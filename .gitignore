@@ -1,0 +1,5 @@
+/analyze/
+/.dependencies
+/libvdr-web.so
+/thirdparty/IXWebSocket/build/
+/.idea/

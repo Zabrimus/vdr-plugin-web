@@ -1,0 +1,311 @@
+/*
+ * web.c: A plugin for the Video Disk Recorder
+ *
+ * See the README file for copyright information and how to reach the author.
+ *
+ * $Id$
+ */
+
+#include <getopt.h>
+#include <vdr/plugin.h>
+#include <vdr/remote.h>
+#include "web.h"
+#include "browserclient.h"
+#include "ini.h"
+#include "httplib.h"
+#include "webosdpage.h"
+#include "sharedmemory.h"
+#include "status.h"
+#include "videocontrol.h"
+
+std::string browserIp;
+int browserPort;
+
+std::string transcoderIp;
+int transcoderPort;
+
+std::string vdrIp;
+int vdrPort;
+
+httplib::Server vdrServer;
+cHbbtvDeviceStatus *hbbtvDeviceStatus;
+
+// VideoControl* videoControl;
+VideoPlayer* videoPlayer;
+
+void startHttpServer(std::string vdrIp, int vdrPort) {
+
+    vdrServer.Post("/ProcessOsdUpdate", [](const httplib::Request &req, httplib::Response &res) {
+        auto width = req.get_param_value("width");
+        auto height = req.get_param_value("height");
+
+        dsyslog("[vdrweb] Incoming request /ProcessOsdUpdate with width %s, height %s", width.c_str(), height.c_str());
+
+        if (width.empty() || height.empty()) {
+            res.status = 404;
+        } else {
+            if (webOsdPage == nullptr) {
+                // illegal request -> abort
+                esyslog("[vdrweb] osd update request while webOsdPage is null.");
+                res.status = 404;
+                return;
+            }
+
+            bool result = webOsdPage->drawImage(sharedMemory.Get(), std::stoi(width), std::stoi(height));
+
+            if (result) {
+                res.status = 200;
+                res.set_content("ok", "text/plain");
+            }  else {
+                res.status = 500;
+                res.set_content("error", "text/plain");
+            }
+        }
+    });
+
+    vdrServer.Post("/ProcessTSPacket", [](const httplib::Request &req, httplib::Response &res) {
+        const std::string body = req.body;
+
+        if (body.empty()) {
+            res.status = 404;
+        } else {
+            /*
+            FILE* f = fopen("test.ts", "a");
+            fwrite((uint8_t *)body.c_str(), body.length(), 1, f);
+            fclose(f);
+            */
+
+            videoPlayer->PlayPacket((uint8_t *)body.c_str(), (int)body.length());
+
+            res.status = 200;
+            res.set_content("ok", "text/plain");
+        }
+    });
+
+    vdrServer.Get("/StartVideo", [](const httplib::Request &req, httplib::Response &res) {
+        delete webOsdPage;
+
+        videoPlayer = new VideoPlayer();
+        new WebOSDPage();
+
+        webOsdPage->SetPlayer(videoPlayer);
+
+        videoPlayer->SetVideoSize();
+
+        cControl::Launch(webOsdPage);
+        cControl::Attach();
+
+        OSDDelegate::osdType = OPEN_VIDEO;
+        if (!cRemote::CallPlugin("web")) {
+            fprintf(stderr, "Plugin web not called\n");
+        } else {
+            fprintf(stderr, "Plugin web called\n");
+        }
+
+        res.status = 200;
+        res.set_content("ok", "text/plain");
+    });
+
+    vdrServer.Get("/StopVideo", [](const httplib::Request &req, httplib::Response &res) {
+        // delete videoControl;
+        // videoControl = nullptr;
+        webOsdPage->SetPlayer(nullptr);
+
+        fprintf(stderr, "/StopVideo\n");
+        fflush(stderr);
+
+        cMutexLock mutex;
+
+        cControl* current = cControl::Control(mutex);
+
+        // if (dynamic_cast<VideoControl*>(current)) {
+        if (dynamic_cast<WebOSDPage*>(current)) {
+            cControl::Shutdown();
+            cControl::Attach();
+        }
+
+        res.status = 200;
+        res.set_content("ok", "text/plain");
+    });
+
+    vdrServer.listen(vdrIp, vdrPort);
+}
+
+cPluginWeb::cPluginWeb() {
+    // Initialize any member variables here.
+    // DON'T DO ANYTHING ELSE THAT MAY HAVE SIDE EFFECTS, REQUIRE GLOBAL
+    // VDR OBJECTS TO EXIST OR PRODUCE ANY OUTPUT!
+    osdDelegate = new OSDDelegate();
+}
+
+cPluginWeb::~cPluginWeb() {
+    // Clean up after yourself!
+    if (osdDelegate != nullptr) {
+        delete osdDelegate;
+    }
+}
+
+const char *cPluginWeb::CommandLineHelp() {
+    // Return a string that describes all known command line options.
+    return nullptr;
+}
+
+bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
+    static struct option long_options[] = {
+            { "config",      required_argument, nullptr, 'c' },
+            {nullptr }
+    };
+
+    int c, option_index = 0;
+    while ((c = getopt_long(argc, argv, "c:", long_options, &option_index)) != -1)
+    {
+        switch (c)
+        {
+            case 'c':
+                if (!readConfiguration(optarg)) {
+                    exit(-1);
+                }
+                break;
+
+            default:
+                return false;
+        }
+    }
+    return true;
+}
+
+bool cPluginWeb::Initialize() {
+    // Initialize any background activities the plugin shall perform.
+    return true;
+}
+
+bool cPluginWeb::Start() {
+    isyslog("[vdrweb] Start hbbtv url collector");
+    hbbtvDeviceStatus = new cHbbtvDeviceStatus();
+
+    isyslog("[vdrweb] Start Http Server on %s:%d", vdrIp.c_str(), vdrPort);
+    std::thread t1(startHttpServer, vdrIp, vdrPort);
+    t1.detach();
+
+    new BrowserClient(browserIp, browserPort);
+
+    return true;
+}
+
+void cPluginWeb::Stop() {
+    vdrServer.stop();
+    delete browserClient;
+}
+
+void cPluginWeb::Housekeeping() {
+    // Perform any cleanup or other regular tasks.
+}
+
+void cPluginWeb::MainThreadHook() {
+    // Perform actions in the context of the main program thread.
+    // WARNING: Use with great care - see PLUGINS.html!
+}
+
+cString cPluginWeb::Active() {
+    // Return a message string if shutdown should be postponed
+    return nullptr;
+}
+
+time_t cPluginWeb::WakeupTime() {
+    // Return custom wakeup time for shutdown script
+    return 0;
+}
+
+cOsdObject *cPluginWeb::MainMenuAction() {
+    // Perform the action when selected from the main VDR menu.
+    if (osdDelegate != nullptr) {
+        return osdDelegate->get("Test");
+    }
+
+    return nullptr;
+}
+
+cMenuSetupPage *cPluginWeb::SetupMenu() {
+    // Return a setup menu in case the plugin supports one.
+    return nullptr;
+}
+
+bool cPluginWeb::SetupParse(const char *Name, const char *Value) {
+    // Parse your own setup parameters and store their values.
+    return false;
+}
+
+bool cPluginWeb::Service(const char *Id, void *Data) {
+    // Handle custom service requests from other plugins
+    return false;
+}
+
+const char **cPluginWeb::SVDRPHelpPages() {
+    // Return help text for SVDRP commands this plugin implements
+    return nullptr;
+}
+
+cString cPluginWeb::SVDRPCommand(const char *Command, const char *Option, int &ReplyCode) {
+    // Process SVDRP commands this plugin implements
+    return nullptr;
+}
+
+bool cPluginWeb::readConfiguration(const char* configFile) {
+    mINI::INIFile file(configFile);
+    mINI::INIStructure ini;
+    auto result = file.read(ini);
+
+    if (!result) {
+        esyslog("[vdrweb] Unable to read config file: %s", configFile);
+        return false;
+    }
+
+    try {
+        browserIp = ini["browser"]["http_ip"];
+        if (browserIp.empty()) {
+            esyslog("[vdrweb] http ip (browser) not found");
+            return false;
+        }
+
+        std::string tmpBrowserPort = ini["browser"]["http_port"];
+        if (tmpBrowserPort.empty()) {
+            esyslog("[vdrweb] http port (browser) not found");
+            return false;
+        }
+
+        transcoderIp = ini["transcoder"]["http_ip"];
+        if (transcoderIp.empty()) {
+            esyslog("[vdrweb] http ip (transcoder) not found");
+            return false;
+        }
+
+        std::string tmpTranscoderPort = ini["transcoder"]["http_port"];
+        if (tmpTranscoderPort.empty()) {
+            esyslog("[vdrweb] http port (transcoder) not found");
+            return false;
+        }
+
+        vdrIp = ini["vdr"]["http_ip"];
+        if (vdrIp.empty()) {
+            esyslog("[vdrweb] http ip (vdr) not found");
+            return false;
+        }
+
+        std::string tmpVdrPort = ini["vdr"]["http_port"];
+        if (tmpVdrPort.empty()) {
+            esyslog("[vdrweb] http port (vdr) not found");
+            return false;
+        }
+
+        browserPort = std::stoi(tmpBrowserPort);
+        transcoderPort = std::stoi(tmpTranscoderPort);
+        vdrPort = std::stoi(tmpVdrPort);
+    } catch (...) {
+        esyslog("[vdrweb] configuration error. aborting...");
+        return false;
+    }
+
+    return true;
+}
+
+VDRPLUGINCREATOR(cPluginWeb); // Don't touch this!
