@@ -61,7 +61,7 @@ DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o osddelegate.o webosdmenu.o webosdpage.o sharedmemory.o browserclient.o status.o ait.o videocontrol.o
+OBJS = $(PLUGIN).o webosdpage.o sharedmemory.o browserclient.o status.o ait.o videocontrol.o
 
 ### The main target:
 
