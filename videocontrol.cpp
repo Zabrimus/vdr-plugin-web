@@ -48,7 +48,12 @@ void VideoPlayer::setVideoDefaultSize() {
 void VideoPlayer::SetVideoSize() {
     // dsyslog("[vdrweb] SetVideoSize in video player: x=%d, y=%d, width=%d, height=%d", video_x, video_y, video_width, video_height);
 
+    // fullscreen
+    cRect r = {0,0,0,0};
+    cDevice::PrimaryDevice()->ScaleVideo(r);
+
     // calculate the new coordinates
+    /*
     if (isVideoFullscreen()) {
         // fullscreen
         cRect r = {0,0,0,0};
@@ -65,6 +70,7 @@ void VideoPlayer::SetVideoSize() {
         cRect r = {newX, newY, newWidth, newHeight};
         cDevice::PrimaryDevice()->ScaleVideo(r);
     }
+    */
 }
 
 void VideoPlayer::calcVideoPosition(int *x, int *y, int *width, int *height) {
