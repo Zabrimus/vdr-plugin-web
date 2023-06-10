@@ -28,7 +28,6 @@ cOsdObject *OSDDelegate::get(const char *title) {
         OSDDelegate::osdType = OSDType::MENU;
         return nullptr;
     } else if (osdType == OPEN_VIDEO) {
-        fprintf(stderr, "TRY OPENVIDEO....: %s\n", (webOsdPage != nullptr ? "vorhanden" : "nicht vorhanden"));
         if (webOsdPage == nullptr) {
             new WebOSDPage();
         }

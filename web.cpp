@@ -39,7 +39,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
         auto width = req.get_param_value("width");
         auto height = req.get_param_value("height");
 
-        dsyslog("[vdrweb] Incoming request /ProcessOsdUpdate with width %s, height %s", width.c_str(), height.c_str());
+        // dsyslog("[vdrweb] Incoming request /ProcessOsdUpdate with width %s, height %s", width.c_str(), height.c_str());
 
         if (width.empty() || height.empty()) {
             res.status = 404;
@@ -83,23 +83,19 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     });
 
     vdrServer.Get("/StartVideo", [](const httplib::Request &req, httplib::Response &res) {
-        delete webOsdPage;
-
         videoPlayer = new VideoPlayer();
-        new WebOSDPage();
-
         webOsdPage->SetPlayer(videoPlayer);
-
         videoPlayer->SetVideoSize();
 
         cControl::Launch(webOsdPage);
         cControl::Attach();
 
+        // try to fix OSD + Video
         OSDDelegate::osdType = OPEN_VIDEO;
         if (!cRemote::CallPlugin("web")) {
-            fprintf(stderr, "Plugin web not called\n");
+            dsyslog("Plugin web not called");
         } else {
-            fprintf(stderr, "Plugin web called\n");
+            dsyslog("Plugin web called\n");
         }
 
         res.status = 200;
