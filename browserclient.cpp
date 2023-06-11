@@ -23,7 +23,7 @@ bool BrowserClient::LoadUrl(std::string url) {
         }
     } else {
         auto err = res.error();
-        std::cout << "HTTP error: " << httplib::to_string(err) << std::endl;
+        std::cout << "HTTP error (LoadURL): " << httplib::to_string(err) << std::endl;
         return false;
     }
 
@@ -41,7 +41,7 @@ bool BrowserClient::RedButton(std::string channelId) {
         }
     } else {
         auto err = res.error();
-        std::cout << "HTTP error: " << httplib::to_string(err) << std::endl;
+        std::cout << "HTTP error (RedButton): " << httplib::to_string(err) << std::endl;
         return false;
     }
 
@@ -59,7 +59,7 @@ bool BrowserClient::ProcessKey(std::string key) {
         }
     } else {
         auto err = res.error();
-        std::cout << "HTTP error: " << httplib::to_string(err) << std::endl;
+        std::cout << "HTTP error (ProcessKey): " << httplib::to_string(err) << std::endl;
         return false;
     }
 
@@ -74,7 +74,7 @@ bool BrowserClient::InsertHbbtv(std::string json) {
         }
     } else {
         auto err = res.error();
-        std::cout << "HTTP error: " << httplib::to_string(err) << std::endl;
+        std::cout << "HTTP error (InsertHbbtv): " << httplib::to_string(err) << std::endl;
         return false;
     }
 
@@ -89,7 +89,26 @@ bool BrowserClient::InsertChannel(std::string json) {
         }
     } else {
         auto err = res.error();
-        std::cout << "HTTP error: " << httplib::to_string(err) << std::endl;
+        std::cout << "HTTP error (InsertChannel): " << httplib::to_string(err) << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+bool BrowserClient::StartApplication(std::string channelId, std::string appId) {
+    httplib::Params params;
+    params.emplace("channelId", channelId);
+    params.emplace("appId", appId);
+
+    if (auto res = client->Post("/StartApplication", params)) {
+        if (res->status != 200) {
+            std::cout << "Http result: " << res->status << std::endl;
+            return false;
+        }
+    } else {
+        auto err = res.error();
+        std::cout << "HTTP error (StartApplication): " << httplib::to_string(err) << std::endl;
         return false;
     }
 

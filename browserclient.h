@@ -15,6 +15,7 @@ public:
     bool ProcessKey(std::string key);
     bool InsertHbbtv(std::string json);
     bool InsertChannel(std::string json);
+    bool StartApplication(std::string channelId, std::string appId);
 
 private:
     httplib::Client* client;

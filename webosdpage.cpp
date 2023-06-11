@@ -194,7 +194,18 @@ eOSState WebOSDPage::ProcessKey(eKeys Key) {
     eOSState state = cOsdObject::ProcessKey(Key);
 
     if (state == osUnknown) {
-        std::map<int, std::string>::iterator search = ::keyMap.find(Key);
+        // special key: kInfo -> Load Application in Browser
+        if (Key == kInfo) {
+            LOCK_CHANNELS_READ
+            const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
+            browserClient->RedButton(*currentChannel->GetChannelID().ToString());
+
+            fprintf(stderr, "kInfo -> Load application\n");
+            browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "currently unused");
+            return osContinue;
+        }
+
+        auto search = ::keyMap.find(Key);
         if (search != ::keyMap.end()) {
             browserClient->ProcessKey(search->second);
             return osContinue;
