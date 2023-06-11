@@ -13,22 +13,17 @@ public:
     void Resume();
 
     void PlayPacket(uint8_t *buffer, int len);
-    void SetVideoSize();
-    void setVideoDefaultSize();
+    void SetVideoSize(int x, int y, int width, int height);
+    void setVideoFullscreen();
 
 protected:
     void Activate(bool On) override;
 
 private:
-    void calcVideoPosition(int *x, int *y, int *width, int *height);
-    bool isVideoFullscreen();
+    void calcVideoPosition(int x, int y, int w, int h, int *newx, int *newy, int *newwidth, int *newheight);
 
 private:
     bool pause;
-
-    // current video size and coordinates
-    int video_x, video_y;
-    int video_width, video_height;
 };
 
 /*

@@ -11,7 +11,7 @@ VideoPlayer::~VideoPlayer() {
     dsyslog("[vdrweb] Delete Player...");
 
     pause = true;
-    setVideoDefaultSize();
+    setVideoFullscreen();
 
     Detach();
 }
@@ -23,10 +23,7 @@ void VideoPlayer::Activate(bool On) {
         isPlayerActivated = true;
     } else {
         isPlayerActivated = false;
-        setVideoDefaultSize();
-
-        cRect r = {0,0,0,0};
-        cDevice::PrimaryDevice()->ScaleVideo(r);
+        setVideoFullscreen();
     }
 }
 
@@ -38,59 +35,37 @@ void VideoPlayer::Resume() {
     pause = false;
 }
 
-void VideoPlayer::setVideoDefaultSize() {
-    video_x = 0;
-    video_y = 0;
-    video_width = 1280;
-    video_height = 720;
-}
-
-void VideoPlayer::SetVideoSize() {
-    // dsyslog("[vdrweb] SetVideoSize in video player: x=%d, y=%d, width=%d, height=%d", video_x, video_y, video_width, video_height);
-
+void VideoPlayer::setVideoFullscreen() {
     // fullscreen
     cRect r = {0,0,0,0};
     cDevice::PrimaryDevice()->ScaleVideo(r);
-
-    // calculate the new coordinates
-    /*
-    if (isVideoFullscreen()) {
-        // fullscreen
-        cRect r = {0,0,0,0};
-        cDevice::PrimaryDevice()->ScaleVideo(r);
-    } else {
-        int osdWidth;
-        int osdHeight;
-        double osdPh;
-        cDevice::PrimaryDevice()->GetOsdSize(osdWidth, osdHeight, osdPh);
-
-        int newX, newY, newWidth, newHeight;
-        calcVideoPosition(&newX, &newY, &newWidth, &newHeight);
-
-        cRect r = {newX, newY, newWidth, newHeight};
-        cDevice::PrimaryDevice()->ScaleVideo(r);
-    }
-    */
 }
 
-void VideoPlayer::calcVideoPosition(int *x, int *y, int *width, int *height) {
+void VideoPlayer::SetVideoSize(int x, int y, int width, int height) {
+    dsyslog("[vdrweb] SetVideoSize in video player: x=%d, y=%d, width=%d, height=%d", x, y, width, height);
+
     int osdWidth;
     int osdHeight;
     double osdPh;
     cDevice::PrimaryDevice()->GetOsdSize(osdWidth, osdHeight, osdPh);
 
-    *x = (video_x * osdWidth) / 1280;
-    *y = (video_y * osdHeight) / 720;
-    *width = (video_width * osdWidth) / 1280;
-    *height = (video_height * osdHeight) / 720;
+    int newX, newY, newWidth, newHeight;
+    calcVideoPosition(x, y, width,height, &newX, &newY, &newWidth, &newHeight);
+
+    cRect r = {newX, newY, newWidth, newHeight};
+    cDevice::PrimaryDevice()->ScaleVideo(r);
 }
 
-bool VideoPlayer::isVideoFullscreen() {
-    if ((video_x == 0) && (video_y == 0) && (video_width == 1280) && (video_height == 720)) {
-        return true;
-    }
+void VideoPlayer::calcVideoPosition(int x, int y, int w, int h, int *newx, int *newy, int *newwidth, int *newheight) {
+    int osdWidth;
+    int osdHeight;
+    double osdPh;
+    cDevice::PrimaryDevice()->GetOsdSize(osdWidth, osdHeight, osdPh);
 
-    return false;
+    *newx = (x * osdWidth) / 1280;
+    *newy = (y * osdHeight) / 720;
+    *newwidth = (w * osdWidth) / 1280;
+    *newheight = (h * osdHeight) / 720;
 }
 
 void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {

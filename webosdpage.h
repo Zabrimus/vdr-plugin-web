@@ -2,6 +2,7 @@
 
 #include <string>
 #include <map>
+#include <thread>
 #include <vdr/osdbase.h>
 #include <vdr/player.h>
 
@@ -15,6 +16,8 @@ private:
     int disp_height;
 
     static std::map<int, std::string> keyMap;
+
+    std::thread* activityTriggerThread;
 
 public:
     WebOSDPage();

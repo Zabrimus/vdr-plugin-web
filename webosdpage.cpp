@@ -1,4 +1,5 @@
 #include <vdr/device.h>
+#include <vdr/remote.h>
 #include "webosdpage.h"
 #include "browserclient.h"
 
@@ -51,16 +52,40 @@ std::map<int, std::string> keyMap({
         {kPrev, "VK_PAGE_UP"},
 });
 
+// Thread to prevent automatically closing the OSD
+bool runTriggerActivity = false;
+void triggerActivityThread() {
+    int counter = 0;
+    int waitTime = 100;
+
+    while (runTriggerActivity) {
+        counter++;
+
+        if ((60 * 1000) % (counter * waitTime) == 0) {
+            cRemote::TriggerLastActivity();
+            counter = 0;
+        } else {
+            std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
+        }
+    }
+}
+
 WebOSDPage::WebOSDPage() : cControl(nullptr) {
     dsyslog("[vdrweb] Create WebOSDPage\n");
 
     osd = nullptr;
     pixmap = nullptr;
     webOsdPage = this;
+
+    runTriggerActivity = true;
+    activityTriggerThread = new std::thread(triggerActivityThread);
 }
 
 WebOSDPage::~WebOSDPage() {
     dsyslog("[vdrweb] Destruct WebOSDPage\n");
+
+    runTriggerActivity = false;
+    activityTriggerThread->join();
 
     if (osd != nullptr) {
         delete osd;

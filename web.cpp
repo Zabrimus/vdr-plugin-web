@@ -93,7 +93,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
 
         videoPlayer = new VideoPlayer();
         webOsdPage->SetPlayer(videoPlayer);
-        videoPlayer->SetVideoSize();
+        // videoPlayer->SetVideoSize();
 
         cControl::Launch(webOsdPage);
         cControl::Attach();
@@ -122,6 +122,33 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
             cControl::Shutdown();
             cControl::Attach();
         }
+
+        res.status = 200;
+        res.set_content("ok", "text/plain");
+    });
+
+    vdrServer.Post("/VideoSize", [](const httplib::Request &req, httplib::Response &res) {
+        auto x = req.get_param_value("x");
+        auto y = req.get_param_value("y");
+        auto w = req.get_param_value("w");
+        auto h = req.get_param_value("h");
+
+        dsyslog("[vdrweb] Incoming request /VideoSize with x %s, y %s, width %s, height %s", x.c_str(), y.c_str(), w.c_str(), h.c_str());
+
+        if (x.empty() || y.empty() || w.empty() || h.empty()) {
+            res.status = 404;
+        } else {
+            videoPlayer->SetVideoSize(std::atoi(x.c_str()), std::atoi(y.c_str()), std::atoi(w.c_str()), std::atoi(h.c_str()));
+
+            res.status = 200;
+            res.set_content("ok", "text/plain");
+        }
+    });
+
+    vdrServer.Get("/VideoFullscreen", [](const httplib::Request &req, httplib::Response &res) {
+        isyslog("[vdrweb] VideoFullscreen received");
+
+        videoPlayer->setVideoFullscreen();
 
         res.status = 200;
         res.set_content("ok", "text/plain");
@@ -220,6 +247,8 @@ cOsdObject *cPluginWeb::MainMenuAction() {
             LOCK_CHANNELS_READ
             const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
             browserClient->RedButton(*currentChannel->GetChannelID().ToString());
+
+            reopenOsd = false;
         }
     }
 
