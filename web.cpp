@@ -33,6 +33,8 @@ cHbbtvDeviceStatus *hbbtvDeviceStatus;
 // VideoControl* videoControl;
 VideoPlayer* videoPlayer;
 
+bool reopenOsd = false;
+
 void startHttpServer(std::string vdrIp, int vdrPort) {
 
     vdrServer.Post("/ProcessOsdUpdate", [](const httplib::Request &req, httplib::Response &res) {
@@ -83,6 +85,12 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     });
 
     vdrServer.Get("/StartVideo", [](const httplib::Request &req, httplib::Response &res) {
+        isyslog("[vdrweb] StartVideo received");
+
+        if (webOsdPage == nullptr) {
+            new WebOSDPage();
+        }
+
         videoPlayer = new VideoPlayer();
         webOsdPage->SetPlayer(videoPlayer);
         videoPlayer->SetVideoSize();
@@ -90,25 +98,20 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
         cControl::Launch(webOsdPage);
         cControl::Attach();
 
-        // try to fix OSD + Video
-        OSDDelegate::osdType = OPEN_VIDEO;
-        if (!cRemote::CallPlugin("web")) {
-            dsyslog("Plugin web not called");
-        } else {
-            dsyslog("Plugin web called\n");
-        }
+        // Restart OSD
+        reopenOsd = true;
+        cRemote::CallPlugin("web");
 
         res.status = 200;
         res.set_content("ok", "text/plain");
     });
 
     vdrServer.Get("/StopVideo", [](const httplib::Request &req, httplib::Response &res) {
+        isyslog("[vdrweb] StopVideo received");
+
         // delete videoControl;
         // videoControl = nullptr;
         webOsdPage->SetPlayer(nullptr);
-
-        fprintf(stderr, "/StopVideo\n");
-        fflush(stderr);
 
         cMutexLock mutex;
 
@@ -131,14 +134,9 @@ cPluginWeb::cPluginWeb() {
     // Initialize any member variables here.
     // DON'T DO ANYTHING ELSE THAT MAY HAVE SIDE EFFECTS, REQUIRE GLOBAL
     // VDR OBJECTS TO EXIST OR PRODUCE ANY OUTPUT!
-    osdDelegate = new OSDDelegate();
 }
 
 cPluginWeb::~cPluginWeb() {
-    // Clean up after yourself!
-    if (osdDelegate != nullptr) {
-        delete osdDelegate;
-    }
 }
 
 const char *cPluginWeb::CommandLineHelp() {
@@ -213,12 +211,19 @@ time_t cPluginWeb::WakeupTime() {
 }
 
 cOsdObject *cPluginWeb::MainMenuAction() {
-    // Perform the action when selected from the main VDR menu.
-    if (osdDelegate != nullptr) {
-        return osdDelegate->get("Test");
+    dsyslog("[vdrweb] MainMenuAction: reopen = %s\n", (reopenOsd ? "yes" : "no"));
+
+    if (webOsdPage == nullptr) {
+        new WebOSDPage();
+
+        if (!reopenOsd) {
+            LOCK_CHANNELS_READ
+            const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
+            browserClient->RedButton(*currentChannel->GetChannelID().ToString());
+        }
     }
 
-    return nullptr;
+    return webOsdPage;
 }
 
 cMenuSetupPage *cPluginWeb::SetupMenu() {

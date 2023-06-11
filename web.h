@@ -9,16 +9,12 @@
 #pragma once
 
 #include <vdr/plugin.h>
-#include "osddelegate.h"
 
 static const char *VERSION = "0.0.1";
 static const char *DESCRIPTION = "Enter description for 'web' plugin";
 static const char *MAINMENUENTRY = "Web";
 
 class cPluginWeb : public cPlugin {
-private:
-    OSDDelegate *osdDelegate = nullptr;
-
 public:
     cPluginWeb();
     ~cPluginWeb() override;
