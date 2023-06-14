@@ -77,7 +77,9 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
             fclose(f);
             */
 
-            videoPlayer->PlayPacket((uint8_t *)body.c_str(), (int)body.length());
+            if (videoPlayer != nullptr) {
+                videoPlayer->PlayPacket((uint8_t *) body.c_str(), (int) body.length());
+            }
 
             res.status = 200;
             res.set_content("ok", "text/plain");
@@ -109,19 +111,8 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     vdrServer.Get("/StopVideo", [](const httplib::Request &req, httplib::Response &res) {
         isyslog("[vdrweb] StopVideo received");
 
-        // delete videoControl;
-        // videoControl = nullptr;
-        webOsdPage->SetPlayer(nullptr);
-
-        cMutexLock mutex;
-
-        cControl* current = cControl::Control(mutex);
-
-        // if (dynamic_cast<VideoControl*>(current)) {
-        if (dynamic_cast<WebOSDPage*>(current)) {
-            cControl::Shutdown();
-            cControl::Attach();
-        }
+        delete videoPlayer;
+        videoPlayer = nullptr;
 
         res.status = 200;
         res.set_content("ok", "text/plain");

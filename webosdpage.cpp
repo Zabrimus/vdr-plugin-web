@@ -223,7 +223,7 @@ eOSState WebOSDPage::ProcessKey(eKeys Key) {
         if (Key == kInfo) {
             LOCK_CHANNELS_READ
             const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
-            browserClient->RedButton(*currentChannel->GetChannelID().ToString());
+            // browserClient->RedButton(*currentChannel->GetChannelID().ToString());
             browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "currently unused");
             return osContinue;
         }
