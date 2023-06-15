@@ -95,7 +95,6 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
 
         videoPlayer = new VideoPlayer();
         webOsdPage->SetPlayer(videoPlayer);
-        // videoPlayer->SetVideoSize();
 
         cControl::Launch(webOsdPage);
         cControl::Attach();
@@ -113,6 +112,28 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
 
         delete videoPlayer;
         videoPlayer = nullptr;
+
+        res.status = 200;
+        res.set_content("ok", "text/plain");
+    });
+
+    vdrServer.Get("/PauseVideo", [](const httplib::Request &req, httplib::Response &res) {
+        isyslog("[vdrweb] PauseVideo received");
+
+        if (videoPlayer != nullptr) {
+            videoPlayer->Pause();
+        }
+
+        res.status = 200;
+        res.set_content("ok", "text/plain");
+    });
+
+    vdrServer.Get("/ResumeVideo", [](const httplib::Request &req, httplib::Response &res) {
+        isyslog("[vdrweb] ResumeVideo received");
+
+        if (videoPlayer != nullptr) {
+            videoPlayer->Resume();
+        }
 
         res.status = 200;
         res.set_content("ok", "text/plain");

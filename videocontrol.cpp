@@ -28,10 +28,13 @@ void VideoPlayer::Activate(bool On) {
 }
 
 void VideoPlayer::Pause() {
+    DeviceClear();
+    DeviceFreeze();
     pause = true;
 }
 
 void VideoPlayer::Resume() {
+    DevicePlay();
     pause = false;
 }
 
