@@ -259,10 +259,10 @@ cOsdObject *cPluginWeb::MainMenuAction() {
             LOCK_CHANNELS_READ
             const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
             browserClient->RedButton(*currentChannel->GetChannelID().ToString());
-
-            reopenOsd = false;
         }
     }
+
+    reopenOsd = false;
 
     return webOsdPage;
 }
