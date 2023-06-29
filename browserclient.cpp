@@ -5,6 +5,7 @@ BrowserClient* browserClient;
 BrowserClient::BrowserClient(std::string browserIp, int browserPort) {
     client = new httplib::Client(browserIp, browserPort);
     browserClient = this;
+    helloReceived = true; // be optimistic
 }
 
 BrowserClient::~BrowserClient() {
@@ -13,17 +14,23 @@ BrowserClient::~BrowserClient() {
 }
 
 bool BrowserClient::LoadUrl(std::string url) {
+    if (!CheckConnection("LoadURL")) {
+        return false;
+    }
+
     httplib::Params params;
     params.emplace("url", url);
 
     if (auto res = client->Post("/LoadUrl", params)) {
         if (res->status != 200) {
+            // TODO: Send message to browser
             std::cout << "Http result: " << res->status << std::endl;
             return false;
         }
     } else {
         auto err = res.error();
         std::cout << "HTTP error (LoadURL): " << httplib::to_string(err) << std::endl;
+        helloReceived = false;
         return false;
     }
 
@@ -31,17 +38,23 @@ bool BrowserClient::LoadUrl(std::string url) {
 }
 
 bool BrowserClient::RedButton(std::string channelId) {
+    if (!CheckConnection("RedButton")) {
+        return false;
+    }
+
     httplib::Params params;
     params.emplace("channelId", channelId);
 
     if (auto res = client->Post("/RedButton", params)) {
         if (res->status != 200) {
+            // TODO: Send message to browser
             std::cout << "Http result: " << res->status << std::endl;
             return false;
         }
     } else {
         auto err = res.error();
         std::cout << "HTTP error (RedButton): " << httplib::to_string(err) << std::endl;
+        helloReceived = false;
         return false;
     }
 
@@ -49,10 +62,16 @@ bool BrowserClient::RedButton(std::string channelId) {
 }
 
 bool BrowserClient::ProcessKey(std::string key) {
+    if (!CheckConnection("ProcessKey")) {
+        return false;
+    }
+
     httplib::Params params;
     params.emplace("key", key);
 
     if (auto res = client->Post("/ProcessKey", params)) {
+        helloReceived = true;
+
         if (res->status != 200) {
             std::cout << "Http result: " << res->status << std::endl;
             return false;
@@ -60,6 +79,7 @@ bool BrowserClient::ProcessKey(std::string key) {
     } else {
         auto err = res.error();
         std::cout << "HTTP error (ProcessKey): " << httplib::to_string(err) << std::endl;
+        helloReceived = false;
         return false;
     }
 
@@ -67,6 +87,10 @@ bool BrowserClient::ProcessKey(std::string key) {
 }
 
 bool BrowserClient::InsertHbbtv(std::string json) {
+    if (!CheckConnection("InsertHbbtv")) {
+        return false;
+    }
+
     if (auto res = client->Post("/InsertHbbtv", json, "text/plain")) {
         if (res->status != 200) {
             std::cout << "Http result: " << res->status << std::endl;
@@ -75,6 +99,7 @@ bool BrowserClient::InsertHbbtv(std::string json) {
     } else {
         auto err = res.error();
         std::cout << "HTTP error (InsertHbbtv): " << httplib::to_string(err) << std::endl;
+        helloReceived = false;
         return false;
     }
 
@@ -82,6 +107,10 @@ bool BrowserClient::InsertHbbtv(std::string json) {
 }
 
 bool BrowserClient::InsertChannel(std::string json) {
+    if (!CheckConnection("InsertChannel")) {
+        return false;
+    }
+
     if (auto res = client->Post("/InsertChannel", json, "text/plain")) {
         if (res->status != 200) {
             std::cout << "Http result: " << res->status << std::endl;
@@ -90,6 +119,7 @@ bool BrowserClient::InsertChannel(std::string json) {
     } else {
         auto err = res.error();
         std::cout << "HTTP error (InsertChannel): " << httplib::to_string(err) << std::endl;
+        helloReceived = false;
         return false;
     }
 
@@ -97,6 +127,10 @@ bool BrowserClient::InsertChannel(std::string json) {
 }
 
 bool BrowserClient::StartApplication(std::string channelId, std::string appId) {
+    if (!CheckConnection("StartApplication")) {
+        return false;
+    }
+
     httplib::Params params;
     params.emplace("channelId", channelId);
     params.emplace("appId", appId);
@@ -109,6 +143,21 @@ bool BrowserClient::StartApplication(std::string channelId, std::string appId) {
     } else {
         auto err = res.error();
         std::cout << "HTTP error (StartApplication): " << httplib::to_string(err) << std::endl;
+        helloReceived = false;
+        return false;
+    }
+
+    return true;
+}
+
+void BrowserClient::HelloFromBrowser() {
+    helloReceived = true;
+}
+
+bool BrowserClient::CheckConnection(std::string method) {
+    if (!helloReceived) {
+        // do nothing, browser is not available
+        dsyslog("[vdrweb] %s, browser is not available", method.c_str());
         return false;
     }
 

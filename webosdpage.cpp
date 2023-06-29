@@ -87,12 +87,16 @@ WebOSDPage::~WebOSDPage() {
     runTriggerActivity = false;
     activityTriggerThread->join();
 
+    if (pixmap != nullptr) {
+        osd->DestroyPixmap(pixmap);
+        pixmap = nullptr;
+    }
+
     if (osd != nullptr) {
         delete osd;
         osd = nullptr;
     }
 
-    pixmap = nullptr;
     webOsdPage = nullptr;
 }
 

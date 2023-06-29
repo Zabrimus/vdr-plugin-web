@@ -17,7 +17,13 @@ public:
     bool InsertChannel(std::string json);
     bool StartApplication(std::string channelId, std::string appId);
 
+    void HelloFromBrowser();
+
 private:
+    bool CheckConnection(std::string method);
+
+private:
+    bool helloReceived;
     httplib::Client* client;
 };
 

@@ -1,45 +1,31 @@
-#include <cstdio>
-#include <thread>
-#include <sys/shm.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string>
 #include "sharedmemory.h"
 
-const key_t sharedMemoryKey = (key_t)0xDEADC0DE;
+const std::string sharedMemoryFile("/cefbrowser");
 const int sharedMemorySize = 1920 * 1080 * 4;
 
+SharedMemory sharedMemory;
+
 SharedMemory::SharedMemory() {
-    // init shared memory
-    shmid = -1;
-    shmp = nullptr;
-
-    shmid = shmget(sharedMemoryKey, sharedMemorySize, 0666 | IPC_CREAT | IPC_EXCL) ;
-
-    if (errno == EEXIST) {
-        shmid = shmget(sharedMemoryKey, sharedMemorySize, 0666);
+    int shmid = shm_open(sharedMemoryFile.c_str(), O_RDWR, 0666);
+    if (shmid < 0) {
+        shmid = shm_open(sharedMemoryFile.c_str(), O_EXCL | O_CREAT | O_RDWR, 0666);
+        if (shmid >= 0) {
+            ftruncate(shmid, sharedMemorySize);
+        }
     }
 
-    if (shmid == -1) {
-        perror("Unable to get shared memory");
-        return;
-    }
-
-    shmp = (uint8_t *) shmat(shmid, nullptr, 0);
-    if (shmp == (void *) -1) {
-        perror("Unable to attach to shared memory");
-        return;
-    }
+    shmp = (uint8_t*)mmap(nullptr, sharedMemorySize, PROT_READ | PROT_WRITE, MAP_SHARED, shmid, 0);
+    close(shmid);
 }
 
 SharedMemory::~SharedMemory() {
-    shutdown();
+    // munmap(shmp, sharedMemorySize);
 }
 
 uint8_t* SharedMemory::Get() {
     return shmp;
 }
-
-void SharedMemory::shutdown() {
-    shmdt(shmp);
-    shmctl(shmid, IPC_RMID, 0);
-}
-
-SharedMemory sharedMemory;

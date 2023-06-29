@@ -14,9 +14,9 @@
 #include "ini.h"
 #include "httplib.h"
 #include "webosdpage.h"
-#include "sharedmemory.h"
 #include "status.h"
 #include "videocontrol.h"
+#include "sharedmemory.h"
 
 std::string browserIp;
 int browserPort;
@@ -34,6 +34,8 @@ cHbbtvDeviceStatus *hbbtvDeviceStatus;
 VideoPlayer* videoPlayer;
 
 bool reopenOsd = false;
+
+int nr = 0;
 
 void startHttpServer(std::string vdrIp, int vdrPort) {
 
@@ -161,6 +163,15 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
         isyslog("[vdrweb] VideoFullscreen received");
 
         videoPlayer->setVideoFullscreen();
+
+        res.status = 200;
+        res.set_content("ok", "text/plain");
+    });
+
+    vdrServer.Get("/Hello", [](const httplib::Request &req, httplib::Response &res) {
+        isyslog("[vdrweb] Hello received");
+
+        browserClient->HelloFromBrowser();
 
         res.status = 200;
         res.set_content("ok", "text/plain");
