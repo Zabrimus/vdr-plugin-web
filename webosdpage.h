@@ -30,6 +30,8 @@ public:
 
     void Hide() override;
 
+    bool NeedsFastResponse() override { return false; };
+
     eOSState ProcessKey(eKeys Key) override;
     bool drawImage(uint8_t* image, int width, int height);
 };

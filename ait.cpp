@@ -149,7 +149,7 @@ cAIT::cAIT(const u_char *Data, u_short Pid) : SI::AIT(Data, true) {
 
         const char* buffer = toHbbtvJson(currentChannel->GetChannelID().ToString(), currentChannel->Name(), aitApp.getApplicationId(), aitApp.getControlCode(), nameBuffer, URLBaseBuffer, URLLocBuffer, URLExtBuffer);
         browserClient->InsertHbbtv(buffer);
-        delete buffer;
+        free((void *) buffer);
     }
 }
 

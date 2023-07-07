@@ -82,10 +82,15 @@ WebOSDPage::WebOSDPage() : cControl(nullptr) {
 }
 
 WebOSDPage::~WebOSDPage() {
+    webOsdPage = nullptr;
+
     dsyslog("[vdrweb] Destruct WebOSDPage\n");
 
     runTriggerActivity = false;
     activityTriggerThread->join();
+
+    sws_freeContext(swsCtx);
+    swsCtx = nullptr;
 
     if (pixmap != nullptr) {
         osd->DestroyPixmap(pixmap);
@@ -96,8 +101,6 @@ WebOSDPage::~WebOSDPage() {
         delete osd;
         osd = nullptr;
     }
-
-    webOsdPage = nullptr;
 }
 
 void WebOSDPage::Show() {
@@ -191,7 +194,9 @@ bool WebOSDPage::drawImage(uint8_t* image, int width, int height) {
                                       width, height, AV_PIX_FMT_BGRA,
                                       disp_width, disp_height, AV_PIX_FMT_BGRA,
                                       SWS_BILINEAR, nullptr, nullptr, nullptr);
-    } else {
+    }
+
+    if (swsCtx == nullptr) {
         swsCtx = sws_getContext(width, height, AV_PIX_FMT_BGRA,
                                 disp_width, disp_height, AV_PIX_FMT_BGRA,
                                 SWS_BILINEAR, nullptr, nullptr, nullptr);
