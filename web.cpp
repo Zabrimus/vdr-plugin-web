@@ -33,8 +33,6 @@ cHbbtvDeviceStatus *hbbtvDeviceStatus;
 // VideoControl* videoControl;
 VideoPlayer* videoPlayer;
 
-bool reopenOsd = false;
-
 int nr = 0;
 
 void startHttpServer(std::string vdrIp, int vdrPort) {
@@ -48,14 +46,24 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
         if (width.empty() || height.empty()) {
             res.status = 404;
         } else {
-            if (webOsdPage == nullptr) {
+            WebOSDPage* currentOpenPage;
+
+            if (currentPage != nullptr) {
+                currentOpenPage = currentPage;
+            } else if (currentVideoPage != nullptr) {
+                currentOpenPage = currentVideoPage;
+            } else {
+                currentOpenPage = nullptr;
+            }
+
+            if (currentOpenPage == nullptr) {
                 // illegal request -> abort
-                esyslog("[vdrweb] osd update request while webOsdPage is null.");
+                // esyslog("[vdrweb] osd update request while webOsdPage is null.");
                 res.status = 404;
                 return;
             }
 
-            bool result = webOsdPage->drawImage(sharedMemory.Get(), std::stoi(width), std::stoi(height));
+            bool result = currentOpenPage->drawImage(sharedMemory.Get(), std::stoi(width), std::stoi(height));
 
             if (result) {
                 res.status = 200;
@@ -70,6 +78,11 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     vdrServer.Post("/ProcessTSPacket", [](const httplib::Request &req, httplib::Response &res) {
         const std::string body = req.body;
 
+        // sanity check
+        if (videoPlayer == nullptr || currentVideoPage == nullptr) {
+            res.status = 500;
+        }
+
         if (body.empty()) {
             res.status = 404;
         } else {
@@ -79,8 +92,11 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
             fclose(f);
             */
 
-            if (videoPlayer != nullptr) {
+            if (videoPlayer != nullptr && currentVideoPage != nullptr) {
                 videoPlayer->PlayPacket((uint8_t *) body.c_str(), (int) body.length());
+            } else {
+                res.status = 500;
+                return;
             }
 
             res.status = 200;
@@ -91,19 +107,13 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     vdrServer.Get("/StartVideo", [](const httplib::Request &req, httplib::Response &res) {
         isyslog("[vdrweb] StartVideo received");
 
-        if (webOsdPage == nullptr) {
-            new WebOSDPage();
-        }
+        WebOSDPage* page = new WebOSDPage(false);
 
         videoPlayer = new VideoPlayer();
-        webOsdPage->SetPlayer(videoPlayer);
+        page->SetPlayer(videoPlayer);
 
-        cControl::Launch(webOsdPage);
+        cControl::Launch(page);
         cControl::Attach();
-
-        // Restart OSD
-        reopenOsd = true;
-        cRemote::CallPlugin("web");
 
         res.status = 200;
         res.set_content("ok", "text/plain");
@@ -261,21 +271,13 @@ time_t cPluginWeb::WakeupTime() {
 }
 
 cOsdObject *cPluginWeb::MainMenuAction() {
-    dsyslog("[vdrweb] MainMenuAction: reopen = %s\n", (reopenOsd ? "yes" : "no"));
+    dsyslog("[vdrweb] MainMenuAction");
 
-    if (webOsdPage == nullptr) {
-        new WebOSDPage();
+    LOCK_CHANNELS_READ
+    const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
+    browserClient->RedButton(*currentChannel->GetChannelID().ToString());
 
-        if (!reopenOsd) {
-            LOCK_CHANNELS_READ
-            const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
-            browserClient->RedButton(*currentChannel->GetChannelID().ToString());
-        }
-    }
-
-    reopenOsd = false;
-
-    return webOsdPage;
+    return new WebOSDPage(true);
 }
 
 cMenuSetupPage *cPluginWeb::SetupMenu() {

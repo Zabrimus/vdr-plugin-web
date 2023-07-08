@@ -20,7 +20,7 @@ private:
     std::thread* activityTriggerThread;
 
 public:
-    WebOSDPage();
+    WebOSDPage(bool isPage);
     ~WebOSDPage();
 
     void Show() override;
@@ -36,4 +36,5 @@ public:
     bool drawImage(uint8_t* image, int width, int height);
 };
 
-extern WebOSDPage *webOsdPage;
+extern WebOSDPage *currentPage;
+extern WebOSDPage *currentVideoPage;

@@ -18,8 +18,10 @@ tArea areas[] = {
         {0, 0, 1280 - 1,  720 - 1, 32}, // 720p
 };
 
-WebOSDPage *webOsdPage;
 struct SwsContext *swsCtx = nullptr;
+
+WebOSDPage *currentPage = nullptr;
+WebOSDPage *currentVideoPage = nullptr;
 
 // initialize keyMap
 std::map<int, std::string> keyMap({
@@ -70,19 +72,46 @@ void triggerActivityThread() {
     }
 }
 
-WebOSDPage::WebOSDPage() : cControl(nullptr) {
+WebOSDPage::WebOSDPage(bool isPage) : cControl(nullptr) {
     dsyslog("[vdrweb] Create WebOSDPage\n");
 
     osd = nullptr;
     pixmap = nullptr;
-    webOsdPage = this;
+
+    double ph;
+    cDevice::PrimaryDevice()->GetOsdSize(disp_width, disp_height, ph);
+
+    if (isPage) {
+        currentPage = this;
+        currentVideoPage = nullptr;
+    } else {
+        currentPage = nullptr;
+        currentVideoPage = this;
+
+        // init OSD. For pages, this will be done in a seperate call of Display()
+        Display();
+    }
 
     runTriggerActivity = true;
     activityTriggerThread = new std::thread(triggerActivityThread);
 }
 
 WebOSDPage::~WebOSDPage() {
-    webOsdPage = nullptr;
+    /*
+    cStringList stringList;
+
+    // cBackTrace::BackTrace(stringList, int Level = 0, bool Mangled = false);
+    cBackTrace::BackTrace(stringList);
+    esyslog("[vdrweb] Backtrace size: %d", stringList.Size());
+    for (int i = 0; i < stringList.Size(); ++i) {
+        esyslog("[vdrweb] ==> %s", stringList[i]);
+    }
+
+    esyslog("[vdrweb] ==> Caller: %s", *cBackTrace::GetCaller());
+    */
+
+    currentPage = nullptr;
+    currentVideoPage = nullptr;
 
     dsyslog("[vdrweb] Destruct WebOSDPage\n");
 
@@ -117,23 +146,6 @@ void WebOSDPage::Display() {
 
     osd = cOsdProvider::NewOsd(0, 0, OSD_LEVEL_SUBTITLES);
 
-    /*
-    // set the maximum area size
-    bool areaFound = false;
-    for (int i = 0; i < 4; ++i) {
-        auto areaResult = osd->SetAreas(&areas[i], 1);
-
-        if (areaResult == oeOk) {
-            isyslog("[vdrweb] Area size set to %d:%d - %d:%d", areas[i].x1, areas[i].y1, areas[i].x2, areas[i].y2);
-            areaFound = true;
-            break;
-        }
-    }
-
-    if (!areaFound) {
-        esyslog("[vdrweb] Unable set any OSD area. OSD will not be created");
-    }
-    */
     double ph;
     cDevice::PrimaryDevice()->GetOsdSize(disp_width, disp_height, ph);
     tArea area {0,0,disp_width, disp_height };
@@ -188,19 +200,10 @@ bool WebOSDPage::drawImage(uint8_t* image, int width, int height) {
         return true;
     }
 
-    // scale image
-    if (swsCtx != nullptr) {
-        swsCtx = sws_getCachedContext(swsCtx,
-                                      width, height, AV_PIX_FMT_BGRA,
-                                      disp_width, disp_height, AV_PIX_FMT_BGRA,
-                                      SWS_BILINEAR, nullptr, nullptr, nullptr);
-    }
-
-    if (swsCtx == nullptr) {
-        swsCtx = sws_getContext(width, height, AV_PIX_FMT_BGRA,
-                                disp_width, disp_height, AV_PIX_FMT_BGRA,
-                                SWS_BILINEAR, nullptr, nullptr, nullptr);
-    }
+    swsCtx = sws_getCachedContext(swsCtx,
+                                  width, height, AV_PIX_FMT_BGRA,
+                                  disp_width, disp_height, AV_PIX_FMT_BGRA,
+                                  SWS_BILINEAR, nullptr, nullptr, nullptr);
 
     uint8_t *inData[1] = { image };
     int inLinesize[1] = {4 * width};
