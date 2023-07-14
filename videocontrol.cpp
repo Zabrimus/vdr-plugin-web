@@ -75,7 +75,46 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
     if (len) { // at least one tspacket
         int result = PlayTs(buffer, len);
         if (result < 0) {
-            // esyslog("[vdrweb] Error playing ts: %d", result);
+            esyslog("[vdrweb] Error playing ts: %d", result);
         }
     }
 }
+
+/*
+VideoControl::VideoControl(cPlayer* Player, bool Hidden) : cControl(Player, Hidden) {
+    dsyslog("[vdrweb] Create Control...");
+}
+
+VideoControl::~VideoControl() {
+    dsyslog("[vdrweb] Delete Control...");
+    delete player;
+}
+
+void VideoControl::Hide() {
+    dsyslog("[vdrweb] Hide Control...");
+}
+
+cOsdObject* VideoControl::GetInfo() {
+    dsyslog("[vdrweb] GetInfo Control...");
+    return nullptr;
+}
+
+cString VideoControl::GetHeader() {
+    dsyslog("[vdrweb] Get Header Control...");
+    return "";
+}
+
+eOSState VideoControl::ProcessKey(eKeys Key) {
+    switch (int(Key)) {
+        case kBack:
+            // stop player mode and return to TV
+            // TODO: Implement me
+            return osEnd;
+            break;
+        default:
+            // send all other keys to the browser
+            // browserComm->SendKey(Key);
+            return osContinue;
+    }
+}
+ */
