@@ -3,6 +3,9 @@
 #include "webosdpage.h"
 #include "browserclient.h"
 
+#define QOI_IMPLEMENTATION
+#include "qoi.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -177,6 +180,36 @@ void WebOSDPage::SetOsdSize() {
 }
 
 bool WebOSDPage::drawImage(uint8_t* image, int width, int height) {
+
+#ifdef DEBUG_SAVE_OSD_IMAGE
+    static int osd_image_number = 0;
+
+    // the qoi encoder expects the RGBA pixel format.
+    // For debugging purposes make a copy of the buffer and change the pixel format
+    uint32_t* image_copy = new uint32_t[width * height];
+    uint32_t* image_u32 = (uint32_t*) image;
+
+    for (int i = 0; i < width * height; ++i) {
+        // Source: BGRA = 0xAARRGGBB
+        // Dest:   RGBA = 0xAABBGGRR
+        image_copy[i] =
+                ((image_u32[i] & 0xFF00FF00)      ) | // AA__GG__
+                ((image_u32[i] & 0x00FF0000) >> 16) | // __RR____ -> ______RR
+                ((image_u32[i] & 0x000000FF) << 16);  // ______BB -> __BB____
+    }
+
+    std::string filename = std::string("/tmp/osd_image_") + std::to_string(osd_image_number) + ".qoi";
+
+    qoi_desc desc {
+        .width = static_cast<unsigned int>(width),
+        .height = static_cast<unsigned int>(height),
+        .channels = 4,
+        .colorspace = QOI_LINEAR
+    };
+    qoi_write(filename.c_str(), image_copy, &desc);
+    osd_image_number++;
+#endif
+
     // create image buffer for scaled image
     cSize recImageSize(disp_width, disp_height);
     cPoint recPoint(0, 0);
@@ -210,9 +243,7 @@ bool WebOSDPage::drawImage(uint8_t* image, int width, int height) {
 
     if (pixmap != nullptr) {
         LOCK_PIXMAPS;
-        // Pixmap::Lock();
         pixmap->DrawImage(recPoint, recImage);
-        // pixmap->Unlock();
     } else {
         esyslog("[vdrweb] Pixmap is null. OSD not available");
     }

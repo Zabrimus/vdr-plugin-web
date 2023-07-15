@@ -13,6 +13,10 @@ PLUGIN = web
 
 VERSION = $(shell grep 'static const char \*VERSION *=' $(PLUGIN).cpp | awk '{ print $$6 }' | sed -e 's/[";]//g')
 
+# Debug configuration
+# Save all OSD images in /tmp with filenname osd_image_*.qoi
+# But be warned: Many images will be created if activated.
+DEBUG_SAVE_OSD_IMAGE ?= 0
 
 mINI_DIR = thirdparty/mINI-0.9.14
 
@@ -54,10 +58,13 @@ PACKAGE = vdr-$(ARCHIVE)
 SOFILE = libvdr-$(PLUGIN).so
 
 ### Includes and Defines (add further entries here):
+ifeq ($(DEBUG_SAVE_OSD_IMAGE),1)
+CONFIG += -DDEBUG_SAVE_OSD_IMAGE
+endif
 
 INCLUDES += -I. -I$(mINI_DIR)/src/mini
 
-DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
+DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' $(CONFIG)
 
 ### The object files (add further files here):
 
