@@ -6,6 +6,14 @@
 #include <vdr/osdbase.h>
 #include <vdr/player.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include <libswscale/swscale.h>
+#ifdef __cplusplus
+}
+#endif
+
 class WebOSDPage : public cControl {
 
 private:
@@ -19,9 +27,12 @@ private:
 
     std::thread* activityTriggerThread;
 
+private:
+    bool scaleAndPaint(uint8_t* image, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat);
+
 public:
     WebOSDPage();
-    ~WebOSDPage();
+    ~WebOSDPage() override;
 
     void Show() override;
     cOsdObject* GetInfo() override;
@@ -33,7 +44,11 @@ public:
     bool NeedsFastResponse() override { return false; };
 
     eOSState ProcessKey(eKeys Key) override;
+
+    // Only one method shall be used.
+    // Using both methods in parallel leads to undefined behaviour.
     bool drawImage(uint8_t* image, int width, int height);
+    bool drawImageQOI(const std::string& qoibuffer);
 };
 
 extern WebOSDPage *webOsdPage;

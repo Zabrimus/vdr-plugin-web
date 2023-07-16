@@ -6,14 +6,6 @@
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include <libswscale/swscale.h>
-#ifdef __cplusplus
-}
-#endif
-
 tArea areas[] = {
 //        {0, 0, 4096 - 1, 2160 - 1, 32}, // 4K
 //        {0, 0, 2560 - 1, 1440 - 1, 32}, // 2K
@@ -208,8 +200,31 @@ bool WebOSDPage::drawImage(uint8_t* image, int width, int height) {
     };
     qoi_write(filename.c_str(), image_copy, &desc);
     osd_image_number++;
+
+    delete(image_copy);
 #endif
 
+    return scaleAndPaint(image, width, height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
+}
+
+bool WebOSDPage::drawImageQOI(const std::string& qoibuffer) {
+    // decode image data
+    qoi_desc desc;
+    void *image = qoi_decode(qoibuffer.c_str(), (int)qoibuffer.size(), &desc, 4);
+
+    if (image == nullptr) {
+        // something failed
+        esyslog("[vdrweb] failed to decode qoi OSD image");
+        return false;
+    }
+
+    bool retValue = scaleAndPaint(static_cast<uint8_t *>(image), (int)desc.width, (int)desc.height, AV_PIX_FMT_RGBA, AV_PIX_FMT_BGRA);
+    free(image);
+
+    return retValue;
+}
+
+bool WebOSDPage::scaleAndPaint(uint8_t* image, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat) {
     // create image buffer for scaled image
     cSize recImageSize(disp_width, disp_height);
     cPoint recPoint(0, 0);
@@ -224,14 +239,14 @@ bool WebOSDPage::drawImage(uint8_t* image, int width, int height) {
     // scale image
     if (swsCtx != nullptr) {
         swsCtx = sws_getCachedContext(swsCtx,
-                                      width, height, AV_PIX_FMT_BGRA,
-                                      disp_width, disp_height, AV_PIX_FMT_BGRA,
+                                      width, height, srcFormat,
+                                      disp_width, disp_height, destFormat,
                                       SWS_BILINEAR, nullptr, nullptr, nullptr);
     }
 
     if (swsCtx == nullptr) {
-        swsCtx = sws_getContext(width, height, AV_PIX_FMT_BGRA,
-                                disp_width, disp_height, AV_PIX_FMT_BGRA,
+        swsCtx = sws_getContext(width, height, srcFormat,
+                                disp_width, disp_height, destFormat,
                                 SWS_BILINEAR, nullptr, nullptr, nullptr);
     }
 
@@ -254,6 +269,7 @@ bool WebOSDPage::drawImage(uint8_t* image, int width, int height) {
 
     return true;
 }
+
 
 eOSState WebOSDPage::ProcessKey(eKeys Key) {
     eOSState state = cOsdObject::ProcessKey(Key);
