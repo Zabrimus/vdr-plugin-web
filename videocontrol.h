@@ -16,6 +16,8 @@ public:
     void SetVideoSize(int x, int y, int width, int height);
     void setVideoFullscreen();
 
+    void ResetVideo();
+
 protected:
     void Activate(bool On) override;
 

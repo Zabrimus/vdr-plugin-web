@@ -44,6 +44,10 @@ void VideoPlayer::setVideoFullscreen() {
     cDevice::PrimaryDevice()->ScaleVideo(r);
 }
 
+void VideoPlayer::ResetVideo() {
+    DeviceClear();
+}
+
 void VideoPlayer::SetVideoSize(int x, int y, int width, int height) {
     dsyslog("[vdrweb] SetVideoSize in video player: x=%d, y=%d, width=%d, height=%d", x, y, width, height);
 
@@ -79,42 +83,3 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
         }
     }
 }
-
-/*
-VideoControl::VideoControl(cPlayer* Player, bool Hidden) : cControl(Player, Hidden) {
-    dsyslog("[vdrweb] Create Control...");
-}
-
-VideoControl::~VideoControl() {
-    dsyslog("[vdrweb] Delete Control...");
-    delete player;
-}
-
-void VideoControl::Hide() {
-    dsyslog("[vdrweb] Hide Control...");
-}
-
-cOsdObject* VideoControl::GetInfo() {
-    dsyslog("[vdrweb] GetInfo Control...");
-    return nullptr;
-}
-
-cString VideoControl::GetHeader() {
-    dsyslog("[vdrweb] Get Header Control...");
-    return "";
-}
-
-eOSState VideoControl::ProcessKey(eKeys Key) {
-    switch (int(Key)) {
-        case kBack:
-            // stop player mode and return to TV
-            // TODO: Implement me
-            return osEnd;
-            break;
-        default:
-            // send all other keys to the browser
-            // browserComm->SendKey(Key);
-            return osContinue;
-    }
-}
- */

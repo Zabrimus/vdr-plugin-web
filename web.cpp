@@ -110,7 +110,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     });
 
     vdrServer.Get("/StartVideo", [](const httplib::Request &req, httplib::Response &res) {
-        isyslog("[vdrweb] StartVideo received");
+        dsyslog("[vdrweb] StartVideo received");
 
         if (webOsdPage == nullptr) {
             new WebOSDPage();
@@ -131,7 +131,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     });
 
     vdrServer.Get("/StopVideo", [](const httplib::Request &req, httplib::Response &res) {
-        isyslog("[vdrweb] StopVideo received");
+        dsyslog("[vdrweb] StopVideo received");
 
         delete videoPlayer;
         videoPlayer = nullptr;
@@ -141,7 +141,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     });
 
     vdrServer.Get("/PauseVideo", [](const httplib::Request &req, httplib::Response &res) {
-        isyslog("[vdrweb] PauseVideo received");
+        dsyslog("[vdrweb] PauseVideo received");
 
         if (videoPlayer != nullptr) {
             videoPlayer->Pause();
@@ -152,7 +152,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     });
 
     vdrServer.Get("/ResumeVideo", [](const httplib::Request &req, httplib::Response &res) {
-        isyslog("[vdrweb] ResumeVideo received");
+        dsyslog("[vdrweb] ResumeVideo received");
 
         if (videoPlayer != nullptr) {
             videoPlayer->Resume();
@@ -181,7 +181,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     });
 
     vdrServer.Get("/VideoFullscreen", [](const httplib::Request &req, httplib::Response &res) {
-        isyslog("[vdrweb] VideoFullscreen received");
+        dsyslog("[vdrweb] VideoFullscreen received");
 
         videoPlayer->setVideoFullscreen();
 
@@ -190,9 +190,18 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     });
 
     vdrServer.Get("/Hello", [](const httplib::Request &req, httplib::Response &res) {
-        isyslog("[vdrweb] Hello received");
+        dsyslog("[vdrweb] Hello received");
 
         browserClient->HelloFromBrowser();
+
+        res.status = 200;
+        res.set_content("ok", "text/plain");
+    });
+
+    vdrServer.Get("/ResetVideo", [](const httplib::Request &req, httplib::Response &res) {
+        dsyslog("[vdrweb] ResetVideo received");
+
+        videoPlayer->ResetVideo();
 
         res.status = 200;
         res.set_content("ok", "text/plain");
