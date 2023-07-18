@@ -2,6 +2,7 @@
 #include <vdr/remote.h>
 #include "webosdpage.h"
 #include "browserclient.h"
+#include "backtrace.h"
 
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
@@ -80,6 +81,8 @@ WebOSDPage::~WebOSDPage() {
     webOsdPage = nullptr;
 
     dsyslog("[vdrweb] Destruct WebOSDPage\n");
+
+    // printBacktrace();
 
     runTriggerActivity = false;
     activityTriggerThread->join();

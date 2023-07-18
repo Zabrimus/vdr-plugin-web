@@ -288,9 +288,15 @@ void cPluginWeb::Housekeeping() {
 void cPluginWeb::MainThreadHook() {
     // Perform actions in the context of the main program thread.
     // WARNING: Use with great care - see PLUGINS.html!
-    if (videoPlayer == nullptr && webOsdPage == nullptr && !browserCleared) {
+
+    if (webOsdPage == nullptr && !browserCleared) {
         browserClient->LoadUrl("about:blank");
         browserCleared = true;
+
+        if (videoPlayer != nullptr) {
+            delete videoPlayer;
+            videoPlayer = nullptr;
+        }
     }
 }
 
