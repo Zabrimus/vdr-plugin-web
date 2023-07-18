@@ -30,12 +30,14 @@ int vdrPort;
 httplib::Server vdrServer;
 cHbbtvDeviceStatus *hbbtvDeviceStatus;
 
-// VideoControl* videoControl;
 VideoPlayer* videoPlayer;
 
 bool reopenOsd = false;
+bool browserCleared = true;
 
 int nr = 0;
+
+int lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight;
 
 void startHttpServer(std::string vdrIp, int vdrPort) {
 
@@ -173,7 +175,12 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
         if (x.empty() || y.empty() || w.empty() || h.empty()) {
             res.status = 404;
         } else {
-            videoPlayer->SetVideoSize(std::atoi(x.c_str()), std::atoi(y.c_str()), std::atoi(w.c_str()), std::atoi(h.c_str()));
+            lastVideoX = std::atoi(x.c_str());
+            lastVideoY = std::atoi(y.c_str());
+            lastVideoWidth = std::atoi(w.c_str());
+            lastVideoHeight = std::atoi(h.c_str());
+
+            videoPlayer->SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
 
             res.status = 200;
             res.set_content("ok", "text/plain");
@@ -182,6 +189,8 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
 
     vdrServer.Get("/VideoFullscreen", [](const httplib::Request &req, httplib::Response &res) {
         dsyslog("[vdrweb] VideoFullscreen received");
+
+        lastVideoX = lastVideoY = lastVideoWidth = lastVideoHeight = 0;
 
         videoPlayer->setVideoFullscreen();
 
@@ -202,6 +211,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
         dsyslog("[vdrweb] ResetVideo received");
 
         videoPlayer->ResetVideo();
+        videoPlayer->SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
 
         res.status = 200;
         res.set_content("ok", "text/plain");
@@ -278,6 +288,10 @@ void cPluginWeb::Housekeeping() {
 void cPluginWeb::MainThreadHook() {
     // Perform actions in the context of the main program thread.
     // WARNING: Use with great care - see PLUGINS.html!
+    if (videoPlayer == nullptr && webOsdPage == nullptr && !browserCleared) {
+        browserClient->LoadUrl("about:blank");
+        browserCleared = true;
+    }
 }
 
 cString cPluginWeb::Active() {
@@ -304,6 +318,8 @@ cOsdObject *cPluginWeb::MainMenuAction() {
     }
 
     reopenOsd = false;
+
+    browserCleared = false;
 
     return webOsdPage;
 }

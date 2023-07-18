@@ -225,6 +225,11 @@ bool WebOSDPage::drawImageQOI(const std::string& qoibuffer) {
 }
 
 bool WebOSDPage::scaleAndPaint(uint8_t* image, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat) {
+    // sanity check
+    if (width > 1920 || height > 1080 || width < 0 || height < 0) {
+        return false;
+    }
+
     // create image buffer for scaled image
     cSize recImageSize(disp_width, disp_height);
     cPoint recPoint(0, 0);

@@ -27,15 +27,3 @@ private:
 private:
     bool pause;
 };
-
-/*
-class VideoControl : public cControl {
-public:
-    VideoControl(cPlayer* Player, bool Hidden = false);
-    ~VideoControl();
-    void Hide() override;
-    cOsdObject *GetInfo() override;
-    cString GetHeader() override;
-    eOSState ProcessKey(eKeys Key) override;
-};
-*/
