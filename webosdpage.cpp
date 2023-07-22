@@ -7,6 +7,9 @@
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
 
+#define QOIR_IMPLEMENTATION
+#include "qoir.h"
+
 tArea areas[] = {
 //        {0, 0, 4096 - 1, 2160 - 1, 32}, // 4K
 //        {0, 0, 2560 - 1, 1440 - 1, 32}, // 2K
@@ -223,6 +226,26 @@ bool WebOSDPage::drawImageQOI(const std::string& qoibuffer) {
 
     bool retValue = scaleAndPaint(static_cast<uint8_t *>(image), (int)desc.width, (int)desc.height, AV_PIX_FMT_RGBA, AV_PIX_FMT_BGRA);
     free(image);
+
+    return retValue;
+}
+
+bool WebOSDPage::drawImageQOIR(const std::string& qoibuffer) {
+    // decode image data
+    qoir_decode_buffer decbuf;
+    qoir_decode_options decopts = { 0 };
+    decopts.decbuf = &decbuf;
+    qoir_decode_result result = qoir_decode(reinterpret_cast<const uint8_t *>(qoibuffer.c_str()), (size_t)qoibuffer.size(), &decopts);
+
+    if (result.status_message != nullptr) {
+        esyslog("[vdrweb] failed to decode qoir OSD image");
+        return false;
+    }
+
+    uint32_t height = result.dst_pixbuf.pixcfg.height_in_pixels;
+    uint32_t width = result.dst_pixbuf.pixcfg.width_in_pixels;
+
+    bool retValue = scaleAndPaint(result.dst_pixbuf.data, (int)width, (int)height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
 
     return retValue;
 }

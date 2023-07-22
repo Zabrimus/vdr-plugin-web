@@ -90,6 +90,27 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
         }
     });
 
+    vdrServer.Post("/ProcessOsdUpdateQOIR", [](const httplib::Request &req, httplib::Response &res) {
+        const std::string body = req.body;
+
+        if (webOsdPage == nullptr) {
+            // illegal request -> abort
+            esyslog("[vdrweb] osd update request while webOsdPage is null.");
+            res.status = 404;
+            return;
+        }
+
+        bool result = webOsdPage->drawImageQOIR(body);
+
+        if (result) {
+            res.status = 200;
+            res.set_content("ok", "text/plain");
+        }  else {
+            res.status = 500;
+            res.set_content("error", "text/plain");
+        }
+    });
+
     vdrServer.Post("/ProcessTSPacket", [](const httplib::Request &req, httplib::Response &res) {
         const std::string body = req.body;
 
