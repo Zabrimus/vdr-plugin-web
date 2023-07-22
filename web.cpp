@@ -231,8 +231,10 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     vdrServer.Get("/ResetVideo", [](const httplib::Request &req, httplib::Response &res) {
         dsyslog("[vdrweb] ResetVideo received");
 
-        videoPlayer->ResetVideo();
-        videoPlayer->SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
+        if (videoPlayer != nullptr) {
+            videoPlayer->ResetVideo();
+            videoPlayer->SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
+        }
 
         res.status = 200;
         res.set_content("ok", "text/plain");
