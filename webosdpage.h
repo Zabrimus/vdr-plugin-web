@@ -5,6 +5,7 @@
 #include <thread>
 #include <vdr/osdbase.h>
 #include <vdr/player.h>
+#include "lancir.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,6 +20,7 @@ class WebOSDPage : public cControl {
 private:
     cPixmap *pixmap;
     cOsd* osd;
+    static avir::CLancIR ImageResizer;
 
     int disp_width;
     int disp_height;
@@ -28,7 +30,8 @@ private:
     std::thread* activityTriggerThread;
 
 private:
-    bool scaleAndPaint(uint8_t* image, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat);
+    bool scaleAndPaint1(uint8_t* image, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat);
+    bool scaleAndPaint2(uint8_t* image, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat);
 
 public:
     WebOSDPage();

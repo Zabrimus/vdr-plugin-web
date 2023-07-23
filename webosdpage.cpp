@@ -10,6 +10,8 @@
 #define QOIR_IMPLEMENTATION
 #include "qoir.h"
 
+#define SCALE_MEASURE_TIME 1
+
 tArea areas[] = {
 //        {0, 0, 4096 - 1, 2160 - 1, 32}, // 4K
 //        {0, 0, 2560 - 1, 1440 - 1, 32}, // 2K
@@ -19,6 +21,8 @@ tArea areas[] = {
 
 WebOSDPage *webOsdPage;
 struct SwsContext *swsCtx = nullptr;
+
+avir::CLancIR WebOSDPage::ImageResizer;
 
 // initialize keyMap
 std::map<int, std::string> keyMap({
@@ -210,7 +214,7 @@ bool WebOSDPage::drawImage(uint8_t* image, int width, int height) {
     delete(image_copy);
 #endif
 
-    return scaleAndPaint(image, width, height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
+    return scaleAndPaint1(image, width, height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
 }
 
 bool WebOSDPage::drawImageQOI(const std::string& qoibuffer) {
@@ -224,7 +228,8 @@ bool WebOSDPage::drawImageQOI(const std::string& qoibuffer) {
         return false;
     }
 
-    bool retValue = scaleAndPaint(static_cast<uint8_t *>(image), (int)desc.width, (int)desc.height, AV_PIX_FMT_RGBA, AV_PIX_FMT_BGRA);
+    // bool retValue = scaleAndPaint1(static_cast<uint8_t *>(image), (int)desc.width, (int)desc.height, AV_PIX_FMT_RGBA, AV_PIX_FMT_BGRA);
+    bool retValue = scaleAndPaint2(static_cast<uint8_t *>(image), (int)desc.width, (int)desc.height, AV_PIX_FMT_RGBA, AV_PIX_FMT_BGRA);
     free(image);
 
     return retValue;
@@ -245,12 +250,12 @@ bool WebOSDPage::drawImageQOIR(const std::string& qoibuffer) {
     uint32_t height = result.dst_pixbuf.pixcfg.height_in_pixels;
     uint32_t width = result.dst_pixbuf.pixcfg.width_in_pixels;
 
-    bool retValue = scaleAndPaint(result.dst_pixbuf.data, (int)width, (int)height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
+    bool retValue = scaleAndPaint1(result.dst_pixbuf.data, (int)width, (int)height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
 
     return retValue;
 }
 
-bool WebOSDPage::scaleAndPaint(uint8_t* image, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat) {
+bool WebOSDPage::scaleAndPaint1(uint8_t* image, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat) {
     // sanity check
     if (width > 1920 || height > 1080 || width <= 0 || height <= 0) {
         return false;
@@ -285,7 +290,67 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int width, int height, AVPixelFor
     int inLinesize[1] = {4 * width};
     int outLinesize[1] = {4 * disp_width};
 
-    sws_scale(swsCtx, inData, inLinesize, 0, height, &scaled, outLinesize);
+#if SCALE_MEASURE_TIME == 1
+    auto begin = std::chrono::high_resolution_clock::now();
+#endif
+
+    sws_scale(swsCtx, inData, inLinesize, 0,height, &scaled, outLinesize);
+
+#if SCALE_MEASURE_TIME == 1
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << "Scale sws_scale: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "ms" << std::endl;
+#endif
+
+    if (pixmap != nullptr) {
+        LOCK_PIXMAPS;
+        pixmap->DrawImage(recPoint, recImage);
+    } else {
+        esyslog("[vdrweb] Pixmap is null. OSD not available");
+    }
+
+    if (osd != nullptr) {
+        osd->Flush();
+    }
+
+    return true;
+}
+
+bool WebOSDPage::scaleAndPaint2(uint8_t* image, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat) {
+    // sanity check
+    if (width > 1920 || height > 1080 || width <= 0 || height <= 0) {
+        return false;
+    }
+
+    // create image buffer for scaled image
+    cSize recImageSize(disp_width, disp_height);
+    cPoint recPoint(0, 0);
+    const cImage recImage(recImageSize);
+    auto *scaled  = (uint8_t*)(recImage.Data());
+
+    if (scaled == nullptr) {
+        esyslog("[vdrweb] Out of memory reading OSD image");
+        return true;
+    }
+
+    /*
+    if (height > width) {
+        ratio = (double) h1 / (double) h2;
+    } else {
+        ratio = (double)w1 / (double)w2;
+    }
+    */
+
+#if SCALE_MEASURE_TIME == 1
+    auto begin = std::chrono::high_resolution_clock::now();
+#endif
+
+    ImageResizer.resizeImage(image, width, height, 0, scaled, disp_width, disp_height, 0, 4);
+
+#if SCALE_MEASURE_TIME == 1
+    auto end = std::chrono::high_resolution_clock::now();
+        std::cout << "Scale ImageResizer: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "ms" << std::endl;
+#endif
+
 
     if (pixmap != nullptr) {
         LOCK_PIXMAPS;
