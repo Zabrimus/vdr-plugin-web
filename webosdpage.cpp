@@ -7,9 +7,6 @@
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
 
-#define QOIR_IMPLEMENTATION
-#include "qoir.h"
-
 tArea areas[] = {
 //        {0, 0, 4096 - 1, 2160 - 1, 32}, // 4K
 //        {0, 0, 2560 - 1, 1440 - 1, 32}, // 2K
@@ -210,13 +207,21 @@ bool WebOSDPage::drawImage(uint8_t* image, int width, int height) {
     delete(image_copy);
 #endif
 
-    return scaleAndPaint(image, width, height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
+    return scaleAndPaint(image, 1, 1, width, height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
 }
 
 bool WebOSDPage::drawImageQOI(const std::string& qoibuffer) {
+    // extract x,y
+    std::string::size_type pos1 = 0, pos2 = 0;
+    pos1 = qoibuffer.find(':', 0);
+    int x = std::atoi(qoibuffer.substr(0, pos1).c_str());
+
+    pos2 = qoibuffer.find(':', pos1 + 1);
+    int y = std::atoi(qoibuffer.substr(pos1 + 1, pos2).c_str());
+
     // decode image data
     qoi_desc desc;
-    void *image = qoi_decode(qoibuffer.c_str(), (int)qoibuffer.size(), &desc, 4);
+    void *image = qoi_decode(qoibuffer.c_str() + pos2 + 1, (int)qoibuffer.size() - pos2 - 1, &desc, 4);
 
     if (image == nullptr) {
         // something failed
@@ -224,41 +229,31 @@ bool WebOSDPage::drawImageQOI(const std::string& qoibuffer) {
         return false;
     }
 
-    bool retValue = scaleAndPaint(static_cast<uint8_t *>(image), (int)desc.width, (int)desc.height, AV_PIX_FMT_RGBA, AV_PIX_FMT_BGRA);
+    bool retValue = scaleAndPaint(static_cast<uint8_t *>(image), x, y, (int)desc.width, (int)desc.height, AV_PIX_FMT_RGBA, AV_PIX_FMT_BGRA);
     free(image);
 
     return retValue;
 }
 
-bool WebOSDPage::drawImageQOIR(const std::string& qoibuffer) {
-    // decode image data
-    qoir_decode_buffer decbuf;
-    qoir_decode_options decopts = { 0 };
-    decopts.decbuf = &decbuf;
-    qoir_decode_result result = qoir_decode(reinterpret_cast<const uint8_t *>(qoibuffer.c_str()), (size_t)qoibuffer.size(), &decopts);
-
-    if (result.status_message != nullptr) {
-        esyslog("[vdrweb] failed to decode qoir OSD image");
-        return false;
-    }
-
-    uint32_t height = result.dst_pixbuf.pixcfg.height_in_pixels;
-    uint32_t width = result.dst_pixbuf.pixcfg.width_in_pixels;
-
-    bool retValue = scaleAndPaint(result.dst_pixbuf.data, (int)width, (int)height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
-
-    return retValue;
-}
-
-bool WebOSDPage::scaleAndPaint(uint8_t* image, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat) {
+bool WebOSDPage::scaleAndPaint(uint8_t* image, int x, int y, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat) {
     // sanity check
     if (width > 1920 || height > 1080 || width <= 0 || height <= 0) {
         return false;
     }
 
+    // calculate scale factor
+    double scalex = disp_width / 1280.0;
+    double scaley = disp_height / 720.0;
+
+    // calculate coordinates
+    int osd_x = (int)lround(scalex * x);
+    int osd_y = (int)lround(scaley * y);
+    int osd_width = (int)lround(scalex * width);
+    int osd_height = (int)lround(scalex * height);
+
     // create image buffer for scaled image
-    cSize recImageSize(disp_width, disp_height);
-    cPoint recPoint(0, 0);
+    cSize recImageSize(osd_width, osd_height);
+    cPoint recPoint(osd_x, osd_y);
     const cImage recImage(recImageSize);
     auto *scaled  = (uint8_t*)(recImage.Data());
 
@@ -271,19 +266,19 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int width, int height, AVPixelFor
     if (swsCtx != nullptr) {
         swsCtx = sws_getCachedContext(swsCtx,
                                       width, height, srcFormat,
-                                      disp_width, disp_height, destFormat,
+                                      osd_width, osd_height, destFormat,
                                       SWS_BILINEAR, nullptr, nullptr, nullptr);
     }
 
     if (swsCtx == nullptr) {
         swsCtx = sws_getContext(width, height, srcFormat,
-                                disp_width, disp_height, destFormat,
+                                osd_width, osd_height, destFormat,
                                 SWS_BILINEAR, nullptr, nullptr, nullptr);
     }
 
     uint8_t *inData[1] = { image };
     int inLinesize[1] = {4 * width};
-    int outLinesize[1] = {4 * disp_width};
+    int outLinesize[1] = {4 * osd_width};
 
     sws_scale(swsCtx, inData, inLinesize, 0, height, &scaled, outLinesize);
 

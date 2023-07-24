@@ -28,7 +28,7 @@ private:
     std::thread* activityTriggerThread;
 
 private:
-    bool scaleAndPaint(uint8_t* image, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat);
+    bool scaleAndPaint(uint8_t* image, int x, int y, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat);
 
 public:
     WebOSDPage();
@@ -49,7 +49,6 @@ public:
     // Using both methods in parallel leads to undefined behaviour.
     bool drawImage(uint8_t* image, int width, int height);
     bool drawImageQOI(const std::string& qoibuffer);
-    bool drawImageQOIR(const std::string& qoibuffer);
 };
 
 extern WebOSDPage *webOsdPage;
