@@ -174,7 +174,7 @@ void WebOSDPage::SetOsdSize() {
     pixmap->Clear();
 }
 
-bool WebOSDPage::drawImage(uint8_t* image, int width, int height) {
+bool WebOSDPage::drawImage(uint8_t* image, int x, int y, int width, int height) {
 
 #ifdef DEBUG_SAVE_OSD_IMAGE
     static int osd_image_number = 0;
@@ -207,7 +207,7 @@ bool WebOSDPage::drawImage(uint8_t* image, int width, int height) {
     delete(image_copy);
 #endif
 
-    return scaleAndPaint(image, 1, 1, width, height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
+    return scaleAndPaint(image, x, y, width, height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
 }
 
 bool WebOSDPage::drawImageQOI(const std::string& qoibuffer) {

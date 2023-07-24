@@ -42,6 +42,8 @@ int lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight;
 void startHttpServer(std::string vdrIp, int vdrPort) {
 
     vdrServer.Post("/ProcessOsdUpdate", [](const httplib::Request &req, httplib::Response &res) {
+        auto x = req.get_param_value("x");
+        auto y = req.get_param_value("y");
         auto width = req.get_param_value("width");
         auto height = req.get_param_value("height");
 
@@ -57,7 +59,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
                 return;
             }
 
-            bool result = webOsdPage->drawImage(sharedMemory.Get(), std::stoi(width), std::stoi(height));
+            bool result = webOsdPage->drawImage(sharedMemory.Get(), std::stoi(x), std::stoi(y), std::stoi(width), std::stoi(height));
 
             if (result) {
                 res.status = 200;

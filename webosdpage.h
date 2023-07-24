@@ -47,7 +47,7 @@ public:
 
     // Only one method shall be used.
     // Using both methods in parallel leads to undefined behaviour.
-    bool drawImage(uint8_t* image, int width, int height);
+    bool drawImage(uint8_t* image, int x, int y, int width, int height);
     bool drawImageQOI(const std::string& qoibuffer);
 };
 
