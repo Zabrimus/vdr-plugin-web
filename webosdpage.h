@@ -22,6 +22,7 @@ private:
 
     int disp_width;
     int disp_height;
+    bool useOutputDeviceScale;
 
     static std::map<int, std::string> keyMap;
 
@@ -31,7 +32,7 @@ private:
     bool scaleAndPaint(uint8_t* image, int x, int y, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat);
 
 public:
-    WebOSDPage();
+    explicit WebOSDPage(bool useOutputDeviceScale);
     ~WebOSDPage() override;
 
     void Show() override;

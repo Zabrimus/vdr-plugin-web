@@ -1,0 +1,20 @@
+The browser window has size 1280 x 720. To show the images or parts of the images in the OSD,
+they must be scaled accordingly. For scaling exists 2 different possibilities:
+1. using FFmpeg sws_scale
+2. using the outputdevice softhd*
+
+To enable faster scaling via the output device, VDR and the output devices needs some patches.
+
+VDR Patch:
+VDR-scalefactor_image.patch
+
+The right output device patch (one of):
+softhdcuvid-draw_image_scale.patch
+softhddevice-draw_image_scale.patch
+softhddrm-draw_image_scale.patch
+softhdodroid-draw_image_scale.patch
+softhdvaapi-draw_image_scale.patch
+softhddevice-drm-gles-draw-image-scale.patch.txt
+
+Additionally the plugin needs the parameter
+"-f" or "--fastscale"

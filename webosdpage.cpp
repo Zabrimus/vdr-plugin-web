@@ -66,12 +66,14 @@ void triggerActivityThread() {
     }
 }
 
-WebOSDPage::WebOSDPage() : cControl(nullptr) {
+WebOSDPage::WebOSDPage(bool useOutputDeviceScale) : cControl(nullptr), useOutputDeviceScale(useOutputDeviceScale) {
     dsyslog("[vdrweb] Create WebOSDPage\n");
 
     osd = nullptr;
     pixmap = nullptr;
     webOsdPage = this;
+    disp_height = 1920;
+    disp_width = 1080;
 
     runTriggerActivity = true;
     activityTriggerThread = new std::thread(triggerActivityThread);
@@ -229,7 +231,7 @@ bool WebOSDPage::drawImageQOI(const std::string& qoibuffer) {
         return false;
     }
 
-    bool retValue = scaleAndPaint(static_cast<uint8_t *>(image), x, y, (int)desc.width, (int)desc.height, AV_PIX_FMT_RGBA, AV_PIX_FMT_BGRA);
+    bool retValue = scaleAndPaint(static_cast<uint8_t *>(image), x, y, (int)desc.width, (int)desc.height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
     free(image);
 
     return retValue;
@@ -251,42 +253,54 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int x, int y, int width, int heig
     int osd_width = (int)lround(scalex * width);
     int osd_height = (int)lround(scalex * height);
 
-    // create image buffer for scaled image
-    cSize recImageSize(osd_width, osd_height);
     cPoint recPoint(osd_x, osd_y);
-    const cImage recImage(recImageSize);
-    auto *scaled  = (uint8_t*)(recImage.Data());
 
-    if (scaled == nullptr) {
-        esyslog("[vdrweb] Out of memory reading OSD image");
-        return true;
-    }
+    if (useOutputDeviceScale) {
+        const cImage recImage(cSize(width, height), (const tColor *)image, scalex, scaley);
 
-    // scale image
-    if (swsCtx != nullptr) {
-        swsCtx = sws_getCachedContext(swsCtx,
-                                      width, height, srcFormat,
-                                      osd_width, osd_height, destFormat,
-                                      SWS_BILINEAR, nullptr, nullptr, nullptr);
-    }
-
-    if (swsCtx == nullptr) {
-        swsCtx = sws_getContext(width, height, srcFormat,
-                                osd_width, osd_height, destFormat,
-                                SWS_BILINEAR, nullptr, nullptr, nullptr);
-    }
-
-    uint8_t *inData[1] = { image };
-    int inLinesize[1] = {4 * width};
-    int outLinesize[1] = {4 * osd_width};
-
-    sws_scale(swsCtx, inData, inLinesize, 0, height, &scaled, outLinesize);
-
-    if (pixmap != nullptr) {
-        LOCK_PIXMAPS;
-        pixmap->DrawImage(recPoint, recImage);
+        if (pixmap != nullptr) {
+            LOCK_PIXMAPS;
+            pixmap->DrawImage(recPoint, recImage);
+        } else {
+            esyslog("[vdrweb] Pixmap is null. OSD not available");
+        }
     } else {
-        esyslog("[vdrweb] Pixmap is null. OSD not available");
+        // create image buffer for scaled image
+        cSize recImageSize(osd_width, osd_height);
+        const cImage recImage(recImageSize);
+        auto *scaled = (uint8_t *) (recImage.Data());
+
+        if (scaled == nullptr) {
+            esyslog("[vdrweb] Out of memory reading OSD image");
+            return true;
+        }
+
+        // scale image
+        if (swsCtx != nullptr) {
+            swsCtx = sws_getCachedContext(swsCtx,
+                                          width, height, srcFormat,
+                                          osd_width, osd_height, destFormat,
+                                          SWS_BILINEAR, nullptr, nullptr, nullptr);
+        }
+
+        if (swsCtx == nullptr) {
+            swsCtx = sws_getContext(width, height, srcFormat,
+                                    osd_width, osd_height, destFormat,
+                                    SWS_BILINEAR, nullptr, nullptr, nullptr);
+        }
+
+        uint8_t *inData[1] = {image};
+        int inLinesize[1] = {4 * width};
+        int outLinesize[1] = {4 * osd_width};
+
+        sws_scale(swsCtx, inData, inLinesize, 0, height, &scaled, outLinesize);
+
+        if (pixmap != nullptr) {
+            LOCK_PIXMAPS;
+            pixmap->DrawImage(recPoint, recImage);
+        } else {
+            esyslog("[vdrweb] Pixmap is null. OSD not available");
+        }
     }
 
     if (osd != nullptr) {

@@ -34,6 +34,7 @@ VideoPlayer* videoPlayer;
 
 bool reopenOsd = false;
 bool browserCleared = true;
+bool useOutputDeviceScale = false;
 
 int nr = 0;
 
@@ -117,7 +118,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
         dsyslog("[vdrweb] StartVideo received");
 
         if (webOsdPage == nullptr) {
-            new WebOSDPage();
+            new WebOSDPage(useOutputDeviceScale);
         }
 
         videoPlayer = new VideoPlayer();
@@ -241,11 +242,12 @@ const char *cPluginWeb::CommandLineHelp() {
 bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
     static struct option long_options[] = {
             { "config",      required_argument, nullptr, 'c' },
+            { "fastscale",   optional_argument, nullptr, 'f' },
             {nullptr }
     };
 
     int c, option_index = 0;
-    while ((c = getopt_long(argc, argv, "c:", long_options, &option_index)) != -1)
+    while ((c = getopt_long(argc, argv, "c:f", long_options, &option_index)) != -1)
     {
         switch (c)
         {
@@ -253,6 +255,10 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
                 if (!readConfiguration(optarg)) {
                     exit(-1);
                 }
+                break;
+
+            case 'f':
+                useOutputDeviceScale = true;
                 break;
 
             default:
@@ -318,7 +324,7 @@ cOsdObject *cPluginWeb::MainMenuAction() {
     dsyslog("[vdrweb] MainMenuAction: reopen = %s\n", (reopenOsd ? "yes" : "no"));
 
     if (webOsdPage == nullptr) {
-        new WebOSDPage();
+        new WebOSDPage(useOutputDeviceScale);
 
         if (!reopenOsd) {
             LOCK_CHANNELS_READ
