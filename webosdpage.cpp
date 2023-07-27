@@ -57,7 +57,7 @@ void triggerActivityThread() {
     while (runTriggerActivity) {
         counter++;
 
-        if ((60 * 1000) % (counter * waitTime) == 0) {
+        if ((60 * 1000) - (counter * waitTime) <= 0) {
             cRemote::TriggerLastActivity();
             counter = 0;
         } else {
