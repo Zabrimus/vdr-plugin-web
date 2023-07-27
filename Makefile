@@ -18,6 +18,10 @@ VERSION = $(shell grep 'static const char \*VERSION *=' $(PLUGIN).cpp | awk '{ p
 # But be warned: Many images will be created if activated.
 DEBUG_SAVE_OSD_IMAGE ?= 0
 
+# Enable fast image scaling by Output device
+# Needs a VDR patch and a patch for the desired output device
+ENABLE_FAST_SCALE ?= 0
+
 mINI_DIR = thirdparty/mINI-0.9.14
 
 ### The directory environment:
@@ -60,6 +64,10 @@ SOFILE = libvdr-$(PLUGIN).so
 ### Includes and Defines (add further entries here):
 ifeq ($(DEBUG_SAVE_OSD_IMAGE),1)
 CONFIG += -DDEBUG_SAVE_OSD_IMAGE
+endif
+
+ifeq ($(ENABLE_FAST_SCALE),1)
+CONFIG += -DENABLE_FAST_SCALE
 endif
 
 INCLUDES += -I. -I$(mINI_DIR)/src/mini

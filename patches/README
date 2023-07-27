@@ -5,6 +5,12 @@ they must be scaled accordingly. For scaling exists 2 different possibilities:
 
 To enable faster scaling via the output device, VDR and the output devices needs some patches.
 
+If at least the VDR patch has been applied either change the Makefile
+ENABLE_FAST_SCALE ?= 1
+or call make with
+make -j ENABLE_FAST_SCALE=1
+
+
 VDR Patch:
 VDR-scalefactor_image.patch
 

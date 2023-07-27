@@ -255,6 +255,7 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int x, int y, int width, int heig
 
     cPoint recPoint(osd_x, osd_y);
 
+#ifdef ENABLE_FAST_SCALE
     if (useOutputDeviceScale) {
         const cImage recImage(cSize(width, height), (const tColor *)image, scalex, scaley);
 
@@ -265,6 +266,8 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int x, int y, int width, int heig
             esyslog("[vdrweb] Pixmap is null. OSD not available");
         }
     } else {
+#endif // ENABLE_FAST_SCALE
+
         // create image buffer for scaled image
         cSize recImageSize(osd_width, osd_height);
         const cImage recImage(recImageSize);
@@ -301,7 +304,9 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int x, int y, int width, int heig
         } else {
             esyslog("[vdrweb] Pixmap is null. OSD not available");
         }
+#ifdef ENABLE_FAST_SCALE
     }
+#endif
 
     if (osd != nullptr) {
         osd->Flush();
