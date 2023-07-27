@@ -52,12 +52,12 @@ std::map<int, std::string> keyMap({
 bool runTriggerActivity = false;
 void triggerActivityThread() {
     int counter = 0;
-    int waitTime = 100;
+    int waitTime = 100 * 1000;
 
     while (runTriggerActivity) {
         counter++;
 
-        if ((60 * 1000) - (counter * waitTime) <= 0) {
+        if ((120 * 1000) - (counter * waitTime) <= 0) {
             cRemote::TriggerLastActivity();
             counter = 0;
         } else {
