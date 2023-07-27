@@ -51,17 +51,15 @@ std::map<int, std::string> keyMap({
 // Thread to prevent automatically closing the OSD
 bool runTriggerActivity = false;
 void triggerActivityThread() {
-    int counter = 0;
-    int waitTime = 100 * 1000;
-
+    int trigger = 0;
+    int catchMenuTimeout = 110 * 1000; // 110sec (must be < MENUTIMEOUT)
     while (runTriggerActivity) {
-        counter++;
-
-        if ((120 * 1000) - (counter * waitTime) <= 0) {
+        if (trigger) {
             cRemote::TriggerLastActivity();
-            counter = 0;
+            trigger = 0;
         } else {
-            std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
+            std::this_thread::sleep_for(std::chrono::milliseconds(catchMenuTimeout));
+            trigger = 1;
         }
     }
 }
