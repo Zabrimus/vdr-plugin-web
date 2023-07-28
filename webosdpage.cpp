@@ -51,20 +51,24 @@ std::map<int, std::string> keyMap({
 // Thread to prevent automatically closing the OSD
 bool runTriggerActivity = false;
 void triggerActivityThread() {
-    int trigger = 0;
-    int catchMenuTimeout = 110 * 1000; // 110sec (must be < MENUTIMEOUT)
+    int counter = 0;
+    int waitTime = 100;
+
     while (runTriggerActivity) {
-        if (trigger) {
+        counter++;
+
+        if ((60 * 1000) - (counter * waitTime) <= 0) {
             cRemote::TriggerLastActivity();
-            trigger = 0;
+            counter = 0;
         } else {
-            std::this_thread::sleep_for(std::chrono::milliseconds(catchMenuTimeout));
-            trigger = 1;
+            std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
         }
     }
 }
 
-WebOSDPage::WebOSDPage(bool useOutputDeviceScale) : cControl(nullptr), useOutputDeviceScale(useOutputDeviceScale) {
+WebOSDPage::WebOSDPage(bool useOutputDeviceScale)
+        : cControl(nullptr), useOutputDeviceScale(useOutputDeviceScale)
+{
     dsyslog("[vdrweb] Create WebOSDPage\n");
 
     osd = nullptr;
@@ -113,7 +117,7 @@ void WebOSDPage::Display() {
         delete osd;
     }
 
-    osd = cOsdProvider::NewOsd(0, 0, OSD_LEVEL_SUBTITLES);
+    osd = cOsdProvider::NewOsd(0, 0, 5);
 
     /*
     // set the maximum area size
@@ -158,7 +162,7 @@ void WebOSDPage::SetOsdSize() {
     double ph;
     cDevice::PrimaryDevice()->GetOsdSize(disp_width, disp_height, ph);
 
-    if (disp_width <= 0 || disp_height <= 0 || disp_width > 4096 || disp_height > 2160) {
+    if (disp_width <= 0 || disp_height <= 0 || disp_width > 3840 || disp_height > 2160) {
         esyslog("[vdrweb] Got illegal OSD size %dx%d", disp_width, disp_height);
         return;
     }
@@ -174,7 +178,7 @@ void WebOSDPage::SetOsdSize() {
     pixmap->Clear();
 }
 
-bool WebOSDPage::drawImage(uint8_t* image, int x, int y, int width, int height) {
+bool WebOSDPage::drawImage(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height) {
 
 #ifdef DEBUG_SAVE_OSD_IMAGE
     static int osd_image_number = 0;
@@ -207,14 +211,22 @@ bool WebOSDPage::drawImage(uint8_t* image, int x, int y, int width, int height) 
     delete(image_copy);
 #endif
 
-    return scaleAndPaint(image, x, y, width, height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
+    return scaleAndPaint(image, render_width, render_height, x, y, width, height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
 }
 
 bool WebOSDPage::drawImageQOI(const std::string& qoibuffer) {
+    std::string::size_type pos1 = 0, pos2 = 0, pos_rw = 0, pos_rh = 0;
+
+    // extract render_width, render_height
+    pos_rw = qoibuffer.find(':', 0);
+    int render_width = std::atoi(qoibuffer.substr(0, pos_rw).c_str());
+
+    pos_rh = qoibuffer.find(':', pos_rw + 1);
+    int render_height = std::atoi(qoibuffer.substr(pos_rw + 1, pos_rh).c_str());
+
     // extract x,y
-    std::string::size_type pos1 = 0, pos2 = 0;
-    pos1 = qoibuffer.find(':', 0);
-    int x = std::atoi(qoibuffer.substr(0, pos1).c_str());
+    pos1 = qoibuffer.find(':', pos_rh + 1);
+    int x = std::atoi(qoibuffer.substr(pos_rh + 1, pos1).c_str());
 
     pos2 = qoibuffer.find(':', pos1 + 1);
     int y = std::atoi(qoibuffer.substr(pos1 + 1, pos2).c_str());
@@ -229,21 +241,44 @@ bool WebOSDPage::drawImageQOI(const std::string& qoibuffer) {
         return false;
     }
 
-    bool retValue = scaleAndPaint(static_cast<uint8_t *>(image), x, y, (int)desc.width, (int)desc.height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
+    bool retValue = scaleAndPaint(static_cast<uint8_t *>(image), render_width, render_height, x, y, (int)desc.width, (int)desc.height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
     free(image);
 
     return retValue;
 }
 
-bool WebOSDPage::scaleAndPaint(uint8_t* image, int x, int y, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat) {
+bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat) {
     // sanity check
-    if (width > 1920 || height > 1080 || width <= 0 || height <= 0) {
+    if (width > 3840 || height > 2160 || width <= 0 || height <= 0) {
         return false;
     }
 
+    bool scaleRequired = (disp_width != render_width) || (disp_height != render_height);
+
+    // dsyslog("RenderSize: %d x %d, DisplaySize: %d x %d, x,y=%d,%d, Scaling required: %s", render_width, render_height, disp_width, disp_height, x, y, (scaleRequired ? "yes" : "no"));
+
+    if (!scaleRequired) {
+        // scaling is not needed. Draw the image as is.
+        cPoint recPoint(x, y);
+        const cImage recImage(cSize(width, height), (const tColor *)image);
+
+        if (pixmap != nullptr) {
+            LOCK_PIXMAPS;
+            pixmap->DrawImage(recPoint, recImage);
+        } else {
+            esyslog("[vdrweb] Pixmap is null. OSD not available");
+        }
+
+        if (osd != nullptr) {
+            osd->Flush();
+        }
+
+        return true;
+    }
+
     // calculate scale factor
-    double scalex = disp_width / 1280.0;
-    double scaley = disp_height / 720.0;
+    double scalex = disp_width / (double)render_width;
+    double scaley = disp_height / (double)render_height;
 
     // calculate coordinates
     int osd_x = (int)lround(scalex * x);

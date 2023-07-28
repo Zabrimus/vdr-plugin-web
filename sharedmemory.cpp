@@ -5,7 +5,7 @@
 #include "sharedmemory.h"
 
 const std::string sharedMemoryFile("/cefbrowser");
-const int sharedMemorySize = 1920 * 1080 * 4;
+const size_t sharedMemorySize = 3840 * 2160 * 4; // 4K
 
 SharedMemory sharedMemory;
 

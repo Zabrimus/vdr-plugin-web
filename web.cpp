@@ -43,6 +43,8 @@ int lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight;
 void startHttpServer(std::string vdrIp, int vdrPort) {
 
     vdrServer.Post("/ProcessOsdUpdate", [](const httplib::Request &req, httplib::Response &res) {
+        auto render_width = req.get_param_value("disp_width");
+        auto render_height = req.get_param_value("disp_height");
         auto x = req.get_param_value("x");
         auto y = req.get_param_value("y");
         auto width = req.get_param_value("width");
@@ -60,7 +62,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
                 return;
             }
 
-            bool result = webOsdPage->drawImage(sharedMemory.Get(), std::stoi(x), std::stoi(y), std::stoi(width), std::stoi(height));
+            bool result = webOsdPage->drawImage(sharedMemory.Get(), std::stoi(render_width), std::stoi(render_height), std::stoi(x), std::stoi(y), std::stoi(width), std::stoi(height));
 
             if (result) {
                 res.status = 200;
@@ -262,7 +264,7 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
                 break;
 
             default:
-                return false;
+                break;
         }
     }
     return true;
