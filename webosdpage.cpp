@@ -7,13 +7,6 @@
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
 
-tArea areas[] = {
-//        {0, 0, 4096 - 1, 2160 - 1, 32}, // 4K
-//        {0, 0, 2560 - 1, 1440 - 1, 32}, // 2K
-//        {0, 0, 1920 - 1, 1080 - 1, 32}, // Full HD
-        {0, 0, 1280 - 1,  720 - 1, 32}, // 720p
-};
-
 WebOSDPage *webOsdPage;
 struct SwsContext *swsCtx = nullptr;
 
@@ -119,23 +112,6 @@ void WebOSDPage::Display() {
 
     osd = cOsdProvider::NewOsd(0, 0, 5);
 
-    /*
-    // set the maximum area size
-    bool areaFound = false;
-    for (int i = 0; i < 4; ++i) {
-        auto areaResult = osd->SetAreas(&areas[i], 1);
-
-        if (areaResult == oeOk) {
-            isyslog("[vdrweb] Area size set to %d:%d - %d:%d", areas[i].x1, areas[i].y1, areas[i].x2, areas[i].y2);
-            areaFound = true;
-            break;
-        }
-    }
-
-    if (!areaFound) {
-        esyslog("[vdrweb] Unable set any OSD area. OSD will not be created");
-    }
-    */
     double ph;
     cDevice::PrimaryDevice()->GetOsdSize(disp_width, disp_height, ph);
     tArea area {0,0,disp_width, disp_height };
