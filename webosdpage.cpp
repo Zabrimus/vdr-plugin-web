@@ -114,7 +114,7 @@ void WebOSDPage::Display() {
 
     double ph;
     cDevice::PrimaryDevice()->GetOsdSize(disp_width, disp_height, ph);
-    tArea area {0,0,disp_width, disp_height };
+    tArea area {0,0,disp_width, disp_height, 32};
     auto areaResult = osd->SetAreas(&area, 1);
 
     if (areaResult == oeOk) {
