@@ -11,6 +11,7 @@ public:
 
     bool LoadUrl(std::string url);
     bool RedButton(std::string channelId);
+    bool ReloadOSD();
 
     bool ProcessKey(std::string key);
     bool InsertHbbtv(std::string json);

@@ -61,6 +61,26 @@ bool BrowserClient::RedButton(std::string channelId) {
     return true;
 }
 
+bool BrowserClient::ReloadOSD() {
+    if (!CheckConnection("ReloadOSD")) {
+        Skins.QueueMessage(mtInfo, tr("Browser not available"));
+        return false;
+    }
+
+    if (auto res = client->Get("/ReloadOSD")) {
+        if (res->status != 200) {
+            return false;
+        }
+    } else {
+        auto err = res.error();
+        dsyslog("HTTP error (ReloadOSD): %s", httplib::to_string(err).c_str());
+        helloReceived = false;
+        return false;
+    }
+
+    return true;
+}
+
 bool BrowserClient::ProcessKey(std::string key) {
     if (!CheckConnection("ProcessKey")) {
         return false;

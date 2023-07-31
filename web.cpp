@@ -213,7 +213,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     });
 
     vdrServer.Get("/ResetVideo", [](const httplib::Request &req, httplib::Response &res) {
-        dsyslog("[vdrweb] ResetVideo received");
+        dsyslog("[vdrweb] ResetVideo received: Coords x=%d, y=%d, w=%d, h=%d", lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
 
         if (videoPlayer != nullptr) {
             videoPlayer->ResetVideo();

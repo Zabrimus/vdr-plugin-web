@@ -1,3 +1,4 @@
+#include "browserclient.h"
 #include "videocontrol.h"
 
 bool isPlayerActivated;
@@ -21,6 +22,7 @@ void VideoPlayer::Activate(bool On) {
 
     if (On) {
         isPlayerActivated = true;
+        browserClient->ReloadOSD();
     } else {
         isPlayerActivated = false;
         setVideoFullscreen();
