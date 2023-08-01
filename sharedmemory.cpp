@@ -14,7 +14,9 @@ SharedMemory sharedMemory;
 SharedMemory::SharedMemory() {
     int shmid = shm_open(sharedMemoryFile.c_str(), O_RDWR, 0666);
     if (shmid < 0) {
+        mode_t old_umask = umask(0);
         shmid = shm_open(sharedMemoryFile.c_str(), O_EXCL | O_CREAT | O_RDWR, 0666);
+        umask(old_umask);
         if (shmid >= 0) {
             ftruncate(shmid, sharedMemorySize);
         } else if (errno == EEXIST) {
