@@ -22,7 +22,6 @@ void VideoPlayer::Activate(bool On) {
 
     if (On) {
         isPlayerActivated = true;
-        browserClient->ReloadOSD();
     } else {
         isPlayerActivated = false;
         setVideoFullscreen();

@@ -122,6 +122,8 @@ void WebOSDPage::Display() {
     }
 
     SetOsdSize();
+
+    browserClient->ReloadOSD();
 }
 
 void WebOSDPage::SetOsdSize() {
