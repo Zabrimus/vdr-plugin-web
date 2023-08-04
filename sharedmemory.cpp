@@ -25,14 +25,14 @@ SharedMemory::SharedMemory() {
     }
 
     if (shmid < 0) {
-        esyslog("Could not open shared memory (shm_open): %s", strerror(errno));
+        esyslog("[vdrweb] Could not open shared memory (shm_open): %s", strerror(errno));
         exit(1);
     }
 
     shmp = (uint8_t*)mmap(nullptr, sharedMemorySize, PROT_READ | PROT_WRITE, MAP_SHARED, shmid, 0);
 
     if (shmp == MAP_FAILED) {
-        esyslog("Could not open shared memory (mmap): %s", strerror(errno));
+        esyslog("[vdrweb] Could not open shared memory (mmap): %s", strerror(errno));
         exit(1);
     }
 

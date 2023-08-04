@@ -30,10 +30,15 @@ int vdrPort;
 httplib::Server vdrServer;
 cHbbtvDeviceStatus *hbbtvDeviceStatus;
 
-VideoPlayer* videoPlayer;
+VideoPlayer* videoPlayer = nullptr;
 
-bool reopenOsd = false;
-bool browserCleared = true;
+enum OSD_COMMAND {
+    OPEN,
+    REOPEN,
+    CLOSE
+};
+
+OSD_COMMAND nextOsdCommand = OPEN;
 bool useOutputDeviceScale = false;
 
 int nr = 0;
@@ -55,14 +60,15 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
         if (width.empty() || height.empty()) {
             res.status = 404;
         } else {
-            if (webOsdPage == nullptr) {
+            WebOSDPage* page = WebOSDPage::Get();
+            if (page == nullptr) {
                 // illegal request -> abort
-                esyslog("[vdrweb] osd update request while webOsdPage is null.");
+                esyslog("[vdrweb] ProcessOsdUpdate: osd update request while webOsdPage is null.");
                 res.status = 404;
                 return;
             }
 
-            bool result = webOsdPage->drawImage(sharedMemory.Get(), std::stoi(render_width), std::stoi(render_height), std::stoi(x), std::stoi(y), std::stoi(width), std::stoi(height));
+            bool result = page->drawImage(sharedMemory.Get(), std::stoi(render_width), std::stoi(render_height), std::stoi(x), std::stoi(y), std::stoi(width), std::stoi(height));
 
             if (result) {
                 res.status = 200;
@@ -77,14 +83,15 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     vdrServer.Post("/ProcessOsdUpdateQOI", [](const httplib::Request &req, httplib::Response &res) {
         const std::string body = req.body;
 
-        if (webOsdPage == nullptr) {
+        WebOSDPage* page = WebOSDPage::Get();
+        if (page == nullptr) {
             // illegal request -> abort
-            esyslog("[vdrweb] osd update request while webOsdPage is null.");
+            esyslog("[vdrweb] ProcessOsdUpdateQOI: osd update request while webOsdPage is null.");
             res.status = 404;
             return;
         }
 
-        bool result = webOsdPage->drawImageQOI(body);
+        bool result = page->drawImageQOI(body);
 
         if (result) {
             res.status = 200;
@@ -119,19 +126,18 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     vdrServer.Get("/StartVideo", [](const httplib::Request &req, httplib::Response &res) {
         dsyslog("[vdrweb] StartVideo received");
 
-        if (webOsdPage == nullptr) {
-            new WebOSDPage(useOutputDeviceScale);
-        }
+        // Close existing OSD
+        nextOsdCommand = CLOSE;
+        cRemote::CallPlugin("web");
+
+        WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, PLAYER);
+        page->Display();
 
         videoPlayer = new VideoPlayer();
-        webOsdPage->SetPlayer(videoPlayer);
+        page->SetPlayer(videoPlayer);
 
-        cControl::Launch(webOsdPage);
+        cControl::Launch(page);
         cControl::Attach();
-
-        // Restart OSD
-        reopenOsd = true;
-        cRemote::CallPlugin("web");
 
         res.status = 200;
         res.set_content("ok", "text/plain");
@@ -140,8 +146,13 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     vdrServer.Get("/StopVideo", [](const httplib::Request &req, httplib::Response &res) {
         dsyslog("[vdrweb] StopVideo received");
 
-        delete videoPlayer;
-        videoPlayer = nullptr;
+        if (videoPlayer != nullptr) {
+            delete videoPlayer;
+            videoPlayer = nullptr;
+
+            nextOsdCommand = REOPEN;
+            cRemote::CallPlugin("web");
+        }
 
         res.status = 200;
         res.set_content("ok", "text/plain");
@@ -301,14 +312,9 @@ void cPluginWeb::MainThreadHook() {
     // Perform actions in the context of the main program thread.
     // WARNING: Use with great care - see PLUGINS.html!
 
-    if (webOsdPage == nullptr && !browserCleared) {
-        browserClient->LoadUrl("about:blank");
-        browserCleared = true;
-
-        if (videoPlayer != nullptr) {
-            delete videoPlayer;
-            videoPlayer = nullptr;
-        }
+    if (WebOSDPage::Get() == nullptr && videoPlayer != nullptr) {
+        delete videoPlayer;
+        videoPlayer = nullptr;
     }
 }
 
@@ -323,23 +329,24 @@ time_t cPluginWeb::WakeupTime() {
 }
 
 cOsdObject *cPluginWeb::MainMenuAction() {
-    dsyslog("[vdrweb] MainMenuAction: reopen = %s\n", (reopenOsd ? "yes" : "no"));
+    dsyslog("[vdrweb] MainMenuAction: command = %d\n", (int)nextOsdCommand);
 
-    if (webOsdPage == nullptr) {
-        new WebOSDPage(useOutputDeviceScale);
+    if (nextOsdCommand == OPEN || nextOsdCommand == REOPEN) {
+        WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, OSD);
 
-        if (!reopenOsd) {
+        if (nextOsdCommand == OPEN) {
             LOCK_CHANNELS_READ
             const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
             browserClient->RedButton(*currentChannel->GetChannelID().ToString());
         }
+
+        nextOsdCommand = OPEN;
+        return page;
     }
 
-    reopenOsd = false;
-
-    browserCleared = false;
-
-    return webOsdPage;
+    // close OSD
+    nextOsdCommand = OPEN;
+    return nullptr;
 }
 
 cMenuSetupPage *cPluginWeb::SetupMenu() {

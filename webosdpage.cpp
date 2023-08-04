@@ -7,8 +7,12 @@
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
 
-WebOSDPage *webOsdPage;
 struct SwsContext *swsCtx = nullptr;
+
+WebOSDPage *webOsdPage;
+WebOSDPage *playerWebOsdPage;
+
+OSD_MODE currentOsdMode = CLOSED;
 
 // initialize keyMap
 std::map<int, std::string> keyMap({
@@ -59,25 +63,66 @@ void triggerActivityThread() {
     }
 }
 
-WebOSDPage::WebOSDPage(bool useOutputDeviceScale)
+
+WebOSDPage *WebOSDPage::Create(bool useOutputDeviceScale, OSD_MODE osdMode) {
+    switch(osdMode) {
+        case OSD:
+            if (webOsdPage == nullptr) {
+                webOsdPage = new WebOSDPage(useOutputDeviceScale, osdMode);
+            }
+            currentOsdMode = OSD;
+            return webOsdPage;
+
+        case PLAYER:
+            if (playerWebOsdPage == nullptr) {
+                playerWebOsdPage = new WebOSDPage(useOutputDeviceScale, osdMode);
+            }
+            currentOsdMode = PLAYER;
+            return playerWebOsdPage;
+
+        case CLOSED:
+            return nullptr;
+    }
+
+    return nullptr;
+}
+
+WebOSDPage *WebOSDPage::Get() {
+    if (currentOsdMode == OSD) {
+        // dsyslog("[vdrweb] WebOSDPage::Get(%d): Return webOsdPage %p", (int)currentOsdMode, webOsdPage);
+        return webOsdPage;
+    } else if (currentOsdMode == PLAYER) {
+        // dsyslog("[vdrweb] WebOSDPage::Get(%d): Return playerWebOsdPage %p", (int)currentOsdMode, playerWebOsdPage);
+        return playerWebOsdPage;
+    }
+
+    // dsyslog("[vdrweb] WebOSDPage::Get(-1): Return nullptr");
+    return nullptr;
+}
+
+bool WebOSDPage::IsOpen() {
+    return (currentOsdMode == OSD && webOsdPage != nullptr)
+       || (currentOsdMode == PLAYER && playerWebOsdPage != nullptr);
+}
+
+WebOSDPage::WebOSDPage(bool useOutputDeviceScale, OSD_MODE osdMode)
         : cControl(nullptr), useOutputDeviceScale(useOutputDeviceScale)
 {
-    dsyslog("[vdrweb] Create WebOSDPage\n");
+    dsyslog("[vdrweb] Create WebOSDPage, osdMode %d", (int)osdMode);
 
     osd = nullptr;
     pixmap = nullptr;
-    webOsdPage = this;
     disp_height = 1920;
     disp_width = 1080;
+
+    currentMode = osdMode;
 
     runTriggerActivity = true;
     activityTriggerThread = new std::thread(triggerActivityThread);
 }
 
 WebOSDPage::~WebOSDPage() {
-    webOsdPage = nullptr;
-
-    dsyslog("[vdrweb] Destruct WebOSDPage\n");
+    dsyslog("[vdrweb] Destruct WebOSDPage, osdMode %d", (int)currentMode);
 
     // printBacktrace();
 
@@ -96,6 +141,21 @@ WebOSDPage::~WebOSDPage() {
         delete osd;
         osd = nullptr;
     }
+
+    switch (currentMode) {
+        case OSD:
+            webOsdPage = nullptr;
+            break;
+
+        case PLAYER:
+            playerWebOsdPage = nullptr;
+            break;
+
+        case CLOSED:
+            break;
+    }
+
+    // cDevice::PrimaryDevice()->ScaleVideo(cRect::Null);
 }
 
 void WebOSDPage::Show() {

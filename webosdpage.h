@@ -14,6 +14,12 @@ extern "C" {
 }
 #endif
 
+enum OSD_MODE {
+    OSD,
+    PLAYER,
+    CLOSED
+};
+
 class WebOSDPage : public cControl {
 
 private:
@@ -30,11 +36,18 @@ private:
 
     std::thread* activityTriggerThread;
 
+    OSD_MODE currentMode;
+
 private:
+    explicit WebOSDPage(bool useOutputDeviceScale, OSD_MODE osdMode);
+
     bool scaleAndPaint(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat);
 
 public:
-    explicit WebOSDPage(bool useOutputDeviceScale);
+    static WebOSDPage* Create(bool useOutputDeviceScale, OSD_MODE osdMode);
+    static WebOSDPage* Get();
+    static bool IsOpen();
+
     ~WebOSDPage() override;
 
     void Show() override;
@@ -53,5 +66,3 @@ public:
     bool drawImage(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height);
     bool drawImageQOI(const std::string& qoibuffer);
 };
-
-extern WebOSDPage *webOsdPage;

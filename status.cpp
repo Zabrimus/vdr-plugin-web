@@ -103,9 +103,11 @@ void cHbbtvDeviceStatus::ChannelSwitch(const cDevice * vdrDevice, int channelNum
          isyslog("[vdrweb] Attached HbbTV ait filter to device %d, vdrDev=%d actDev=%d, Sid=0x%04x", device->CardIndex()+1, vdrDevice->CardIndex()+1,cDevice::ActualDevice()->CardIndex()+1, sid);
 
          // if the OSD is still open send a refresh to the browser
-         if (webOsdPage != nullptr) {
+         /*
+         if (WebOSDPage::Get() != nullptr) {
              browserClient->ReloadOSD();
          }
+         */
       }
    }
 }

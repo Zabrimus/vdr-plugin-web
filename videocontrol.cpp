@@ -41,8 +41,7 @@ void VideoPlayer::Resume() {
 
 void VideoPlayer::setVideoFullscreen() {
     // fullscreen
-    cRect r = {0,0,0,0};
-    cDevice::PrimaryDevice()->ScaleVideo(r);
+    cDevice::PrimaryDevice()->ScaleVideo(cRect::Null);
 }
 
 void VideoPlayer::ResetVideo() {
@@ -61,7 +60,8 @@ void VideoPlayer::SetVideoSize(int x, int y, int width, int height) {
     calcVideoPosition(x, y, width,height, &newX, &newY, &newWidth, &newHeight);
 
     cRect r = {newX, newY, newWidth, newHeight};
-    cDevice::PrimaryDevice()->ScaleVideo(r);
+    cRect availableRect = cDevice::PrimaryDevice()->CanScaleVideo(r);
+    cDevice::PrimaryDevice()->ScaleVideo(availableRect);
 }
 
 void VideoPlayer::calcVideoPosition(int x, int y, int w, int h, int *newx, int *newy, int *newwidth, int *newheight) {

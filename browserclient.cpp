@@ -24,12 +24,12 @@ bool BrowserClient::LoadUrl(std::string url) {
 
     if (auto res = client->Post("/LoadUrl", params)) {
         if (res->status != 200) {
-            dsyslog("Http result: %d", res->status);
+            dsyslog("[vdrweb] Http result: %d", res->status);
             return false;
         }
     } else {
         auto err = res.error();
-        dsyslog("HTTP error (LoadURL): %s", httplib::to_string(err).c_str());
+        dsyslog("[vdrweb] HTTP error (LoadURL): %s", httplib::to_string(err).c_str());
         helloReceived = false;
         return false;
     }
@@ -53,7 +53,7 @@ bool BrowserClient::RedButton(std::string channelId) {
         }
     } else {
         auto err = res.error();
-        dsyslog("HTTP error (RedButton): %s", httplib::to_string(err).c_str());
+        dsyslog("[vdrweb] HTTP error (RedButton): %s", httplib::to_string(err).c_str());
         helloReceived = false;
         return false;
     }
@@ -73,7 +73,7 @@ bool BrowserClient::ReloadOSD() {
         }
     } else {
         auto err = res.error();
-        dsyslog("HTTP error (ReloadOSD): %s", httplib::to_string(err).c_str());
+        dsyslog("[vdrweb] HTTP error (ReloadOSD): %s", httplib::to_string(err).c_str());
         helloReceived = false;
         return false;
     }
@@ -93,12 +93,12 @@ bool BrowserClient::ProcessKey(std::string key) {
         helloReceived = true;
 
         if (res->status != 200) {
-            dsyslog("Http result: %d", res->status);
+            dsyslog("[vdrweb] Http result: %d", res->status);
             return false;
         }
     } else {
         auto err = res.error();
-        dsyslog("HTTP error (ProcessKey): %s", httplib::to_string(err).c_str());
+        dsyslog("[vdrweb] HTTP error (ProcessKey): %s", httplib::to_string(err).c_str());
         helloReceived = false;
         return false;
     }
@@ -113,12 +113,12 @@ bool BrowserClient::InsertHbbtv(std::string json) {
 
     if (auto res = client->Post("/InsertHbbtv", json, "text/plain")) {
         if (res->status != 200) {
-            dsyslog("Http result: %d", res->status);
+            dsyslog("[vdrweb] Http result: %d", res->status);
             return false;
         }
     } else {
         auto err = res.error();
-        dsyslog("HTTP error (InsertHbbtv): %s", httplib::to_string(err).c_str());
+        dsyslog("[vdrweb] HTTP error (InsertHbbtv): %s", httplib::to_string(err).c_str());
         helloReceived = false;
         return false;
     }
@@ -133,12 +133,12 @@ bool BrowserClient::InsertChannel(std::string json) {
 
     if (auto res = client->Post("/InsertChannel", json, "text/plain")) {
         if (res->status != 200) {
-            dsyslog("Http result: %d", res->status);
+            dsyslog("[vdrweb] Http result: %d", res->status);
             return false;
         }
     } else {
         auto err = res.error();
-        dsyslog("HTTP error (InsertChannel): %s", httplib::to_string(err).c_str());
+        dsyslog("[vdrweb] HTTP error (InsertChannel): %s", httplib::to_string(err).c_str());
         helloReceived = false;
         return false;
     }
@@ -157,12 +157,12 @@ bool BrowserClient::StartApplication(std::string channelId, std::string appId) {
 
     if (auto res = client->Post("/StartApplication", params)) {
         if (res->status != 200) {
-            dsyslog("Http result: %d", res->status);
+            dsyslog("[vdrweb] Http result: %d", res->status);
             return false;
         }
     } else {
         auto err = res.error();
-        dsyslog("HTTP error (StartApplication): %s", httplib::to_string(err).c_str());
+        dsyslog("[vdrweb] HTTP error (StartApplication): %s", httplib::to_string(err).c_str());
         helloReceived = false;
         return false;
     }
