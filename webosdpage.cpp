@@ -1,13 +1,16 @@
 #include <vdr/device.h>
 #include <vdr/remote.h>
+#include <Magick++/Blob.h>
+#include <Magick++/Image.h>
+#include <chrono>
 #include "webosdpage.h"
 #include "browserclient.h"
 #include "backtrace.h"
 
+// #define MEASURE_SCALE_TIME 1
+
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
-
-struct SwsContext *swsCtx = nullptr;
 
 WebOSDPage *webOsdPage;
 WebOSDPage *playerWebOsdPage;
@@ -129,9 +132,6 @@ WebOSDPage::~WebOSDPage() {
     runTriggerActivity = false;
     activityTriggerThread->join();
 
-    sws_freeContext(swsCtx);
-    swsCtx = nullptr;
-
     if (pixmap != nullptr) {
         osd->DestroyPixmap(pixmap);
         pixmap = nullptr;
@@ -249,7 +249,7 @@ bool WebOSDPage::drawImage(uint8_t* image, int render_width, int render_height, 
     delete(image_copy);
 #endif
 
-    return scaleAndPaint(image, render_width, render_height, x, y, width, height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
+    return scaleAndPaint(image, render_width, render_height, x, y, width, height);
 }
 
 bool WebOSDPage::drawImageQOI(const std::string& qoibuffer) {
@@ -279,13 +279,13 @@ bool WebOSDPage::drawImageQOI(const std::string& qoibuffer) {
         return false;
     }
 
-    bool retValue = scaleAndPaint(static_cast<uint8_t *>(image), render_width, render_height, x, y, (int)desc.width, (int)desc.height, AV_PIX_FMT_BGRA, AV_PIX_FMT_BGRA);
+    bool retValue = scaleAndPaint(static_cast<uint8_t *>(image), render_width, render_height, x, y, (int)desc.width, (int)desc.height);
     free(image);
 
     return retValue;
 }
 
-bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat) {
+bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height) {
     // sanity check
     if (width > 3840 || height > 2160 || width <= 0 || height <= 0) {
         return false;
@@ -354,25 +354,19 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
             return true;
         }
 
-        // scale image
-        if (swsCtx != nullptr) {
-            swsCtx = sws_getCachedContext(swsCtx,
-                                          width, height, srcFormat,
-                                          osd_width, osd_height, destFormat,
-                                          SWS_BILINEAR, nullptr, nullptr, nullptr);
-        }
+#ifdef MEASURE_SCALE_TIME
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+#endif
 
-        if (swsCtx == nullptr) {
-            swsCtx = sws_getContext(width, height, srcFormat,
-                                    osd_width, osd_height, destFormat,
-                                    SWS_BILINEAR, nullptr, nullptr, nullptr);
-        }
+        Magick::Image mimage;
+        mimage.read(width, height, "RGBA", static_cast<const MagickLib::StorageType>(0), image);
+        mimage.sample(Magick::Geometry(osd_width, osd_height));
+        mimage.write ( 0, 0, osd_width, osd_height, "RGBA", static_cast<const MagickLib::StorageType>(0), scaled);
 
-        uint8_t *inData[1] = {image};
-        int inLinesize[1] = {4 * width};
-        int outLinesize[1] = {4 * osd_width};
-
-        sws_scale(swsCtx, inData, inLinesize, 0, height, &scaled, outLinesize);
+#ifdef MEASURE_SCALE_TIME
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    dsyslog("[vdrweb] Scale time = %lu [ms]", std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count());
+#endif
 
         if (pixmap != nullptr) {
             LOCK_PIXMAPS;

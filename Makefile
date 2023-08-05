@@ -40,9 +40,9 @@ TMPDIR ?= /tmp
 export CFLAGS   = $(call PKGCFG,cflags)
 export CXXFLAGS = $(call PKGCFG,cxxflags)
 
-# ffmpeg libswscale
-CXXFLAGS += $(shell pkg-config --cflags libswscale)
-LDFLAGS += $(shell pkg-config --libs libswscale)
+# graphicsmagick
+CXXFLAGS += $(shell pkg-config --cflags GraphicsMagick++)
+LDFLAGS += $(shell pkg-config --libs GraphicsMagick++)
 
 ### The version number of VDR's plugin API:
 

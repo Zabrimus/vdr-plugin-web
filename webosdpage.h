@@ -6,14 +6,6 @@
 #include <vdr/osdbase.h>
 #include <vdr/player.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include <libswscale/swscale.h>
-#ifdef __cplusplus
-}
-#endif
-
 enum OSD_MODE {
     OSD,
     PLAYER,
@@ -41,7 +33,7 @@ private:
 private:
     explicit WebOSDPage(bool useOutputDeviceScale, OSD_MODE osdMode);
 
-    bool scaleAndPaint(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height, AVPixelFormat srcFormat, AVPixelFormat destFormat);
+    bool scaleAndPaint(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height);
 
 public:
     static WebOSDPage* Create(bool useOutputDeviceScale, OSD_MODE osdMode);

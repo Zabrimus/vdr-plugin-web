@@ -9,6 +9,7 @@
 #include <getopt.h>
 #include <vdr/plugin.h>
 #include <vdr/remote.h>
+#include <Magick++.h>
 #include "web.h"
 #include "browserclient.h"
 #include "ini.h"
@@ -283,6 +284,7 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
 
 bool cPluginWeb::Initialize() {
     // Initialize any background activities the plugin shall perform.
+    Magick::InitializeMagick(nullptr);
     return true;
 }
 
