@@ -296,6 +296,8 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
     // dsyslog("RenderSize: %d x %d, DisplaySize: %d x %d, x,y=%d,%d, Scaling required: %s", render_width, render_height, disp_width, disp_height, x, y, (scaleRequired ? "yes" : "no"));
 
     if (!scaleRequired) {
+        // dsyslog("[vdrweb] no scaling required");
+
         // scaling is not needed. Draw the image as is.
         cPoint recPoint(x, y);
         const cImage recImage(cSize(width, height), (const tColor *)image);
@@ -322,12 +324,13 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
     int osd_x = (int)lround(scalex * x);
     int osd_y = (int)lround(scaley * y);
     int osd_width = (int)lround(scalex * width);
-    int osd_height = (int)lround(scalex * height);
+    int osd_height = (int)lround(scaley * height);
 
     cPoint recPoint(osd_x, osd_y);
 
 #ifdef ENABLE_FAST_SCALE
     if (useOutputDeviceScale) {
+        // dsyslog("[vdrweb] scaling using outputdevice");
         const cImage recImage(cSize(width, height), (const tColor *)image, scalex, scaley);
 
         if (pixmap != nullptr) {
@@ -338,6 +341,8 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
         }
     } else {
 #endif // ENABLE_FAST_SCALE
+
+        // dsyslog("[vdrweb] scaling using sws_scale");
 
         // create image buffer for scaled image
         cSize recImageSize(osd_width, osd_height);
