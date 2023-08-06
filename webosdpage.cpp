@@ -209,7 +209,7 @@ void WebOSDPage::SetOsdSize() {
 
     // try to get a pixmap
     dsyslog("[vdrweb] webosdpage SetOsdSize, Create pixmap %dx%d", disp_width, disp_height);
-    pixmap = osd->CreatePixmap(1, rect, rect);
+    pixmap = osd->CreatePixmap(5, rect, rect);
 
     dsyslog("[vdrweb] webosdpage SetOsdSize, Clear Pixmap");
     LOCK_PIXMAPS;
