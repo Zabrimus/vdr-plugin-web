@@ -18,6 +18,7 @@
 #include "status.h"
 #include "videocontrol.h"
 #include "sharedmemory.h"
+#include "dummyosd.h"
 
 std::string browserIp;
 int browserPort;
@@ -41,6 +42,7 @@ enum OSD_COMMAND {
 
 OSD_COMMAND nextOsdCommand = OPEN;
 bool useOutputDeviceScale = false;
+bool useDummyOsd = false;
 
 int nr = 0;
 
@@ -257,11 +259,12 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
     static struct option long_options[] = {
             { "config",      required_argument, nullptr, 'c' },
             { "fastscale",   optional_argument, nullptr, 'f' },
-            {nullptr }
+            { "dummyosd",    optional_argument, nullptr, 'o' },
+            { nullptr }
     };
 
     int c, option_index = 0;
-    while ((c = getopt_long(argc, argv, "c:f", long_options, &option_index)) != -1)
+    while ((c = getopt_long(argc, argv, "c:fo", long_options, &option_index)) != -1)
     {
         switch (c)
         {
@@ -273,6 +276,10 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
 
             case 'f':
                 useOutputDeviceScale = true;
+                break;
+
+            case 'o':
+                useDummyOsd = true;
                 break;
 
             default:
@@ -346,9 +353,16 @@ cOsdObject *cPluginWeb::MainMenuAction() {
         return page;
     }
 
-    // close OSD
     nextOsdCommand = OPEN;
-    return nullptr;
+
+    if (useDummyOsd) {
+        // instead of really closing the OSD, open a dummy OSD
+        return new cDummyOsdObject();
+    } else {
+        // close OSD
+        return nullptr;
+    }
+
 }
 
 cMenuSetupPage *cPluginWeb::SetupMenu() {
