@@ -18,6 +18,8 @@ public:
     bool InsertChannel(std::string json);
     bool StartApplication(std::string channelId, std::string appId);
 
+    bool SetVolume(int currentVolume, int maxVolume);
+
     void HelloFromBrowser();
 
 private:

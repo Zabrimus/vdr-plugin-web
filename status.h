@@ -19,6 +19,7 @@ private:
    int sid;
 protected:
    void ChannelSwitch(const cDevice *device, int channelNumber, bool LiveView) override;
+   void SetVolume(int Volume, bool Absolute) override;
 
 public:
    cHbbtvDeviceStatus();
