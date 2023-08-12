@@ -29,9 +29,9 @@ void VideoPlayer::Activate(bool On) {
 }
 
 void VideoPlayer::Pause() {
+    pause = true;
     DeviceClear();
     DeviceFreeze();
-    pause = true;
 }
 
 void VideoPlayer::Resume() {
@@ -77,7 +77,15 @@ void VideoPlayer::calcVideoPosition(int x, int y, int w, int h, int *newx, int *
 }
 
 void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
-    static uchar buf[188],bufsize=0;
+    static uchar buf[188], bufsize=0;
+
+    // if player is paused, discard all incoming packets
+    if (pause) {
+        dsyslog("[vdrweb] Video paused, drop TS packets with len %d", len);
+        bufsize = 0;
+        return;
+    }
+
     if (len) { // at least one tspacket
         if (bufsize) {
             memcpy(buf+bufsize,buffer,188-bufsize);
