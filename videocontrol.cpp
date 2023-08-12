@@ -3,9 +3,15 @@
 
 bool isPlayerActivated;
 
+static uchar buf[188], bufsize;
+
+uint8_t pausePacketBuffer[64 * 1024];
+int pausePacketBufferIdx;
+
 VideoPlayer::VideoPlayer() {
     dsyslog("[vdrweb] Create Player...");
     pause = false;
+    bufsize = 0;
 }
 
 VideoPlayer::~VideoPlayer() {
@@ -30,6 +36,7 @@ void VideoPlayer::Activate(bool On) {
 
 void VideoPlayer::Pause() {
     pause = true;
+    pausePacketBufferIdx = 0;
     DeviceClear();
     DeviceFreeze();
 }
@@ -37,6 +44,13 @@ void VideoPlayer::Pause() {
 void VideoPlayer::Resume() {
     DevicePlay();
     pause = false;
+
+    if (pausePacketBufferIdx > 0) {
+        dsyslog("[vdrweb] Play pause buffer of length %d", pausePacketBufferIdx);
+        // play at first the saved packets
+        PlayPacket(pausePacketBuffer, pausePacketBufferIdx);
+        pausePacketBufferIdx = 0;
+    }
 }
 
 void VideoPlayer::setVideoFullscreen() {
@@ -46,6 +60,7 @@ void VideoPlayer::setVideoFullscreen() {
 
 void VideoPlayer::ResetVideo() {
     DeviceClear();
+    bufsize = 0;
 }
 
 void VideoPlayer::SetVideoSize(int x, int y, int width, int height) {
@@ -77,12 +92,16 @@ void VideoPlayer::calcVideoPosition(int x, int y, int w, int h, int *newx, int *
 }
 
 void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
-    static uchar buf[188], bufsize=0;
-
     // if player is paused, discard all incoming packets
     if (pause) {
         dsyslog("[vdrweb] Video paused, drop TS packets with len %d", len);
-        bufsize = 0;
+        if (len + pausePacketBufferIdx < 64 * 1024) {
+            memcpy(pausePacketBuffer + pausePacketBufferIdx, buffer, len);
+            pausePacketBufferIdx += len;
+        } else {
+            dsyslog("[vdrweb] unable to fill pause buffer, length is too large %d", len + pausePacketBufferIdx);
+        }
+
         return;
     }
 
