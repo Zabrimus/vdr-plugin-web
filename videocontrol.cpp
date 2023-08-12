@@ -77,10 +77,34 @@ void VideoPlayer::calcVideoPosition(int x, int y, int w, int h, int *newx, int *
 }
 
 void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
+    static uchar buf[188],bufsize=0;
     if (len) { // at least one tspacket
-        int result = PlayTs(buffer, len);
-        if (result < 0) {
-            esyslog("[vdrweb] Error playing ts: %d", result);
+        if (bufsize) {
+            memcpy(buf+bufsize,buffer,188-bufsize);
+            PlayTs(buf,188);
+            buffer += 188-bufsize;
+            len -= 188-bufsize;
+            esyslog("[vdrweb] Error playing TS parts: %d %d", bufsize, 188-bufsize);
+            bufsize=0;
+        }
+        int rest = len % 188;
+        if (rest) {
+            memcpy(buf,buffer+len-rest,rest);
+            len -= rest;
+            bufsize = rest;
+            esyslog("[vdrweb] Error playing ts saving : %d", rest);
+        }
+        while (len >= 188) {
+            int result = PlayTs(buffer, len);
+            if (result < 0)
+                return;
+            if (result != len) {
+                esyslog("[vdrweb] Error playing ts: %d %d", len, result);
+            }
+            if (result > 0) {
+                len -= result;
+                buffer += result;
+            }
         }
     }
 }
