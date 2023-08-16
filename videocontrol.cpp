@@ -114,6 +114,7 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
             esyslog("[vdrweb] Error playing TS parts: %d %d", bufsize, 188-bufsize);
             bufsize=0;
         }
+
         int rest = len % 188;
         if (rest) {
             memcpy(buf,buffer+len-rest,rest);
@@ -121,13 +122,25 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
             bufsize = rest;
             esyslog("[vdrweb] Error playing ts saving : %d", rest);
         }
+
         while (len >= 188) {
             int result = PlayTs(buffer, len);
-            if (result < 0)
+
+            if (result < 0) {
                 return;
+            }
+
+            if (result == 0) {
+                // abort to prevent an endless loop
+                // TODO: perhaps a sleep is a better solution, but without the break,
+                //        the loop is much too fast and breaks not only VDR, syslog, ...
+                break;
+            }
+
             if (result != len) {
                 esyslog("[vdrweb] Error playing ts: %d %d", len, result);
             }
+
             if (result > 0) {
                 len -= result;
                 buffer += result;

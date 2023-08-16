@@ -48,25 +48,6 @@ std::map<int, std::string> keyMap({
         {kPrev, "VK_PAGE_UP"},
 });
 
-// Thread to prevent automatically closing the OSD
-bool runTriggerActivity = false;
-void triggerActivityThread() {
-    int counter = 0;
-    int waitTime = 100;
-
-    while (runTriggerActivity) {
-        counter++;
-
-        if ((60 * 1000) - (counter * waitTime) <= 0) {
-            cRemote::TriggerLastActivity();
-            counter = 0;
-        } else {
-            std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
-        }
-    }
-}
-
-
 WebOSDPage *WebOSDPage::Create(bool useOutputDeviceScale, OSD_MODE osdMode) {
     switch(osdMode) {
         case OSD:
@@ -119,18 +100,12 @@ WebOSDPage::WebOSDPage(bool useOutputDeviceScale, OSD_MODE osdMode)
     disp_width = 1080;
 
     currentMode = osdMode;
-
-    runTriggerActivity = true;
-    activityTriggerThread = new std::thread(triggerActivityThread);
 }
 
 WebOSDPage::~WebOSDPage() {
     dsyslog("[vdrweb] Destruct WebOSDPage, osdMode %d", (int)currentMode);
 
-    // printBacktrace();
-
-    runTriggerActivity = false;
-    activityTriggerThread->join();
+    printBacktrace();
 
     if (pixmap != nullptr) {
         osd->DestroyPixmap(pixmap);
@@ -387,26 +362,22 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
 
 
 eOSState WebOSDPage::ProcessKey(eKeys Key) {
-    eOSState state = cOsdObject::ProcessKey(Key);
-
-    if (state == osUnknown) {
-        // special key: kInfo -> Load Application in Browser
-        if (Key == kInfo) {
-            LOCK_CHANNELS_READ
-            const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
-            // browserClient->RedButton(*currentChannel->GetChannelID().ToString());
-            browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "currently unused");
-            return osContinue;
-        }
-
-        auto search = ::keyMap.find(Key);
-        if (search != ::keyMap.end()) {
-            browserClient->ProcessKey(search->second);
-            return osContinue;
-        }
+    // special key: kInfo -> Load Application in Browser
+    if (Key == kInfo) {
+        LOCK_CHANNELS_READ
+        const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
+        // browserClient->RedButton(*currentChannel->GetChannelID().ToString());
+        browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "currently unused");
+        return osContinue;
     }
 
-    return state;
+    auto search = ::keyMap.find(Key);
+    if (search != ::keyMap.end()) {
+        browserClient->ProcessKey(search->second);
+        return osContinue;
+    }
+
+    return osContinue;
 }
 
 void WebOSDPage::Hide() {

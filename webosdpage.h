@@ -26,8 +26,6 @@ private:
 
     static std::map<int, std::string> keyMap;
 
-    std::thread* activityTriggerThread;
-
     OSD_MODE currentMode;
 
 private:
