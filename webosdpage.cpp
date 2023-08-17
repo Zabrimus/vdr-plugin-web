@@ -98,6 +98,8 @@ WebOSDPage::WebOSDPage(bool useOutputDeviceScale, OSD_MODE osdMode)
     pixmap = nullptr;
     disp_height = 1920;
     disp_width = 1080;
+    lastVolume = -1;
+    lastVolumeTime = time(NULL);
 
     currentMode = osdMode;
 }
@@ -362,6 +364,11 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
 
 
 eOSState WebOSDPage::ProcessKey(eKeys Key) {
+    // check if volumebar is displayed and kill it after a timeout
+    // a volume change resets the timeout
+    if (pixmapVol && (time(NULL) - lastVolumeTime > 3))
+        DeleteVolume();
+
     // special key: kInfo -> Load Application in Browser
     if (Key == kInfo) {
         LOCK_CHANNELS_READ
@@ -382,6 +389,42 @@ eOSState WebOSDPage::ProcessKey(eKeys Key) {
 
 void WebOSDPage::Hide() {
     dsyslog("[vdrweb] WebOSDPage::Hide...");
+}
+
+void WebOSDPage::DrawVolume(int volume) {
+    dsyslog("[vdrweb] WebOSDPage::DrawVolume...");
+   if (volume != lastVolume) {
+      int x = 0;           // volumebar x
+      int y = 20;          // volumebar y
+      int w = disp_width;  // volumebar width
+      int h = 20;          // volumebar height
+      if (!pixmapVol) {
+          pixmapVol = osd->CreatePixmap(7, cRect(x, y, w, h));
+          pixmapVol->Fill(clrTransparent);
+      }
+      if (volume) {
+         int p = (w - 1) * volume / MAXVOLUME;
+         pixmapVol->DrawRectangle(cRect(0, 0, p - 1, h - 1), clrVolumeBarLower);
+         pixmapVol->DrawRectangle(cRect(p, 0, w - 1, h - 1), clrVolumeBarUpper);
+      } else {
+         pixmapVol->DrawRectangle(cRect(0, 0, w - 1, h - 1), clrVolumeBarUpper);
+      }
+      lastVolume = volume;
+      // (re)set the display volumebar timeout
+      lastVolumeTime = time(NULL);
+      if (osd)
+         osd->Flush();
+   }
+}
+
+void WebOSDPage::DeleteVolume(void) {
+    dsyslog("[vdrweb] WebOSDPage::DeleteVolume...");
+    if (pixmapVol) {
+        pixmapVol->SetLayer(-1);
+        osd->Flush();
+        osd->DestroyPixmap(pixmapVol);
+        pixmapVol = nullptr;
+    }
 }
 
 cOsdObject *WebOSDPage::GetInfo() {

@@ -17,14 +17,13 @@ private:
    cDevice *device;
    cAitFilter *aitFilter;
    int sid;
+   int volume = 0;
 protected:
    void ChannelSwitch(const cDevice *device, int channelNumber, bool LiveView) override;
-   void SetVolume(int Volume, bool Absolute) override;
+   virtual void SetVolume(int Volume, bool Absolute);
 
 public:
    cHbbtvDeviceStatus();
    ~cHbbtvDeviceStatus() override;
    int Sid() const { return sid; }
 };
-
-extern cHbbtvDeviceStatus *HbbtvDeviceStatus;

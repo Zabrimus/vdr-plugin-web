@@ -60,7 +60,6 @@ inline const char* toChannelJson(const cChannel* channel) {
     return cmd;
 }
 
-
 cHbbtvDeviceStatus::cHbbtvDeviceStatus() {
    device = nullptr;
    aitFilter = nullptr;
@@ -107,5 +106,10 @@ void cHbbtvDeviceStatus::ChannelSwitch(const cDevice * vdrDevice, int channelNum
 
 void cHbbtvDeviceStatus::SetVolume(int Volume, bool Absolute) {
     // instead using the parameter (relative volume change), use the absolute volume of the Device
-    browserClient->SetVolume(cDevice::CurrentVolume(), MAXVOLUME);
+//    browserClient->SetVolume(cDevice::CurrentVolume(), MAXVOLUME);
+
+   volume = Absolute ? Volume : volume + Volume;
+   WebOSDPage* page = WebOSDPage::Get();
+   if (page)
+       page->DrawVolume(volume);
 }
