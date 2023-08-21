@@ -218,8 +218,6 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     });
 
     vdrServer.Get("/Hello", [](const httplib::Request &req, httplib::Response &res) {
-        dsyslog("[vdrweb] Hello received");
-
         browserClient->HelloFromBrowser();
 
         res.status = 200;
@@ -291,7 +289,7 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
 
 bool cPluginWeb::Initialize() {
     // Initialize any background activities the plugin shall perform.
-    Magick::InitializeMagick(nullptr);
+    MagickLib::InitializeMagickEx(NULL, MAGICK_OPT_NO_SIGNAL_HANDER, NULL);
     return true;
 }
 

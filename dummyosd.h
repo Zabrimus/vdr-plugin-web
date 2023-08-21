@@ -12,6 +12,11 @@ public:
 
     void Show() override {};
     eOSState ProcessKey(eKeys Key) override {
-        return WebOSDPage::Get()->ProcessKey(Key);
+        auto osd = WebOSDPage::Get();
+        if (osd != nullptr) {
+            return osd->ProcessKey(Key);
+        } else {
+            return osContinue;
+        }
     }
 };

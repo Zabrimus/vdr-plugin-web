@@ -109,15 +109,11 @@ WebOSDPage::~WebOSDPage() {
 
     printBacktrace();
 
-    if (pixmap != nullptr) {
-        osd->DestroyPixmap(pixmap);
-        pixmap = nullptr;
-    }
-
     if (osd != nullptr) {
         delete osd;
         osd = nullptr;
     }
+    pixmap = nullptr;
 
     switch (currentMode) {
         case OSD:
@@ -319,7 +315,7 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
     } else {
 #endif // ENABLE_FAST_SCALE
 
-        // dsyslog("[vdrweb] scaling using sws_scale");
+        // dsyslog("[vdrweb] scaling using GraphicsMagick");
 
         // create image buffer for scaled image
         cSize recImageSize(osd_width, osd_height);

@@ -127,6 +127,7 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
             int result = PlayTs(buffer, len);
 
             if (result < 0) {
+                esyslog("[vdrweb] Error playing ts, result is %d", result);
                 return;
             }
 
@@ -134,6 +135,7 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
                 // abort to prevent an endless loop
                 // TODO: perhaps a sleep is a better solution, but without the break,
                 //        the loop is much too fast and breaks not only VDR, syslog, ...
+                esyslog("[vdrweb] Error playing ts, abort: %d %d", len, result);
                 break;
             }
 
