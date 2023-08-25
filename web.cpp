@@ -9,6 +9,8 @@
 #include <getopt.h>
 #include <vdr/plugin.h>
 #include <vdr/remote.h>
+#include <vdr/tools.h>
+#include <vdr/videodir.h>
 #include <Magick++.h>
 #include "web.h"
 #include "browserclient.h"
@@ -19,6 +21,12 @@
 #include "videocontrol.h"
 #include "sharedmemory.h"
 #include "dummyosd.h"
+
+#define TSDIR  "%s/web/%s/%4d-%02d-%02d.%02d.%02d.%d-%d.rec"
+
+bool saveTS;
+char* currentTSFilename;
+char *currentTSDir;
 
 std::string browserIp;
 int browserPort;
@@ -47,6 +55,25 @@ bool useDummyOsd = false;
 int nr = 0;
 
 int lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight;
+
+void createTSFileName() {
+    if (currentTSFilename != nullptr) {
+        delete currentTSFilename;
+        currentTSFilename = nullptr;
+    }
+
+    if (currentTSDir != nullptr) {
+        delete currentTSDir;
+        currentTSDir = nullptr;
+    }
+
+    time_t now = time(nullptr);
+    struct tm tm_r;
+    struct tm *t = localtime_r(&now, &tm_r);
+
+    currentTSDir = strdup(cString::sprintf(TSDIR, cVideoDirectory::Name(), *cString::sprintf("%lu", now), t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, 0, 0));
+    currentTSFilename = strdup(cString::sprintf("%s/00001.ts", currentTSDir));
+}
 
 void startHttpServer(std::string vdrIp, int vdrPort) {
 
@@ -111,11 +138,11 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
         if (body.empty()) {
             res.status = 404;
         } else {
-            /*
-            FILE* f = fopen("test.ts", "a");
-            fwrite((uint8_t *)body.c_str(), body.length(), 1, f);
-            fclose(f);
-            */
+            if (saveTS) {
+                FILE* f = fopen(currentTSFilename, "a");
+                fwrite((uint8_t *)body.c_str(), body.length(), 1, f);
+                fclose(f);
+            }
 
             if (videoPlayer != nullptr) {
                 videoPlayer->PlayPacket((uint8_t *) body.c_str(), (int) body.length());
@@ -135,6 +162,14 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
 
         WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, PLAYER);
         page->Display();
+
+        if (saveTS) {
+            // create directory if necessary
+            createTSFileName();
+            if (!MakeDirs(currentTSDir, true)) {
+                esyslog("[vdrweb]: can't create directory %s", currentTSDir);
+            }
+        }
 
         videoPlayer = new VideoPlayer();
         page->SetPlayer(videoPlayer);
@@ -227,9 +262,20 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     vdrServer.Get("/ResetVideo", [](const httplib::Request &req, httplib::Response &res) {
         dsyslog("[vdrweb] ResetVideo received: Coords x=%d, y=%d, w=%d, h=%d", lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
 
+        if (saveTS) {
+            // create directory if necessary
+            createTSFileName();
+            if (!MakeDirs(currentTSDir, true)) {
+                esyslog("[vdrweb]: can't create directory %s", currentTSDir);
+            }
+        }
+
         if (videoPlayer != nullptr) {
             videoPlayer->ResetVideo();
             videoPlayer->SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
+        } else {
+            // TODO: Is it necessary to create a new Player?
+            esyslog("[vdrweb] ResetVideo called, but videoPlayer is null");
         }
 
         res.status = 200;
@@ -243,6 +289,8 @@ cPluginWeb::cPluginWeb() {
     // Initialize any member variables here.
     // DON'T DO ANYTHING ELSE THAT MAY HAVE SIDE EFFECTS, REQUIRE GLOBAL
     // VDR OBJECTS TO EXIST OR PRODUCE ANY OUTPUT!
+    currentTSFilename = nullptr;
+    saveTS = false;
 }
 
 cPluginWeb::~cPluginWeb() {
@@ -258,11 +306,12 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
             { "config",      required_argument, nullptr, 'c' },
             { "fastscale",   optional_argument, nullptr, 'f' },
             { "dummyosd",    optional_argument, nullptr, 'o' },
+            { "savets",      optional_argument, nullptr, 's' },
             { nullptr }
     };
 
     int c, option_index = 0;
-    while ((c = getopt_long(argc, argv, "c:fo", long_options, &option_index)) != -1)
+    while ((c = getopt_long(argc, argv, "c:fos", long_options, &option_index)) != -1)
     {
         switch (c)
         {
@@ -280,6 +329,10 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
                 useDummyOsd = true;
                 break;
 
+            case 's':
+                saveTS = true;
+                break;
+
             default:
                 break;
         }
@@ -290,6 +343,7 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
 bool cPluginWeb::Initialize() {
     // Initialize any background activities the plugin shall perform.
     MagickLib::InitializeMagickEx(NULL, MAGICK_OPT_NO_SIGNAL_HANDER, NULL);
+
     return true;
 }
 
@@ -309,6 +363,14 @@ bool cPluginWeb::Start() {
 void cPluginWeb::Stop() {
     vdrServer.stop();
     delete browserClient;
+
+    if (currentTSDir != nullptr) {
+        delete currentTSDir;
+    }
+
+    if (currentTSFilename != nullptr) {
+        delete currentTSFilename;
+    }
 }
 
 void cPluginWeb::Housekeeping() {
