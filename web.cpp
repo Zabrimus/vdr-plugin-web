@@ -75,6 +75,16 @@ void createTSFileName() {
     currentTSFilename = strdup(cString::sprintf("%s/00001.ts", currentTSDir));
 }
 
+void stopVideo() {
+    if (videoPlayer != nullptr) {
+        delete videoPlayer;
+        videoPlayer = nullptr;
+
+        nextOsdCommand = REOPEN;
+        cRemote::CallPlugin("web");
+    }
+}
+
 void startHttpServer(std::string vdrIp, int vdrPort) {
 
     vdrServer.Post("/ProcessOsdUpdate", [](const httplib::Request &req, httplib::Response &res) {
@@ -146,6 +156,16 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
 
             if (videoPlayer != nullptr) {
                 videoPlayer->PlayPacket((uint8_t *) body.c_str(), (int) body.length());
+
+                if (videoPlayer->hasTsError()) {
+                    // stop video streaming
+                    browserClient->StopVideo();
+                    stopVideo();
+                }
+            } else {
+                // No video Player? Stop streaming
+                browserClient->StopVideo();
+                stopVideo();
             }
 
             res.status = 200;
@@ -153,8 +173,10 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
         }
     });
 
-    vdrServer.Get("/StartVideo", [](const httplib::Request &req, httplib::Response &res) {
+    vdrServer.Post("/StartVideo", [](const httplib::Request &req, httplib::Response &res) {
         dsyslog("[vdrweb] StartVideo received");
+
+        std::string videoInfo = req.get_param_value("videoInfo");
 
         // Close existing OSD
         nextOsdCommand = CLOSE;
@@ -171,7 +193,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
             }
         }
 
-        videoPlayer = new VideoPlayer();
+        videoPlayer = new VideoPlayer(videoInfo);
         page->SetPlayer(videoPlayer);
 
         cControl::Launch(page);
@@ -184,13 +206,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     vdrServer.Get("/StopVideo", [](const httplib::Request &req, httplib::Response &res) {
         dsyslog("[vdrweb] StopVideo received");
 
-        if (videoPlayer != nullptr) {
-            delete videoPlayer;
-            videoPlayer = nullptr;
-
-            nextOsdCommand = REOPEN;
-            cRemote::CallPlugin("web");
-        }
+        stopVideo();
 
         res.status = 200;
         res.set_content("ok", "text/plain");
@@ -259,8 +275,10 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
         res.set_content("ok", "text/plain");
     });
 
-    vdrServer.Get("/ResetVideo", [](const httplib::Request &req, httplib::Response &res) {
+    vdrServer.Post("/ResetVideo", [](const httplib::Request &req, httplib::Response &res) {
         dsyslog("[vdrweb] ResetVideo received: Coords x=%d, y=%d, w=%d, h=%d", lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
+
+        std::string videoInfo = req.get_param_value("videoInfo");
 
         if (saveTS) {
             // create directory if necessary
@@ -271,7 +289,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
         }
 
         if (videoPlayer != nullptr) {
-            videoPlayer->ResetVideo();
+            videoPlayer->ResetVideo(videoInfo);
             videoPlayer->SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
         } else {
             // TODO: Is it necessary to create a new Player?

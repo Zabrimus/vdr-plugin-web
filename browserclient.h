@@ -17,6 +17,7 @@ public:
     bool InsertHbbtv(std::string json);
     bool InsertChannel(std::string json);
     bool StartApplication(std::string channelId, std::string appId);
+    bool StopVideo();
 
     bool SetVolume(int currentVolume, int maxVolume);
 

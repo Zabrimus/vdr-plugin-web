@@ -194,6 +194,26 @@ bool BrowserClient::SetVolume(int currentVolume, int maxVolume) {
     return true;
 }
 
+bool BrowserClient::StopVideo() {
+    if (!CheckConnection("StopVideo")) {
+        return false;
+    }
+
+    if (auto res = client->Get("/StopVideo")) {
+        if (res->status != 200) {
+            dsyslog("[vdrweb] Http result: %d", res->status);
+            return false;
+        }
+    } else {
+        auto err = res.error();
+        dsyslog("[vdrweb] HTTP error (StopVideo): %s", httplib::to_string(err).c_str());
+        helloReceived = false;
+        return false;
+    }
+
+    return true;
+}
+
 void BrowserClient::HelloFromBrowser() {
     helloReceived = true;
 }

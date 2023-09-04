@@ -8,10 +8,11 @@ static uchar buf[188], bufsize;
 uint8_t pausePacketBuffer[64 * 1024];
 int pausePacketBufferIdx;
 
-VideoPlayer::VideoPlayer() {
+VideoPlayer::VideoPlayer(std::string vi) {
     dsyslog("[vdrweb] Create Player...");
     pause = false;
     bufsize = 0;
+    videoInfo = vi;
 }
 
 VideoPlayer::~VideoPlayer() {
@@ -58,9 +59,22 @@ void VideoPlayer::setVideoFullscreen() {
     cDevice::PrimaryDevice()->ScaleVideo(cRect::Null);
 }
 
-void VideoPlayer::ResetVideo() {
+void VideoPlayer::ResetVideo(std::string vi) {
+    // TODO: Compare saved videoInfo with new value to determine
+    //   if DeviceClear is sufficient or a complete reset is necessary
+
+    dsyslog("[vdrweb] video change from %s to %s", videoInfo.c_str(), vi.c_str());
+
+    if (videoInfo != vi) {
+        dsyslog("[vdrweb] Device Reset requested");
+    } else {
+        dsyslog("[vdrweb] Device Clear requested");
+    }
+
     DeviceClear();
     bufsize = 0;
+
+    videoInfo = vi;
 }
 
 void VideoPlayer::SetVideoSize(int x, int y, int width, int height) {
@@ -92,6 +106,8 @@ void VideoPlayer::calcVideoPosition(int x, int y, int w, int h, int *newx, int *
 }
 
 void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
+    tsError = false;
+
     // if player is paused, discard all incoming packets
     if (pause) {
         dsyslog("[vdrweb] Video paused, drop TS packets with len %d", len);
@@ -113,6 +129,8 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
             len -= 188-bufsize;
             esyslog("[vdrweb] Error playing TS parts: %d %d", bufsize, 188-bufsize);
             bufsize=0;
+
+            tsError = true;
         }
 
         int rest = len % 188;
@@ -121,6 +139,8 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
             len -= rest;
             bufsize = rest;
             esyslog("[vdrweb] Error playing ts saving : %d", rest);
+
+            tsError = true;
         }
 
         while (len >= 188) {
@@ -128,6 +148,7 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
 
             if (result < 0) {
                 esyslog("[vdrweb] Error playing ts, result is %d", result);
+                tsError = true;
                 return;
             }
 
@@ -136,11 +157,13 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
                 // TODO: perhaps a sleep is a better solution, but without the break,
                 //        the loop is much too fast and breaks not only VDR, syslog, ...
                 esyslog("[vdrweb] Error playing ts, abort: %d %d", len, result);
+                tsError = true;
                 break;
             }
 
             if (result != len) {
                 esyslog("[vdrweb] Error playing ts: %d %d", len, result);
+                tsError = true;
             }
 
             if (result > 0) {

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <string>
 #include <vdr/plugin.h>
 
 static const char *VERSION = "0.0.1";
@@ -44,4 +45,7 @@ public:
     cString SVDRPCommand(const char *Command, const char *Option, int &ReplyCode) override;
 
     bool readConfiguration(const char* configFile);
+
+private:
+    std::string videoInfo;
 };
