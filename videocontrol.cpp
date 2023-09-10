@@ -8,11 +8,10 @@ static uchar buf[188], bufsize;
 uint8_t pausePacketBuffer[64 * 1024];
 int pausePacketBufferIdx;
 
-VideoPlayer::VideoPlayer(std::string vi) {
+VideoPlayer::VideoPlayer() {
     dsyslog("[vdrweb] Create Player...");
     pause = false;
     bufsize = 0;
-    videoInfo = vi;
 }
 
 VideoPlayer::~VideoPlayer() {
@@ -59,22 +58,9 @@ void VideoPlayer::setVideoFullscreen() {
     cDevice::PrimaryDevice()->ScaleVideo(cRect::Null);
 }
 
-void VideoPlayer::ResetVideo(std::string vi) {
-    // TODO: Compare saved videoInfo with new value to determine
-    //   if DeviceClear is sufficient or a complete reset is necessary
-
-    dsyslog("[vdrweb] video change from %s to %s", videoInfo.c_str(), vi.c_str());
-
-    if (videoInfo != vi) {
-        dsyslog("[vdrweb] Device Reset requested");
-    } else {
-        dsyslog("[vdrweb] Device Clear requested");
-    }
-
+void VideoPlayer::ResetVideo() {
     DeviceClear();
     bufsize = 0;
-
-    videoInfo = vi;
 }
 
 void VideoPlayer::SetVideoSize(int x, int y, int width, int height) {

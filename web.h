@@ -45,7 +45,4 @@ public:
     cString SVDRPCommand(const char *Command, const char *Option, int &ReplyCode) override;
 
     bool readConfiguration(const char* configFile);
-
-private:
-    std::string videoInfo;
 };

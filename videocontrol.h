@@ -6,7 +6,7 @@
 
 class VideoPlayer : public cPlayer {
 public:
-    explicit VideoPlayer(std::string vi);
+    explicit VideoPlayer();
     ~VideoPlayer() override;
 
     void Pause();
@@ -16,7 +16,7 @@ public:
     void SetVideoSize(int x, int y, int width, int height);
     void setVideoFullscreen();
 
-    void ResetVideo(std::string string);
+    void ResetVideo();
 
     bool hasTsError() { return tsError; };
 
@@ -29,6 +29,4 @@ private:
 private:
     bool pause;
     bool tsError;
-
-    std::string videoInfo;
 };

@@ -42,6 +42,8 @@ cHbbtvDeviceStatus *hbbtvDeviceStatus;
 
 VideoPlayer* videoPlayer = nullptr;
 
+std::string videoInfo;
+
 enum OSD_COMMAND {
     OPEN,
     REOPEN,
@@ -193,7 +195,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
             }
         }
 
-        videoPlayer = new VideoPlayer(videoInfo);
+        videoPlayer = new VideoPlayer();
         page->SetPlayer(videoPlayer);
 
         cControl::Launch(page);
@@ -278,7 +280,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     vdrServer.Post("/ResetVideo", [](const httplib::Request &req, httplib::Response &res) {
         dsyslog("[vdrweb] ResetVideo received: Coords x=%d, y=%d, w=%d, h=%d", lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
 
-        std::string videoInfo = req.get_param_value("videoInfo");
+        std::string vi = req.get_param_value("videoInfo");
 
         if (saveTS) {
             // create directory if necessary
@@ -289,7 +291,19 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
         }
 
         if (videoPlayer != nullptr) {
-            videoPlayer->ResetVideo(videoInfo);
+            // TODO: Compare saved videoInfo with new value to determine
+            //   if DeviceClear is sufficient or a complete reset is necessary
+
+            dsyslog("[vdrweb] video change from %s to %s", videoInfo.c_str(), vi.c_str());
+
+            if (videoInfo != vi) {
+                dsyslog("[vdrweb] Device Reset requested");
+                videoPlayer->ResetVideo();
+            } else {
+                dsyslog("[vdrweb] Device Clear requested");
+                videoPlayer->ResetVideo();
+            }
+
             videoPlayer->SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
         } else {
             // TODO: Is it necessary to create a new Player?
