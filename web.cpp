@@ -178,7 +178,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     vdrServer.Post("/StartVideo", [](const httplib::Request &req, httplib::Response &res) {
         dsyslog("[vdrweb] StartVideo received");
 
-        std::string videoInfo = req.get_param_value("videoInfo");
+        videoInfo = req.get_param_value("videoInfo");
 
         // Close existing OSD
         nextOsdCommand = CLOSE;
@@ -309,6 +309,8 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
             // TODO: Is it necessary to create a new Player?
             esyslog("[vdrweb] ResetVideo called, but videoPlayer is null");
         }
+
+        videoInfo = vi;
 
         res.status = 200;
         res.set_content("ok", "text/plain");
