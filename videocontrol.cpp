@@ -1,3 +1,5 @@
+#include <chrono>
+#include <thread>
 #include "browserclient.h"
 #include "videocontrol.h"
 
@@ -108,54 +110,53 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
     }
 
     if (len) { // at least one tspacket
+        // play saved partial packet
         if (bufsize) {
-            memcpy(buf+bufsize,buffer,188-bufsize);
-            PlayTs(buf,188);
-            buffer += 188-bufsize;
-            len -= 188-bufsize;
-            esyslog("[vdrweb] Error playing TS parts: %d %d", bufsize, 188-bufsize);
-            bufsize=0;
-
-            tsError = true;
+            memcpy(buf + bufsize, buffer, 188 - bufsize);
+            PlayTs(buf, 188);
+            buffer += 188 - bufsize;
+            len -= 188 - bufsize;
+            bufsize = 0;
         }
 
+        // save partial packet
         int rest = len % 188;
         if (rest) {
-            memcpy(buf,buffer+len-rest,rest);
+            memcpy(buf, buffer + len - rest, rest);
             len -= rest;
             bufsize = rest;
-            esyslog("[vdrweb] Error playing ts saving : %d", rest);
-
-            tsError = true;
         }
 
+        // now play packets
+        int retry_loop_count = 0;
         while (len >= 188) {
             int result = PlayTs(buffer, len);
 
+            // play error.
             if (result < 0) {
                 esyslog("[vdrweb] Error playing ts, result is %d", result);
                 tsError = true;
                 return;
             }
 
+            // packets not played
             if (result == 0) {
-                // abort to prevent an endless loop
-                // TODO: perhaps a sleep is a better solution, but without the break,
-                //        the loop is much too fast and breaks not only VDR, syslog, ...
-                esyslog("[vdrweb] Error playing ts, abort: %d %d", len, result);
-                tsError = true;
-                break;
+                // retry after some time, but increase retry_loop_count
+                if (retry_loop_count >= 5) {
+                    esyslog("[vdrweb] Error playing ts, abort: %d %d", len, result);
+                    tsError = true;
+                    return;
+                } else {
+                    retry_loop_count++;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+
+                    continue;
+                }
             }
 
-            if (result != len) {
-                esyslog("[vdrweb] Error playing ts: %d %d", len, result);
-                tsError = true;
-            }
-
-            if (result > 0) {
-                len -= result;
-                buffer += result;
-            }
+            // packets accepted
+            len -= result;
+            buffer += result;
         }
     }
 }
