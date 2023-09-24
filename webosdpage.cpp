@@ -414,11 +414,10 @@ void WebOSDPage::DrawVolume(int volume) {
 }
 
 void WebOSDPage::DeleteVolume(void) {
-    dsyslog("[vdrweb] WebOSDPage::DeleteVolume...");
+    dsyslog("[vdrweb] WebOSDPage::DeleteVolume...: %s", pixmapVol != nullptr ? "pixmapVol != null" : "pixmapVol == null");
     if (pixmapVol) {
-        pixmapVol->SetLayer(-1);
-        osd->Flush();
         osd->DestroyPixmap(pixmapVol);
+        osd->Flush();
         pixmapVol = nullptr;
     }
 }
