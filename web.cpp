@@ -152,8 +152,10 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
         } else {
             if (saveTS) {
                 FILE* f = fopen(currentTSFilename, "a");
-                fwrite((uint8_t *)body.c_str(), body.length(), 1, f);
-                fclose(f);
+                if (f != nullptr) {
+                    fwrite((uint8_t *)body.c_str(), body.length(), 1, f);
+                    fclose(f);
+                }
             }
 
             if (videoPlayer != nullptr) {

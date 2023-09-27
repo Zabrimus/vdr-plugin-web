@@ -117,6 +117,8 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
             buffer += 188 - bufsize;
             len -= 188 - bufsize;
             bufsize = 0;
+
+            dsyslog("[vdrweb] Play saved partial TS packet");
         }
 
         // save partial packet
@@ -125,6 +127,8 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
             memcpy(buf, buffer + len - rest, rest);
             len -= rest;
             bufsize = rest;
+
+            dsyslog("[vdrweb] Save partial TS packet, len %d", rest);
         }
 
         // now play packets
@@ -147,6 +151,7 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
                     tsError = true;
                     return;
                 } else {
+                    dsyslog("[vdrweb] Wait for retrying playTS, loop_count %d", retry_loop_count);
                     retry_loop_count++;
                     std::this_thread::sleep_for(std::chrono::milliseconds(5));
 

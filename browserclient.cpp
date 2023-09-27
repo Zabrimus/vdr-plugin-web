@@ -199,6 +199,8 @@ bool BrowserClient::StopVideo() {
         return false;
     }
 
+    dsyslog("Request StopVideo");
+
     if (auto res = client->Get("/StopVideo")) {
         if (res->status != 200) {
             dsyslog("[vdrweb] Http result: %d", res->status);
