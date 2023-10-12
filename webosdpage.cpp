@@ -147,11 +147,11 @@ void WebOSDPage::Display() {
 
     double ph;
     cDevice::PrimaryDevice()->GetOsdSize(disp_width, disp_height, ph);
-    tArea area {0,0,disp_width, disp_height, 32};
+    tArea area {0, 0, disp_width - 1, disp_height - 1, 32};
     auto areaResult = osd->SetAreas(&area, 1);
 
     if (areaResult == oeOk) {
-        isyslog("[vdrweb] Area size set to %d:%d - %d:%d", 0, 0, disp_width, disp_height);
+        isyslog("[vdrweb] Area size set to %d:%d - %d:%d", 0, 0, disp_width - 1, disp_height - 1);
     }
 
     SetOsdSize();
