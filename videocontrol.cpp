@@ -153,7 +153,7 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
                 } else {
                     dsyslog("[vdrweb] Wait for retrying playTS, loop_count %d", retry_loop_count);
                     retry_loop_count++;
-                    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
                     continue;
                 }
