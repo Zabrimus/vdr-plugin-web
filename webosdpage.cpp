@@ -5,7 +5,6 @@
 #include <chrono>
 #include "webosdpage.h"
 #include "browserclient.h"
-#include "backtrace.h"
 
 // #define MEASURE_SCALE_TIME 1
 
@@ -106,8 +105,6 @@ WebOSDPage::WebOSDPage(bool useOutputDeviceScale, OSD_MODE osdMode)
 
 WebOSDPage::~WebOSDPage() {
     dsyslog("[vdrweb] Destruct WebOSDPage, osdMode %d", (int)currentMode);
-
-    printBacktrace();
 
     if (osd != nullptr) {
         delete osd;
