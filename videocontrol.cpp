@@ -14,6 +14,7 @@ VideoPlayer::VideoPlayer() {
     dsyslog("[vdrweb] Create Player...");
     pause = false;
     bufsize = 0;
+    tsPlayed = false;
 }
 
 VideoPlayer::~VideoPlayer() {
@@ -39,7 +40,6 @@ void VideoPlayer::Activate(bool On) {
 void VideoPlayer::Pause() {
     pause = true;
     pausePacketBufferIdx = 0;
-    DeviceClear();
     DeviceFreeze();
 }
 
@@ -61,7 +61,11 @@ void VideoPlayer::setVideoFullscreen() {
 }
 
 void VideoPlayer::ResetVideo() {
-    DeviceClear();
+    if (tsPlayed) {
+        DeviceClear();
+        tsPlayed = false;
+    }
+
     bufsize = 0;
 }
 
@@ -146,14 +150,14 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
             // packets not played
             if (result == 0) {
                 // retry after some time, but increase retry_loop_count
-                if (retry_loop_count >= 5) {
+                if (retry_loop_count >= 10) {
                     esyslog("[vdrweb] Error playing ts, abort: %d %d", len, result);
                     tsError = true;
                     return;
                 } else {
                     dsyslog("[vdrweb] Wait for retrying playTS, loop_count %d", retry_loop_count);
                     retry_loop_count++;
-                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
                     continue;
                 }
@@ -162,6 +166,8 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
             // packets accepted
             len -= result;
             buffer += result;
+
+            tsPlayed = true;
         }
     }
 }

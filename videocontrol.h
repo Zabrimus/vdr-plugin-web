@@ -29,4 +29,5 @@ private:
 private:
     bool pause;
     bool tsError;
+    bool tsPlayed;
 };

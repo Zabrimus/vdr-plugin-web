@@ -302,8 +302,8 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
                 dsyslog("[vdrweb] Device Reset requested");
                 videoPlayer->ResetVideo();
             } else {
-                dsyslog("[vdrweb] Device Clear requested");
-                videoPlayer->ResetVideo();
+                // dsyslog("[vdrweb] Device Clear requested");
+                // videoPlayer->ResetVideo();
             }
 
             videoPlayer->SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
