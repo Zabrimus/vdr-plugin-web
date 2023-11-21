@@ -301,9 +301,6 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
             if (videoInfo != vi) {
                 dsyslog("[vdrweb] Device Reset requested");
                 videoPlayer->ResetVideo();
-            } else {
-                // dsyslog("[vdrweb] Device Clear requested");
-                // videoPlayer->ResetVideo();
             }
 
             videoPlayer->SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
@@ -313,6 +310,15 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
         }
 
         videoInfo = vi;
+
+        res.status = 200;
+        res.set_content("ok", "text/plain");
+    });
+
+    vdrServer.Get("/Seeked", [](const httplib::Request &req, httplib::Response &res) {
+        if (videoPlayer != nullptr) {
+            videoPlayer->ResetVideo();
+        }
 
         res.status = 200;
         res.set_content("ok", "text/plain");
