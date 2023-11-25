@@ -137,6 +137,11 @@ void WebOSDPage::Show() {
 void WebOSDPage::Display() {
     dsyslog("[vdrweb] WebOSDPage Display\n");
     if (osd) {
+        if (pixmap != nullptr) {
+            osd->DestroyPixmap(pixmap);
+            pixmap = nullptr;
+        }
+
         delete osd;
     }
 
