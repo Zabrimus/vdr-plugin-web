@@ -107,6 +107,10 @@ WebOSDPage::~WebOSDPage() {
     dsyslog("[vdrweb] Destruct WebOSDPage, osdMode %d", (int)currentMode);
 
     if (osd != nullptr) {
+        if (pixmap != nullptr) {
+            osd->DestroyPixmap(pixmap);
+        }
+
         delete osd;
         osd = nullptr;
     }
