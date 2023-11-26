@@ -316,6 +316,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
     });
 
     vdrServer.Get("/Seeked", [](const httplib::Request &req, httplib::Response &res) {
+        dsyslog("[vdrweb] Seeked received");
         if (videoPlayer != nullptr) {
             videoPlayer->ResetVideo();
         }

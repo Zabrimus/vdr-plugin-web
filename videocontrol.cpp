@@ -62,6 +62,7 @@ void VideoPlayer::setVideoFullscreen() {
 
 void VideoPlayer::ResetVideo() {
     if (tsPlayed) {
+        dsyslog("VideoPlayer::ResetVideo");
         DeviceClear();
         tsPlayed = false;
     }

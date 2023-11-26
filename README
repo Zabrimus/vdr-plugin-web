@@ -1,10 +1,10 @@
 This is a "plugin" for the Video Disk Recorder (VDR).
 
-Written by:                  Your Name <email@host.dom>
+Written by:                  Zabrimus
 
-Project's homepage:          URL
+Project's homepage:          https://github.com/Zabrimus/vdr-plugin-web
 
-Latest version available at: URL
+Latest version available at: https://github.com/Zabrimus/vdr-plugin-web
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -13,3 +13,13 @@ the Free Software Foundation; either version 2 of the License, or
 See the file COPYING for more information.
 
 Description:
+This plugin is part of a triple of applications, which works together to show HbbTV pages and videos in directly in VDR.
+
+Optional patches:
+A patch for VDR and several output devices can be found in directory patches. These patches allows the usage of image
+scaling using OpenGL instead of the slower GraphicsMagick.
+
+For the other two parts see
+https://github.com/Zabrimus/cefbrowser
+https://github.com/Zabrimus/remotetranscode
+
