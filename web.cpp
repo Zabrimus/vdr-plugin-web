@@ -299,7 +299,7 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
             dsyslog("[vdrweb] video change from %s to %s", videoInfo.c_str(), vi.c_str());
 
             if (videoInfo != vi) {
-                dsyslog("[vdrweb] Device restart requested, because of a video format change");
+                dsyslog("[vdrweb] Device res requested, because of a video format change");
                 // videoPlayer->ResetVideo();
                 cControl::Shutdown();
 
