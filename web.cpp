@@ -299,7 +299,17 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
             dsyslog("[vdrweb] video change from %s to %s", videoInfo.c_str(), vi.c_str());
 
             if (videoInfo != vi) {
-                dsyslog("[vdrweb] Device Reset requested");
+                dsyslog("[vdrweb] Device restart requested, because of a video format change");
+                // videoPlayer->ResetVideo();
+                cControl::Shutdown();
+
+                WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, PLAYER);
+                page->Display();
+                videoPlayer = new VideoPlayer();
+                cControl::Launch(page);
+                page->SetPlayer(videoPlayer);
+            } else {
+                dsyslog("[vdrweb] Device reset is sufficent, because video format does not change");
                 videoPlayer->ResetVideo();
             }
 
