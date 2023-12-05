@@ -310,11 +310,10 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
 #ifdef ENABLE_FAST_SCALE
     if (useOutputDeviceScale) {
         // dsyslog("[vdrweb] scaling using outputdevice");
-        const cImage recImage(cSize(width, height), (const tColor *)image, scalex, scaley);
-
+        const cImage recImage(cSize(width, height), (const tColor *)image);
         if (pixmap != nullptr) {
             LOCK_PIXMAPS;
-            pixmap->DrawImage(recPoint, recImage);
+            pixmap->DrawScaledImage(recPoint, recImage, scalex, scaley, true);
         } else {
             esyslog("[vdrweb] Pixmap is null. OSD not available");
         }
