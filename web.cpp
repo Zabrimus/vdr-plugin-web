@@ -168,7 +168,6 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
                 }
             } else {
                 // No video Player? Stop streaming
-                browserClient->StopVideo();
                 stopVideo();
             }
 
