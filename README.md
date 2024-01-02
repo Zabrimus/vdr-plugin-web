@@ -20,7 +20,8 @@ It's safe to use the same sockets.ini for all of the three parts (vdr-plugin-web
 -c / --config </path/to/sockets.ini>  (mandatory parameter)
 -f / --fastscale                      (optional parameter)
 -o / --dummyosd                       (optional parameter)
--s / --savets                         (optional parameter)            
+-s / --savets                         (optional parameter)       
+-b / --bindall                        (optional parameter)     
 ```
 ### -c / --config
 This parameter is mandatory and must point to a sockets.ini file which contains 
@@ -36,6 +37,9 @@ Creates a dummy osd while streaming a video. It could be necessary.
 
 ### -s / --savets
 Used for debugging. The incoming TS streams will be saved in the recordings/web directory. 
+
+### -b / --bindall
+If set, then bind the internal HTTP server to all available network devices. Otherwise use the configured IP.
 
 ## Logging
 Uses the VDR logging mechanism. Log entries can be found in ```/var/log/syslog``` with ```[vdrweb]``` prefix.

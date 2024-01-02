@@ -37,6 +37,8 @@ int transcoderPort;
 std::string vdrIp;
 int vdrPort;
 
+bool bindAll;
+
 httplib::Server vdrServer;
 cHbbtvDeviceStatus *hbbtvDeviceStatus;
 
@@ -87,7 +89,7 @@ void stopVideo() {
     }
 }
 
-void startHttpServer(std::string vdrIp, int vdrPort) {
+void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
 
     vdrServer.Post("/ProcessOsdUpdate", [](const httplib::Request &req, httplib::Response &res) {
         auto render_width = req.get_param_value("disp_width");
@@ -334,7 +336,10 @@ void startHttpServer(std::string vdrIp, int vdrPort) {
         res.set_content("ok", "text/plain");
     });
 
-    vdrServer.listen(vdrIp, vdrPort);
+    std::string listenIp = bindAll ? "0.0.0.0" : vdrIp;
+    if (!vdrServer.listen(listenIp, vdrPort)) {
+        esyslog("[vdrweb] Call of listen failed: ip %s, port %d, Reason: %s", listenIp.c_str(), vdrPort, strerror(errno));
+    }
 }
 
 cPluginWeb::cPluginWeb() {
@@ -343,6 +348,7 @@ cPluginWeb::cPluginWeb() {
     // VDR OBJECTS TO EXIST OR PRODUCE ANY OUTPUT!
     currentTSFilename = nullptr;
     saveTS = false;
+    bindAll = false;
 }
 
 cPluginWeb::~cPluginWeb() {
@@ -359,11 +365,12 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
             { "fastscale",   optional_argument, nullptr, 'f' },
             { "dummyosd",    optional_argument, nullptr, 'o' },
             { "savets",      optional_argument, nullptr, 's' },
+            { "bindall",     optional_argument, nullptr, 'b' },
             { nullptr }
     };
 
     int c, option_index = 0;
-    while ((c = getopt_long(argc, argv, "c:fos", long_options, &option_index)) != -1)
+    while ((c = getopt_long(argc, argv, "c:fosb", long_options, &option_index)) != -1)
     {
         switch (c)
         {
@@ -385,6 +392,10 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
                 saveTS = true;
                 break;
 
+            case 'b':
+                bindAll = true;
+                break;
+
             default:
                 break;
         }
@@ -404,7 +415,7 @@ bool cPluginWeb::Start() {
     hbbtvDeviceStatus = new cHbbtvDeviceStatus();
 
     isyslog("[vdrweb] Start Http Server on %s:%d", vdrIp.c_str(), vdrPort);
-    std::thread t1(startHttpServer, vdrIp, vdrPort);
+    std::thread t1(startHttpServer, vdrIp, vdrPort, bindAll);
     t1.detach();
 
     new BrowserClient(browserIp, browserPort);
