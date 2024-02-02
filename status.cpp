@@ -106,7 +106,6 @@ void cHbbtvDeviceStatus::ChannelSwitch(const cDevice * vdrDevice, int channelNum
 
 void cHbbtvDeviceStatus::SetVolume(int Volume, bool Absolute) {
     // instead using the parameter (relative volume change), use the absolute volume of the Device
-//    browserClient->SetVolume(cDevice::CurrentVolume(), MAXVOLUME);
 
    volume = Absolute ? Volume : volume + Volume;
    WebOSDPage* page = WebOSDPage::Get();

@@ -172,30 +172,6 @@ bool BrowserClient::StartApplication(std::string channelId, std::string appId) {
     return true;
 }
 
-bool BrowserClient::SetVolume(int currentVolume, int maxVolume) {
-    if (!CheckConnection("SetVolume")) {
-        return false;
-    }
-
-    httplib::Params params;
-    params.emplace("currentVolume", std::to_string(currentVolume));
-    params.emplace("maxVolume", std::to_string(maxVolume));
-
-    if (auto res = client->Post("/SetVolume", params)) {
-        if (res->status != 200) {
-            dsyslog("[vdrweb] Http result: %d", res->status);
-            return false;
-        }
-    } else {
-        auto err = res.error();
-        dsyslog("[vdrweb] HTTP error (SetVolume): %s", httplib::to_string(err).c_str());
-        helloReceived = false;
-        return false;
-    }
-
-    return true;
-}
-
 bool BrowserClient::StopVideo() {
     if (!CheckConnection("StopVideo")) {
         return false;

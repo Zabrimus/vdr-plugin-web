@@ -19,8 +19,6 @@ public:
     bool StartApplication(std::string channelId, std::string appId);
     bool StopVideo();
 
-    bool SetVolume(int currentVolume, int maxVolume);
-
     void HelloFromBrowser();
 
 private:
