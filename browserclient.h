@@ -16,7 +16,7 @@ public:
     bool ProcessKey(std::string key);
     bool InsertHbbtv(std::string json);
     bool InsertChannel(std::string json);
-    bool StartApplication(std::string channelId, std::string appId);
+    bool StartApplication(std::string channelId, const std::string& appId, const std::string& param_userAgent="", const std::string& param_referrer="", const std::string& param_cookie="", const std::string& body = "");
     bool StopVideo();
 
     void HelloFromBrowser();

@@ -148,16 +148,28 @@ bool BrowserClient::InsertChannel(std::string json) {
     return true;
 }
 
-bool BrowserClient::StartApplication(std::string channelId, std::string appId) {
+bool BrowserClient::StartApplication(std::string channelId, const std::string& appId, const std::string& param_userAgent, const std::string& param_referrer, const std::string& param_cookie, const std::string& body) {
     if (!CheckConnection("StartApplication")) {
         return false;
     }
 
-    httplib::Params params;
-    params.emplace("channelId", channelId);
-    params.emplace("appId", appId);
+    httplib::Headers headers;
+    headers.emplace("channelId", channelId);
+    headers.emplace("appId", appId);
 
-    if (auto res = client->Post("/StartApplication", params)) {
+    if (!param_cookie.empty()) {
+        headers.emplace("appCookie", param_cookie);
+    }
+
+    if (!param_referrer.empty()) {
+        headers.emplace("appReferrer", param_referrer);
+    }
+
+    if (!param_userAgent.empty()) {
+        headers.emplace("appUserAgent", param_userAgent);
+    }
+
+    if (auto res = client->Post("/StartApplication", headers, body, "text/plain")) {
         if (res->status != 200) {
             dsyslog("[vdrweb] Http result: %d", res->status);
             return false;

@@ -15,12 +15,12 @@
 #include "web.h"
 #include "browserclient.h"
 #include "ini.h"
-#include "httplib.h"
 #include "webosdpage.h"
 #include "status.h"
 #include "videocontrol.h"
 #include "sharedmemory.h"
 #include "dummyosd.h"
+#include "httplib.h"
 
 #define TSDIR  "%s/web/%s/%4d-%02d-%02d.%02d.%02d.%d-%d.rec"
 
@@ -47,9 +47,15 @@ VideoPlayer* videoPlayer = nullptr;
 std::string videoInfo;
 
 enum OSD_COMMAND {
+    // normal commands
     OPEN,
     REOPEN,
-    CLOSE
+    CLOSE,
+
+    // start specific applications
+    MAIN,
+    M3U,
+    URL
 };
 
 OSD_COMMAND nextOsdCommand = OPEN;
@@ -59,6 +65,13 @@ bool useDummyOsd = false;
 int nr = 0;
 
 int lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight;
+
+// parameters for calling application
+std::string param_url;
+std::string param_m3uContent;
+std::string param_userAgent;
+std::string param_referrer;
+std::string param_cookie;
 
 void createTSFileName() {
     if (currentTSFilename != nullptr) {
@@ -336,6 +349,18 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
         res.set_content("ok", "text/plain");
     });
 
+    vdrServer.Post("/SelectAudioTrack", [](const httplib::Request &req, httplib::Response &res) {
+        dsyslog("[vdrweb] SelectAudioTrack received");
+        if (videoPlayer != nullptr) {
+            auto track = req.get_param_value("audioTrack");
+            videoPlayer->SelectAudioTrack(track);
+        }
+
+        res.status = 200;
+        res.set_content("ok", "text/plain");
+    });
+
+
     std::string listenIp = bindAll ? "0.0.0.0" : vdrIp;
     if (!vdrServer.listen(listenIp, vdrPort)) {
         esyslog("[vdrweb] Call of listen failed: ip %s, port %d, Reason: %s", listenIp.c_str(), vdrPort, strerror(errno));
@@ -355,8 +380,12 @@ cPluginWeb::~cPluginWeb() {
 }
 
 const char *cPluginWeb::CommandLineHelp() {
-    // Return a string that describes all known command line options.
-    return nullptr;
+    return "  -c file,     --config=file configuration file sockets.ini\n"
+           "  -f,          --fastscale   used opengl to scale images\n"
+           "  -o,          --dummyosd    opens a dummy osd while playing videos\n"
+           "  -s,          --savets      Saves all incoming ts streams\n"
+           "  -b,          --bindall     bind the web server to all interfaces\n"
+           "  -n,          --name        Menu entry name\n";
 }
 
 bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
@@ -366,11 +395,12 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
             { "dummyosd",    optional_argument, nullptr, 'o' },
             { "savets",      optional_argument, nullptr, 's' },
             { "bindall",     optional_argument, nullptr, 'b' },
+            { "name",        optional_argument, nullptr, 'n' },
             { nullptr }
     };
 
     int c, option_index = 0;
-    while ((c = getopt_long(argc, argv, "c:fosb", long_options, &option_index)) != -1)
+    while ((c = getopt_long(argc, argv, "c:fosbn:", long_options, &option_index)) != -1)
     {
         switch (c)
         {
@@ -394,6 +424,10 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
 
             case 'b':
                 bindAll = true;
+                break;
+
+            case 'n':
+                MAINMENUENTRYALT = strdup(optarg);
                 break;
 
             default:
@@ -463,29 +497,38 @@ time_t cPluginWeb::WakeupTime() {
 cOsdObject *cPluginWeb::MainMenuAction() {
     dsyslog("[vdrweb] MainMenuAction: command = %d\n", (int)nextOsdCommand);
 
-    if (nextOsdCommand == OPEN || nextOsdCommand == REOPEN) {
-        WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, OSD);
-
-        if (nextOsdCommand == OPEN) {
-            LOCK_CHANNELS_READ
-            const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
-            browserClient->RedButton(*currentChannel->GetChannelID().ToString());
-        }
-
+    if (nextOsdCommand == CLOSE) {
         nextOsdCommand = OPEN;
-        return page;
+
+        if (useDummyOsd) {
+            // instead of really closing the OSD, open a dummy OSD
+            return new cDummyOsdObject();
+        } else {
+            // close OSD
+            return nullptr;
+        }
+    }
+
+    LOCK_CHANNELS_READ
+    const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
+
+    WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, OSD);
+
+    if (nextOsdCommand == OPEN) {
+        browserClient->RedButton(*currentChannel->GetChannelID().ToString());
+    } else if (nextOsdCommand == REOPEN) {
+        // nothing to do
+    } else if (nextOsdCommand == URL) {
+        browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "URL", param_userAgent, param_referrer, param_cookie, param_url);
+    } else if (nextOsdCommand == MAIN) {
+        browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "MAIN", param_userAgent, param_referrer, param_cookie);
+    } else if (nextOsdCommand == M3U) {
+        browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "M3U", param_userAgent, param_referrer, param_cookie, param_m3uContent);
     }
 
     nextOsdCommand = OPEN;
 
-    if (useDummyOsd) {
-        // instead of really closing the OSD, open a dummy OSD
-        return new cDummyOsdObject();
-    } else {
-        // close OSD
-        return nullptr;
-    }
-
+    return page;
 }
 
 cMenuSetupPage *cPluginWeb::SetupMenu() {
@@ -498,8 +541,56 @@ bool cPluginWeb::SetupParse(const char *Name, const char *Value) {
     return false;
 }
 
-bool cPluginWeb::Service(const char *Id, void *Data) {
-    // Handle custom service requests from other plugins
+bool cPluginWeb::Service(const char *Id, void *Data = nullptr) {
+    param_url = "";
+    param_m3uContent = "";
+    param_userAgent = "";
+    param_referrer = "";
+    param_cookie = "";
+
+    if (! Data) {
+        // There exists no service without data
+        return false;
+    }
+
+    if (strcmp(Id, "WebApp-Main-v1.0") == 0) {
+        WebApp_Main_v1_0 *sc = (WebApp_Main_v1_0*)Data;
+        nextOsdCommand = MAIN;
+        cRemote::CallPlugin("web");
+
+        param_userAgent = sc->userAgent;
+        param_referrer = sc->referrer;
+        param_cookie = sc->cookie;
+
+        return true;
+    }
+
+    if (strcmp(Id, "WebApp-M3U-v1.0") == 0) {
+        WebApp_M3U_v1_0 *sc = (WebApp_M3U_v1_0*)Data;
+        nextOsdCommand = M3U;
+
+        param_m3uContent = sc->m3uContent;
+        param_userAgent = sc->userAgent;
+        param_referrer = sc->referrer;
+        param_cookie = sc->cookie;
+
+        cRemote::CallPlugin("web");
+        return true;
+    }
+
+    if (strcmp(Id, "WebApp-Url-v1.0") == 0) {
+        WebApp_Url_v1_0 *sc = (WebApp_Url_v1_0*)Data;
+        nextOsdCommand = URL;
+
+        param_url = sc->url;
+        param_userAgent = sc->userAgent;
+        param_referrer = sc->referrer;
+        param_cookie = sc->cookie;
+
+        cRemote::CallPlugin("web");
+        return true;
+    }
+
     return false;
 }
 

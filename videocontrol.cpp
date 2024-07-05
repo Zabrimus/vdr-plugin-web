@@ -149,4 +149,11 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
             tsPlayed = true;
         }
     }
+
+
+}
+
+void VideoPlayer::SelectAudioTrack(std::string track) {
+    // TODO: Wie wechselt man den Audiotrack?
+    // printf("Anzahl der Audio-Tracks: %d\n", cDevice::PrimaryDevice()->NumAudioTracks());
 }

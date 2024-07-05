@@ -10,10 +10,12 @@
 
 #include <string>
 #include <vdr/plugin.h>
+#include "service/web_service.h"
 
 static const char *VERSION = "0.0.1";
-static const char *DESCRIPTION = "Enter description for 'web' plugin";
+static const char *DESCRIPTION = "Uses the cefbrowser to show HTTP Pages, HbbTV applications and videos";
 static const char *MAINMENUENTRY = "Web";
+static char* MAINMENUENTRYALT = nullptr;
 
 class cPluginWeb : public cPlugin {
 public:
@@ -35,12 +37,12 @@ public:
     cString Active() override;
     time_t WakeupTime() override;
 
-    const char *MainMenuEntry() override { return MAINMENUENTRY; }
+    const char *MainMenuEntry() override { return MAINMENUENTRYALT != nullptr ? MAINMENUENTRYALT : MAINMENUENTRY; }
     cOsdObject *MainMenuAction() override;
     cMenuSetupPage *SetupMenu() override;
 
     bool SetupParse(const char *Name, const char *Value) override;
-    bool Service(const char *Id, void *Data = nullptr) override;
+    bool Service(const char *Id, void *Data) override;
     const char **SVDRPHelpPages() override;
     cString SVDRPCommand(const char *Command, const char *Option, int &ReplyCode) override;
 

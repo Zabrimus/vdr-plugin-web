@@ -17,6 +17,7 @@ public:
     void setVideoFullscreen();
 
     void ResetVideo();
+    void SelectAudioTrack(std::string track);
 
     bool hasTsError() { return tsError; };
 
