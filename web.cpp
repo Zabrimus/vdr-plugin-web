@@ -94,8 +94,9 @@ void createTSFileName() {
 
 void stopVideo() {
     if (videoPlayer != nullptr) {
-        delete videoPlayer;
+        VideoPlayer *copy = videoPlayer;
         videoPlayer = nullptr;
+        delete copy;
 
         nextOsdCommand = REOPEN;
         cRemote::CallPlugin("web");
@@ -176,7 +177,7 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
             if (videoPlayer != nullptr) {
                 videoPlayer->PlayPacket((uint8_t *) body.c_str(), (int) body.length());
 
-                if (videoPlayer->hasTsError()) {
+                if (videoPlayer && videoPlayer->hasTsError()) {
                     // stop video streaming
                     browserClient->StopVideo();
                     stopVideo();
