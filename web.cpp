@@ -269,7 +269,9 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
             lastVideoWidth = std::atoi(w.c_str());
             lastVideoHeight = std::atoi(h.c_str());
 
-            videoPlayer->SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
+            if (videoPlayer != nullptr) {
+                videoPlayer->SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
+            }
 
             res.status = 200;
             res.set_content("ok", "text/plain");
@@ -281,7 +283,9 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
 
         lastVideoX = lastVideoY = lastVideoWidth = lastVideoHeight = 0;
 
-        videoPlayer->setVideoFullscreen();
+        if (videoPlayer != nullptr) {
+            videoPlayer->setVideoFullscreen();
+        }
 
         res.status = 200;
         res.set_content("ok", "text/plain");
@@ -342,6 +346,7 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
 
     vdrServer.Get("/Seeked", [](const httplib::Request &req, httplib::Response &res) {
         dsyslog("[vdrweb] Seeked received");
+
         if (videoPlayer != nullptr) {
             videoPlayer->ResetVideo();
         }
@@ -352,6 +357,7 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
 
     vdrServer.Post("/SelectAudioTrack", [](const httplib::Request &req, httplib::Response &res) {
         dsyslog("[vdrweb] SelectAudioTrack received");
+
         if (videoPlayer != nullptr) {
             auto track = req.get_param_value("audioTrack");
             videoPlayer->SelectAudioTrack(track);
@@ -480,8 +486,9 @@ void cPluginWeb::MainThreadHook() {
     // WARNING: Use with great care - see PLUGINS.html!
 
     if (WebOSDPage::Get() == nullptr && videoPlayer != nullptr) {
-        delete videoPlayer;
+        VideoPlayer *cp = videoPlayer;
         videoPlayer = nullptr;
+        delete cp;
     }
 }
 

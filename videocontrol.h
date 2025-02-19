@@ -32,3 +32,5 @@ private:
     bool tsError;
     bool tsPlayed;
 };
+
+extern VideoPlayer *videoPlayer;

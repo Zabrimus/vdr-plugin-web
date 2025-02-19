@@ -103,7 +103,12 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
         // play saved partial packet
         if (bufsize) {
             memcpy(buf + bufsize, buffer, 188 - bufsize);
-            PlayTs(buf, 188);
+            if (videoPlayer != nullptr) {
+                PlayTs(buf, 188);
+            } else {
+                return;
+            }
+
             buffer += 188 - bufsize;
             len -= 188 - bufsize;
             bufsize = 0;
@@ -120,7 +125,12 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
         // now play packets
         int retry_loop_count = 0;
         while (len >= 188) {
-            int result = PlayTs(buffer, len);
+            int result = -1;
+            if (videoPlayer != nullptr) {
+                result = PlayTs(buffer, len);
+            } else {
+                return;
+            }
 
             // play error.
             if (result < 0) {
