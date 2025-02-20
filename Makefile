@@ -40,6 +40,9 @@ TMPDIR ?= /tmp
 export CFLAGS   = $(call PKGCFG,cflags)
 export CXXFLAGS = $(call PKGCFG,cxxflags)
 
+# c++ version
+CXXFLAGS += -std=c++17
+
 # graphicsmagick
 CXXFLAGS += $(shell pkg-config --cflags GraphicsMagick++)
 LDFLAGS += $(shell pkg-config --libs GraphicsMagick++)

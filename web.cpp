@@ -46,6 +46,8 @@ VideoPlayer* videoPlayer = nullptr;
 
 std::string videoInfo;
 
+std::shared_mutex videoPlayerLock;
+
 enum OSD_COMMAND {
     // normal commands
     OPEN,
@@ -94,6 +96,8 @@ void createTSFileName() {
 
 void stopVideo() {
     if (videoPlayer != nullptr) {
+        std::unique_lock lock(videoPlayerLock);
+
         VideoPlayer *copy = videoPlayer;
         videoPlayer = nullptr;
         delete copy;
@@ -166,6 +170,8 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
         if (body.empty()) {
             res.status = 404;
         } else {
+            std::shared_lock lock(videoPlayerLock);
+
             if (saveTS) {
                 FILE* f = fopen(currentTSFilename, "a");
                 if (f != nullptr) {
@@ -212,6 +218,8 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
             }
         }
 
+        std::unique_lock lock(videoPlayerLock);
+
         videoPlayer = new VideoPlayer();
         page->SetPlayer(videoPlayer);
 
@@ -235,6 +243,7 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
         dsyslog("[vdrweb] PauseVideo received");
 
         if (videoPlayer != nullptr) {
+            std::shared_lock lock(videoPlayerLock);
             videoPlayer->Pause();
         }
 
@@ -246,6 +255,7 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
         dsyslog("[vdrweb] ResumeVideo received");
 
         if (videoPlayer != nullptr) {
+            std::shared_lock lock(videoPlayerLock);
             videoPlayer->Resume();
         }
 
@@ -270,6 +280,7 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
             lastVideoHeight = std::atoi(h.c_str());
 
             if (videoPlayer != nullptr) {
+                std::shared_lock lock(videoPlayerLock);
                 videoPlayer->SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
             }
 
@@ -284,6 +295,7 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
         lastVideoX = lastVideoY = lastVideoWidth = lastVideoHeight = 0;
 
         if (videoPlayer != nullptr) {
+            std::shared_lock lock(videoPlayerLock);
             videoPlayer->setVideoFullscreen();
         }
 
@@ -318,6 +330,8 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
             dsyslog("[vdrweb] video change from %s to %s", videoInfo.c_str(), vi.c_str());
 
             if (videoInfo != vi) {
+                std::unique_lock lock(videoPlayerLock);
+
                 dsyslog("[vdrweb] Device res requested, because of a video format change");
                 // videoPlayer->ResetVideo();
                 cControl::Shutdown();
@@ -329,9 +343,11 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
                 page->SetPlayer(videoPlayer);
             } else {
                 dsyslog("[vdrweb] Device reset is sufficent, because video format does not change");
+                std::shared_lock lock(videoPlayerLock);
                 videoPlayer->ResetVideo();
             }
 
+            std::shared_lock lock(videoPlayerLock);
             videoPlayer->SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
         } else {
             // TODO: Is it necessary to create a new Player?
@@ -348,6 +364,7 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
         dsyslog("[vdrweb] Seeked received");
 
         if (videoPlayer != nullptr) {
+            std::shared_lock lock(videoPlayerLock);
             videoPlayer->ResetVideo();
         }
 
@@ -359,6 +376,7 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
         dsyslog("[vdrweb] SelectAudioTrack received");
 
         if (videoPlayer != nullptr) {
+            std::shared_lock lock(videoPlayerLock);
             auto track = req.get_param_value("audioTrack");
             videoPlayer->SelectAudioTrack(track);
         }
@@ -486,6 +504,8 @@ void cPluginWeb::MainThreadHook() {
     // WARNING: Use with great care - see PLUGINS.html!
 
     if (WebOSDPage::Get() == nullptr && videoPlayer != nullptr) {
+        std::unique_lock lock(videoPlayerLock);
+
         VideoPlayer *cp = videoPlayer;
         videoPlayer = nullptr;
         delete cp;

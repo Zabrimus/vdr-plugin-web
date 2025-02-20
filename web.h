@@ -9,6 +9,7 @@
 #pragma once
 
 #include <string>
+#include <shared_mutex>
 #include <vdr/plugin.h>
 #include "service/web_service.h"
 
@@ -16,6 +17,8 @@ static const char *VERSION = "0.0.1";
 static const char *DESCRIPTION = "Uses the cefbrowser to show HTTP Pages, HbbTV applications and videos";
 static const char *MAINMENUENTRY = "Web";
 static char* MAINMENUENTRYALT = nullptr;
+
+extern std::shared_mutex videoPlayerLock;
 
 class cPluginWeb : public cPlugin {
 public:
