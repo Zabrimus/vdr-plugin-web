@@ -392,6 +392,34 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
     }
 }
 
+cRegularWorker::cRegularWorker() {
+}
+
+cRegularWorker::~cRegularWorker() {
+}
+
+void cRegularWorker::Stop() {
+    m_waitCondition.Broadcast();  // wakeup the thread
+    Cancel(10);                   // wait up to 10 seconds for thread was stopping
+}
+
+void cRegularWorker::Action() {
+    m_mutex.Lock();
+    int loopSleep = 500; // do this every 1/2 second
+
+    while (Running()) {
+        m_waitCondition.TimedWait(m_mutex, loopSleep);
+
+        if (WebOSDPage::Get() == nullptr && videoPlayer != nullptr) {
+            std::unique_lock lock(videoPlayerLock);
+
+            VideoPlayer *cp = videoPlayer;
+            videoPlayer = nullptr;
+            delete cp;
+        }
+    }
+}
+
 cPluginWeb::cPluginWeb() {
     // Initialize any member variables here.
     // DON'T DO ANYTHING ELSE THAT MAY HAVE SIDE EFFECTS, REQUIRE GLOBAL
@@ -479,12 +507,17 @@ bool cPluginWeb::Start() {
 
     new BrowserClient(browserIp, browserPort);
 
+    regularWorker = std::unique_ptr<cRegularWorker>(new cRegularWorker());
+    regularWorker->Start();
+
     return true;
 }
 
 void cPluginWeb::Stop() {
     vdrServer.stop();
     delete browserClient;
+
+    regularWorker->Stop();
 
     if (currentTSDir != nullptr) {
         delete currentTSDir;
@@ -502,14 +535,6 @@ void cPluginWeb::Housekeeping() {
 void cPluginWeb::MainThreadHook() {
     // Perform actions in the context of the main program thread.
     // WARNING: Use with great care - see PLUGINS.html!
-
-    if (WebOSDPage::Get() == nullptr && videoPlayer != nullptr) {
-        std::unique_lock lock(videoPlayerLock);
-
-        VideoPlayer *cp = videoPlayer;
-        videoPlayer = nullptr;
-        delete cp;
-    }
 }
 
 cString cPluginWeb::Active() {

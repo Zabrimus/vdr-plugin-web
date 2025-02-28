@@ -10,6 +10,7 @@
 
 #include <string>
 #include <shared_mutex>
+#include <memory>
 #include <vdr/plugin.h>
 #include "service/web_service.h"
 
@@ -20,7 +21,23 @@ static char* MAINMENUENTRYALT = nullptr;
 
 extern std::shared_mutex videoPlayerLock;
 
+class cRegularWorker: public cThread {
+    private:
+        cMutex m_mutex;
+        cCondVar m_waitCondition;
+
+    public:
+        cRegularWorker();
+        ~cRegularWorker();
+
+        void Stop();
+        void Action();
+};
+
 class cPluginWeb : public cPlugin {
+private:
+    std::unique_ptr<cRegularWorker> regularWorker;
+
 public:
     cPluginWeb();
     ~cPluginWeb() override;
