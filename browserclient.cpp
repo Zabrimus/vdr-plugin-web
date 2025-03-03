@@ -6,13 +6,16 @@ BrowserClient* browserClient;
 BrowserClient::BrowserClient(std::string browserIp, int browserPort) {
     client = new httplib::Client(browserIp, browserPort);
     client->set_read_timeout(15, 0);
+    client->set_keep_alive(true);
 
     browserClient = this;
     helloReceived = true; // be optimistic
 }
 
 BrowserClient::~BrowserClient() {
+    client->stop();
     delete client;
+
     browserClient = nullptr;
 }
 

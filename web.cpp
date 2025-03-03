@@ -385,6 +385,8 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
         res.set_content("ok", "text/plain");
     });
 
+    vdrServer.set_keep_alive_max_count(50);
+    vdrServer.set_keep_alive_timeout(5);
 
     std::string listenIp = bindAll ? "0.0.0.0" : vdrIp;
     if (!vdrServer.listen(listenIp, vdrPort)) {
