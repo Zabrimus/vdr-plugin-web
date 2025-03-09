@@ -1,6 +1,8 @@
 #include <vdr/skins.h>
 #include "browserclient.h"
 
+time_t lastBrowserLogTime = time(0);
+
 BrowserClient* browserClient;
 
 BrowserClient::BrowserClient(std::string browserIp, int browserPort) {
@@ -215,8 +217,20 @@ void BrowserClient::HelloFromBrowser() {
 
 bool BrowserClient::CheckConnection(std::string method) {
     if (!helloReceived) {
+        if (method == "InsertHbbtv") {
+            // special handling, much less logging is desired
+            time_t currentTime = time(0);
+
+            if (currentTime - lastBrowserLogTime < 2 * 60) {
+                return false;
+            } else {
+                lastBrowserLogTime = currentTime;
+            }
+        }
+
         // do nothing, browser is not available
         dsyslog("[vdrweb] %s, browser is not available", method.c_str());
+
         return false;
     }
 
