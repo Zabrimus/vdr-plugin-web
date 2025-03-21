@@ -279,10 +279,7 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
             lastVideoWidth = std::atoi(w.c_str());
             lastVideoHeight = std::atoi(h.c_str());
 
-            if (videoPlayer != nullptr) {
-                std::shared_lock lock(videoPlayerLock);
-                videoPlayer->SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
-            }
+            VideoPlayer::SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
 
             res.status = 200;
             res.set_content("ok", "text/plain");
@@ -293,11 +290,7 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
         dsyslog("[vdrweb] VideoFullscreen received");
 
         lastVideoX = lastVideoY = lastVideoWidth = lastVideoHeight = 0;
-
-        if (videoPlayer != nullptr) {
-            std::shared_lock lock(videoPlayerLock);
-            videoPlayer->setVideoFullscreen();
-        }
+        VideoPlayer::setVideoFullscreen();
 
         res.status = 200;
         res.set_content("ok", "text/plain");
@@ -348,7 +341,7 @@ void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
             }
 
             std::shared_lock lock(videoPlayerLock);
-            videoPlayer->SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
+            VideoPlayer::SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
         } else {
             // TODO: Is it necessary to create a new Player?
             esyslog("[vdrweb] ResetVideo called, but videoPlayer is null");
