@@ -13,13 +13,30 @@
 #include <memory>
 #include <vdr/plugin.h>
 #include "service/web_service.h"
+#include "thrift-services/src-client/BrowserClient.h"
+
+#include "VdrPluginWeb.h"
+#include <thrift/transport/TSocket.h>
+#include <thrift/protocol/TBinaryProtocol.h>
+#include <thrift/transport/TBufferTransports.h>
+#include <thrift/server/TThreadPoolServer.h>
+#include <thrift/transport/TServerSocket.h>
+#include <thrift/transport/TBufferTransports.h>
+
+using namespace ::apache::thrift;
+using namespace ::apache::thrift::protocol;
+using namespace ::apache::thrift::transport;
+using namespace ::apache::thrift::server;
+using namespace ::apache::thrift::concurrency;
+using namespace ::pluginweb;
+using namespace ::common;
 
 static const char *VERSION = "0.0.1";
 static const char *DESCRIPTION = "Uses the cefbrowser to show HTTP Pages, HbbTV applications and videos";
 static const char *MAINMENUENTRY = "Web";
 static char* MAINMENUENTRYALT = nullptr;
 
-extern std::shared_mutex videoPlayerLock;
+extern BrowserClient* browserClient;
 
 class cRegularWorker: public cThread {
     private:
@@ -67,4 +84,32 @@ public:
     cString SVDRPCommand(const char *Command, const char *Option, int &ReplyCode) override;
 
     bool readConfiguration(const char* configFile);
+};
+
+class VdrPluginWebServer : public VdrPluginWebIf {
+
+public:
+    ~VdrPluginWebServer() override;
+
+    void ping() override;
+    bool ProcessOsdUpdate(const ProcessOsdUpdateType& input) override;
+    bool ProcessOsdUpdateQOI(const ProcessOsdUpdateQOIType& input) override;
+    bool ProcessTSPacket(const ProcessTSPacketType& input) override;
+    bool StartVideo(const StartVideoType& input) override;
+    bool StopVideo() override;
+    bool PauseVideo() override;
+    bool ResumeVideo() override;
+    bool Seeked() override;
+    bool VideoSize(const VideoSizeType& input) override;
+    bool VideoFullscreen() override;
+    bool ResetVideo(const ResetVideoType& input) override;
+    bool SelectAudioTrack(const SelectAudioTrackType& input) override;
+};
+
+class VdrPluginWebCloneFactory : virtual public VdrPluginWebIfFactory {
+public:
+    ~VdrPluginWebCloneFactory() override = default;
+
+    VdrPluginWebIf* getHandler(const TConnectionInfo& connInfo) override;
+    void releaseHandler(CommonServiceIf* handler) override;
 };

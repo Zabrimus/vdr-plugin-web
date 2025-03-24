@@ -41,11 +41,15 @@ export CFLAGS   = $(call PKGCFG,cflags)
 export CXXFLAGS = $(call PKGCFG,cxxflags)
 
 # c++ version
-CXXFLAGS += -std=c++17
+CXXFLAGS += -std=c++17 -Wno-overloaded-virtual
 
 # graphicsmagick
 CXXFLAGS += $(shell pkg-config --cflags GraphicsMagick++)
 LDFLAGS += $(shell pkg-config --libs GraphicsMagick++)
+
+# thrift
+CXXFLAGS += -Ithrift-install/install/include -fPIC
+LDFLAGS += -Lthrift-install/install/lib -lthrift
 
 ### The version number of VDR's plugin API:
 
@@ -73,13 +77,17 @@ ifeq ($(ENABLE_FAST_SCALE),1)
 CONFIG += -DENABLE_FAST_SCALE
 endif
 
-INCLUDES += -I. -I$(mINI_DIR)/src/mini
+INCLUDES += -I. -I$(mINI_DIR)/src/mini -Ithrift-services/src-gen -Ithrift-services/src-client
 
 DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' $(CONFIG)
 
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o webosdpage.o sharedmemory.o browserclient.o status.o ait.o videocontrol.o backtrace.o
+OBJS = $(PLUGIN).o webosdpage.o sharedmemory.o status.o ait.o videocontrol.o backtrace.o \
+	   thrift-services/src-gen/CommonService.o thrift-services/src-gen/common_types.o \
+	   thrift-services/src-gen/VdrPluginWeb.o thrift-services/src-gen/pluginweb_types.o \
+	   thrift-services/src-gen/CefBrowser.o thrift-services/src-gen/cefbrowser_types.o \
+	   thrift-services/src-client/BrowserClient.o
 
 ### The main target:
 
@@ -140,6 +148,12 @@ $(SOFILE): $(OBJS)
 	@echo LD $@
 	$(Q)$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LDFLAGS) -o $@
 
+compile-thrift-service:
+	cd thrift-services && ../thrift-install/install/bin/thrift --gen cpp -out src-gen common.thrift
+	cd thrift-services && ../thrift-install/install/bin/thrift --gen cpp -out src-gen pluginweb.thrift
+	cd thrift-services && ../thrift-install/install/bin/thrift --gen cpp -out src-gen cefbrowser.thrift
+	cd thrift-services && ../thrift-install/install/bin/thrift --gen cpp -out src-gen remotetranscoder.thrift
+
 install-lib: $(SOFILE)
 	install -D $^ $(DESTDIR)$(LIBDIR)/$^.$(APIVERSION)
 
@@ -154,5 +168,5 @@ dist: $(I18Npo) clean
 	@echo Distribution package created as $(PACKAGE).tgz
 
 clean:
-	@-rm -f $(PODIR)/*.mo $(PODIR)/*.pot
+	@-rm -f $(PODIR)/*.mo
 	@-rm -f $(OBJS) $(DEPFILE) *.so *.tgz core* *~

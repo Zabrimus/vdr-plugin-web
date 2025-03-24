@@ -12,17 +12,21 @@
 #include <vdr/tools.h>
 #include <vdr/videodir.h>
 #include <Magick++.h>
+#include <mutex>
+
+#include <memory>
 #include "web.h"
-#include "browserclient.h"
+#include "BrowserClient.h"
 #include "ini.h"
 #include "webosdpage.h"
 #include "status.h"
 #include "videocontrol.h"
 #include "sharedmemory.h"
 #include "dummyosd.h"
-#include "httplib.h"
 
 #define TSDIR  "%s/web/%s/%4d-%02d-%02d.%02d.%02d.%d-%d.rec"
+
+TThreadPoolServer *thriftServer;
 
 bool saveTS;
 char* currentTSFilename;
@@ -39,14 +43,13 @@ int vdrPort;
 
 bool bindAll;
 
-httplib::Server vdrServer;
 cHbbtvDeviceStatus *hbbtvDeviceStatus;
 
 VideoPlayer* videoPlayer = nullptr;
 
 std::string videoInfo;
 
-std::shared_mutex videoPlayerLock;
+BrowserClient* browserClient;
 
 enum OSD_COMMAND {
     // normal commands
@@ -96,8 +99,6 @@ void createTSFileName() {
 
 void stopVideo() {
     if (videoPlayer != nullptr) {
-        std::unique_lock lock(videoPlayerLock);
-
         VideoPlayer *copy = videoPlayer;
         videoPlayer = nullptr;
         delete copy;
@@ -107,284 +108,251 @@ void stopVideo() {
     }
 }
 
-void startHttpServer(std::string vdrIp, int vdrPort, bool bindAll) {
+inline OperationFailed createException(int code, std::string reason) {
+    OperationFailed io;
+    io.code = code;
+    io.reason = reason;
 
-    vdrServer.Post("/ProcessOsdUpdate", [](const httplib::Request &req, httplib::Response &res) {
-        auto render_width = req.get_param_value("disp_width");
-        auto render_height = req.get_param_value("disp_height");
-        auto x = req.get_param_value("x");
-        auto y = req.get_param_value("y");
-        auto width = req.get_param_value("width");
-        auto height = req.get_param_value("height");
+    return io;
+}
 
-        // dsyslog("[vdrweb] Incoming request /ProcessOsdUpdate with width %s, height %s", width.c_str(), height.c_str());
+VdrPluginWebServer::~VdrPluginWebServer() {
+}
 
-        if (width.empty() || height.empty()) {
-            res.status = 404;
-        } else {
-            WebOSDPage* page = WebOSDPage::Get();
-            if (page == nullptr) {
-                // illegal request -> abort
-                esyslog("[vdrweb] ProcessOsdUpdate: osd update request while webOsdPage is null.");
-                res.status = 404;
-                return;
-            }
+void VdrPluginWebServer::ping() {
+}
 
-            bool result = page->drawImage(sharedMemory.Get(), std::stoi(render_width), std::stoi(render_height), std::stoi(x), std::stoi(y), std::stoi(width), std::stoi(height));
+bool VdrPluginWebServer::ProcessOsdUpdate(const ProcessOsdUpdateType &input) {
+    WebOSDPage* page = WebOSDPage::Get();
+    if (page == nullptr) {
+        // illegal request -> abort
+        esyslog("[vdrweb] ProcessOsdUpdate: osd update request while webOsdPage is null.");
+        throw createException(400, "webOsdPage is null");
+    }
 
-            if (result) {
-                res.status = 200;
-                res.set_content("ok", "text/plain");
-            }  else {
-                res.status = 500;
-                res.set_content("error", "text/plain");
-            }
+    if (!page->drawImage(sharedMemory.Get(), input.disp_width, input.disp_height, input.x, input.y, input.width, input.height)) {
+        throw createException(400, "ProcessOsdUpdate failed");
+    }
+
+    return true;
+}
+
+bool VdrPluginWebServer::ProcessOsdUpdateQOI(const ProcessOsdUpdateQOIType &input) {
+    WebOSDPage* page = WebOSDPage::Get();
+    if (page == nullptr) {
+        // illegal request -> abort
+        esyslog("[vdrweb] ProcessOsdUpdate: osd update request while webOsdPage is null.");
+        throw createException(400, "webOsdPage is null");
+    }
+
+    if (!page->drawImageQOI(input.image_data, input.render_width, input.render_height, input.x, input.y)) {
+        throw createException(400, "ProcessOsdUpdate failed");
+    }
+
+    return true;
+}
+
+bool VdrPluginWebServer::ProcessTSPacket(const ProcessTSPacketType &input) {
+    if (saveTS) {
+        FILE* f = fopen(currentTSFilename, "a");
+        if (f != nullptr) {
+            fwrite((uint8_t *)input.ts.c_str(), input.ts.length(), 1, f);
+            fclose(f);
         }
-    });
+    }
 
-    vdrServer.Post("/ProcessOsdUpdateQOI", [](const httplib::Request &req, httplib::Response &res) {
-        const std::string body = req.body;
+    if (videoPlayer != nullptr) {
+        videoPlayer->PlayPacket((uint8_t *) input.ts.c_str(), (int) input.ts.length());
 
-        WebOSDPage* page = WebOSDPage::Get();
-        if (page == nullptr) {
-            // illegal request -> abort
-            esyslog("[vdrweb] ProcessOsdUpdateQOI: osd update request while webOsdPage is null.");
-            res.status = 404;
-            return;
+        /*
+        if (videoPlayer && videoPlayer->hasTsError()) {
+            // stop video streaming
+            stopVideo();
+            browserClient->StopVideo("VideoPlayer is null or ts stream has errors");
         }
-
-        bool result = page->drawImageQOI(body);
-
-        if (result) {
-            res.status = 200;
-            res.set_content("ok", "text/plain");
-        }  else {
-            res.status = 500;
-            res.set_content("error", "text/plain");
-        }
-    });
-
-    vdrServer.Post("/ProcessTSPacket", [](const httplib::Request &req, httplib::Response &res) {
-        const std::string body = req.body;
-
-        if (body.empty()) {
-            res.status = 404;
-        } else {
-            std::shared_lock lock(videoPlayerLock);
-
-            if (saveTS) {
-                FILE* f = fopen(currentTSFilename, "a");
-                if (f != nullptr) {
-                    fwrite((uint8_t *)body.c_str(), body.length(), 1, f);
-                    fclose(f);
-                }
-            }
-
-            if (videoPlayer != nullptr) {
-                videoPlayer->PlayPacket((uint8_t *) body.c_str(), (int) body.length());
-
-                if (videoPlayer && videoPlayer->hasTsError()) {
-                    // stop video streaming
-                    browserClient->StopVideo();
-                    stopVideo();
-                }
-            } else {
-                // No video Player? Stop streaming
-                stopVideo();
-            }
-
-            res.status = 200;
-            res.set_content("ok", "text/plain");
-        }
-    });
-
-    vdrServer.Post("/StartVideo", [](const httplib::Request &req, httplib::Response &res) {
-        dsyslog("[vdrweb] StartVideo received");
-
-        videoInfo = req.get_param_value("videoInfo");
-
-        // Close existing OSD
-        nextOsdCommand = CLOSE;
-        cRemote::CallPlugin("web");
-
-        WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, PLAYER);
-        page->Display();
-
-        if (saveTS) {
-            // create directory if necessary
-            createTSFileName();
-            if (!MakeDirs(currentTSDir, true)) {
-                esyslog("[vdrweb]: can't create directory %s", currentTSDir);
-            }
-        }
-
-        std::unique_lock lock(videoPlayerLock);
-
-        videoPlayer = new VideoPlayer();
-        page->SetPlayer(videoPlayer);
-
-        cControl::Launch(page);
-        cControl::Attach();
-
-        res.status = 200;
-        res.set_content("ok", "text/plain");
-    });
-
-    vdrServer.Get("/StopVideo", [](const httplib::Request &req, httplib::Response &res) {
-        dsyslog("[vdrweb] StopVideo received");
-
+        */
+    } else {
+        // No video Player? Stop streaming
         stopVideo();
+    }
 
-        res.status = 200;
-        res.set_content("ok", "text/plain");
-    });
+    return true;
+}
 
-    vdrServer.Get("/PauseVideo", [](const httplib::Request &req, httplib::Response &res) {
-        dsyslog("[vdrweb] PauseVideo received");
+bool VdrPluginWebServer::StartVideo(const StartVideoType &input) {
+    dsyslog("[vdrweb] StartVideo received");
 
-        if (videoPlayer != nullptr) {
-            std::shared_lock lock(videoPlayerLock);
-            videoPlayer->Pause();
+    // Close existing OSD
+    nextOsdCommand = CLOSE;
+    cRemote::CallPlugin("web");
+
+    WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, PLAYER);
+    page->Display();
+
+    if (saveTS) {
+        // create directory if necessary
+        createTSFileName();
+        if (!MakeDirs(currentTSDir, true)) {
+            esyslog("[vdrweb]: can't create directory %s", currentTSDir);
         }
+    }
 
-        res.status = 200;
-        res.set_content("ok", "text/plain");
-    });
+    videoPlayer = new VideoPlayer();
+    page->SetPlayer(videoPlayer);
 
-    vdrServer.Get("/ResumeVideo", [](const httplib::Request &req, httplib::Response &res) {
-        dsyslog("[vdrweb] ResumeVideo received");
+    cControl::Launch(page);
+    cControl::Attach();
 
-        if (videoPlayer != nullptr) {
-            std::shared_lock lock(videoPlayerLock);
-            videoPlayer->Resume();
+    return true;
+}
+
+bool VdrPluginWebServer::StopVideo() {
+    dsyslog("[vdrweb] StopVideo received");
+
+    stopVideo();
+    return true;
+}
+
+bool VdrPluginWebServer::PauseVideo() {
+    dsyslog("[vdrweb] PauseVideo received");
+
+    if (videoPlayer != nullptr) {
+        videoPlayer->Pause();
+    }
+
+    return true;
+}
+
+bool VdrPluginWebServer::ResumeVideo() {
+    dsyslog("[vdrweb] ResumeVideo received");
+
+    if (videoPlayer != nullptr) {
+        videoPlayer->Resume();
+    }
+
+    return true;
+}
+
+bool VdrPluginWebServer::Seeked() {
+    dsyslog("[vdrweb] Seeked received");
+
+    if (videoPlayer != nullptr) {
+        videoPlayer->ResetVideo();
+    }
+
+    return true;
+}
+
+bool VdrPluginWebServer::VideoSize(const VideoSizeType &input) {
+    dsyslog("[vdrweb] Incoming request /VideoSize with x %d, y %d, width %d, height %d", input.x, input.y, input.w, input.h);
+
+    lastVideoX = input.x;
+    lastVideoY = input.y;
+    lastVideoWidth = input.w;
+    lastVideoHeight = input.h;
+
+    VideoPlayer::SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
+
+    return true;
+}
+
+bool VdrPluginWebServer::VideoFullscreen() {
+    dsyslog("[vdrweb] VideoFullscreen received");
+
+    lastVideoX = lastVideoY = lastVideoWidth = lastVideoHeight = 0;
+    VideoPlayer::setVideoFullscreen();
+
+    return true;
+}
+
+bool VdrPluginWebServer::ResetVideo(const ResetVideoType &input) {
+    dsyslog("[vdrweb] ResetVideo received: Coords x=%d, y=%d, w=%d, h=%d", lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
+
+    if (saveTS) {
+        // create directory if necessary
+        createTSFileName();
+        if (!MakeDirs(currentTSDir, true)) {
+            esyslog("[vdrweb]: can't create directory %s", currentTSDir);
         }
+    }
 
-        res.status = 200;
-        res.set_content("ok", "text/plain");
-    });
+    if (videoPlayer != nullptr) {
+        // TODO: Compare saved videoInfo with new value to determine
+        //   if DeviceClear is sufficient or a complete reset is necessary
 
-    vdrServer.Post("/VideoSize", [](const httplib::Request &req, httplib::Response &res) {
-        auto x = req.get_param_value("x");
-        auto y = req.get_param_value("y");
-        auto w = req.get_param_value("w");
-        auto h = req.get_param_value("h");
+        dsyslog("[vdrweb] video change from %s to %s", videoInfo.c_str(), input.videoInfo.c_str());
 
-        dsyslog("[vdrweb] Incoming request /VideoSize with x %s, y %s, width %s, height %s", x.c_str(), y.c_str(), w.c_str(), h.c_str());
+        if (videoInfo != input.videoInfo) {
+            dsyslog("[vdrweb] Device res requested, because of a video format change");
+            // videoPlayer->ResetVideo();
+            cControl::Shutdown();
 
-        if (x.empty() || y.empty() || w.empty() || h.empty()) {
-            res.status = 404;
+            WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, PLAYER);
+            page->Display();
+            videoPlayer = new VideoPlayer();
+            cControl::Launch(page);
+            page->SetPlayer(videoPlayer);
         } else {
-            lastVideoX = std::atoi(x.c_str());
-            lastVideoY = std::atoi(y.c_str());
-            lastVideoWidth = std::atoi(w.c_str());
-            lastVideoHeight = std::atoi(h.c_str());
-
-            VideoPlayer::SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
-
-            res.status = 200;
-            res.set_content("ok", "text/plain");
-        }
-    });
-
-    vdrServer.Get("/VideoFullscreen", [](const httplib::Request &req, httplib::Response &res) {
-        dsyslog("[vdrweb] VideoFullscreen received");
-
-        lastVideoX = lastVideoY = lastVideoWidth = lastVideoHeight = 0;
-        VideoPlayer::setVideoFullscreen();
-
-        res.status = 200;
-        res.set_content("ok", "text/plain");
-    });
-
-    vdrServer.Get("/Hello", [](const httplib::Request &req, httplib::Response &res) {
-        browserClient->HelloFromBrowser();
-
-        res.status = 200;
-        res.set_content("ok", "text/plain");
-    });
-
-    vdrServer.Post("/ResetVideo", [](const httplib::Request &req, httplib::Response &res) {
-        dsyslog("[vdrweb] ResetVideo received: Coords x=%d, y=%d, w=%d, h=%d", lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
-
-        std::string vi = req.get_param_value("videoInfo");
-
-        if (saveTS) {
-            // create directory if necessary
-            createTSFileName();
-            if (!MakeDirs(currentTSDir, true)) {
-                esyslog("[vdrweb]: can't create directory %s", currentTSDir);
-            }
-        }
-
-        if (videoPlayer != nullptr) {
-            // TODO: Compare saved videoInfo with new value to determine
-            //   if DeviceClear is sufficient or a complete reset is necessary
-
-            dsyslog("[vdrweb] video change from %s to %s", videoInfo.c_str(), vi.c_str());
-
-            if (videoInfo != vi) {
-                std::unique_lock lock(videoPlayerLock);
-
-                dsyslog("[vdrweb] Device res requested, because of a video format change");
-                // videoPlayer->ResetVideo();
-                cControl::Shutdown();
-
-                WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, PLAYER);
-                page->Display();
-                videoPlayer = new VideoPlayer();
-                cControl::Launch(page);
-                page->SetPlayer(videoPlayer);
-            } else {
-                dsyslog("[vdrweb] Device reset is sufficent, because video format does not change");
-                std::shared_lock lock(videoPlayerLock);
-                videoPlayer->ResetVideo();
-            }
-
-            std::shared_lock lock(videoPlayerLock);
-            VideoPlayer::SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
-        } else {
-            // TODO: Is it necessary to create a new Player?
-            esyslog("[vdrweb] ResetVideo called, but videoPlayer is null");
-        }
-
-        videoInfo = vi;
-
-        res.status = 200;
-        res.set_content("ok", "text/plain");
-    });
-
-    vdrServer.Get("/Seeked", [](const httplib::Request &req, httplib::Response &res) {
-        dsyslog("[vdrweb] Seeked received");
-
-        if (videoPlayer != nullptr) {
-            std::shared_lock lock(videoPlayerLock);
+            dsyslog("[vdrweb] Device reset is sufficent, because video format does not change");
             videoPlayer->ResetVideo();
         }
 
-        res.status = 200;
-        res.set_content("ok", "text/plain");
-    });
+        VideoPlayer::SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
+    } else {
+        // TODO: Is it necessary to create a new Player?
+        esyslog("[vdrweb] ResetVideo called, but videoPlayer is null");
+    }
 
-    vdrServer.Post("/SelectAudioTrack", [](const httplib::Request &req, httplib::Response &res) {
-        dsyslog("[vdrweb] SelectAudioTrack received");
+    videoInfo = input.videoInfo;
 
-        if (videoPlayer != nullptr) {
-            std::shared_lock lock(videoPlayerLock);
-            auto track = req.get_param_value("audioTrack");
-            videoPlayer->SelectAudioTrack(track);
-        }
+    return true;
+}
 
-        res.status = 200;
-        res.set_content("ok", "text/plain");
-    });
+bool VdrPluginWebServer::SelectAudioTrack(const SelectAudioTrackType &input) {
+    dsyslog("[vdrweb] SelectAudioTrack received");
 
-    vdrServer.set_keep_alive_max_count(50);
-    vdrServer.set_keep_alive_timeout(5);
+    if (videoPlayer != nullptr) {
+        auto track = input.audioTrack;
+        videoPlayer->SelectAudioTrack(track);
+    }
+
+    return true;
+}
+
+VdrPluginWebIf *VdrPluginWebCloneFactory::getHandler(const TConnectionInfo &connInfo) {
+    std::shared_ptr<TSocket> sock = std::dynamic_pointer_cast<TSocket>(connInfo.transport);
+
+    /*
+    std::cout << "Incoming connection" << "\n";
+    std::cout << "\tSocketInfo: "  << sock->getSocketInfo() << "\n";
+    std::cout << "\tPeerHost: "    << sock->getPeerHost() << "\n";
+    std::cout << "\tPeerAddress: " << sock->getPeerAddress() << "\n";
+    std::cout << "\tPeerPort: "    << sock->getPeerPort() << "\n";
+    */
+
+    return new VdrPluginWebServer();
+}
+
+void VdrPluginWebCloneFactory::releaseHandler(CommonServiceIf* handler) {
+    delete handler;
+}
+
+void startServer() {
+    const int workerCount = 4;
+    std::shared_ptr<ThreadManager> threadManager = ThreadManager::newSimpleThreadManager(workerCount);
+    threadManager->threadFactory(std::make_shared<ThreadFactory>());
+    threadManager->start();
 
     std::string listenIp = bindAll ? "0.0.0.0" : vdrIp;
-    if (!vdrServer.listen(listenIp, vdrPort)) {
-        esyslog("[vdrweb] Call of listen failed: ip %s, port %d, Reason: %s", listenIp.c_str(), vdrPort, strerror(errno));
-    }
+
+    thriftServer = new TThreadPoolServer(
+            std::make_shared<VdrPluginWebProcessorFactory>(std::make_shared<VdrPluginWebCloneFactory>()),
+            std::make_shared<TServerSocket>(listenIp, vdrPort),
+            std::make_shared<TBufferedTransportFactory>(),
+            std::make_shared<TBinaryProtocolFactory>(),
+            threadManager);
+
+    thriftServer->serve();
 }
 
 cRegularWorker::cRegularWorker() {
@@ -406,8 +374,6 @@ void cRegularWorker::Action() {
         m_waitCondition.TimedWait(m_mutex, loopSleep);
 
         if (WebOSDPage::Get() == nullptr && videoPlayer != nullptr) {
-            std::unique_lock lock(videoPlayerLock);
-
             VideoPlayer *cp = videoPlayer;
             videoPlayer = nullptr;
             delete cp;
@@ -487,7 +453,7 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
 
 bool cPluginWeb::Initialize() {
     // Initialize any background activities the plugin shall perform.
-    MagickLib::InitializeMagickEx(NULL, MAGICK_OPT_NO_SIGNAL_HANDER, NULL);
+    MagickLib::InitializeMagickEx(nullptr, MAGICK_OPT_NO_SIGNAL_HANDER, NULL);
 
     return true;
 }
@@ -496,20 +462,21 @@ bool cPluginWeb::Start() {
     isyslog("[vdrweb] Start hbbtv url collector");
     hbbtvDeviceStatus = new cHbbtvDeviceStatus();
 
-    isyslog("[vdrweb] Start Http Server on %s:%d", vdrIp.c_str(), vdrPort);
-    std::thread t1(startHttpServer, vdrIp, vdrPort, bindAll);
+    isyslog("[vdrweb] Start Thrift Server on %s:%d", vdrIp.c_str(), vdrPort);
+    std::thread t1(startServer);
     t1.detach();
 
-    new BrowserClient(browserIp, browserPort);
+    browserClient = new BrowserClient(browserIp, browserPort);
 
-    regularWorker = std::unique_ptr<cRegularWorker>(new cRegularWorker());
+    regularWorker = std::make_unique<cRegularWorker>();
     regularWorker->Start();
 
     return true;
 }
 
 void cPluginWeb::Stop() {
-    vdrServer.stop();
+    thriftServer->stop();
+
     delete browserClient;
 
     regularWorker->Stop();
@@ -563,13 +530,15 @@ cOsdObject *cPluginWeb::MainMenuAction() {
     WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, OSD);
 
     if (nextOsdCommand == OPEN) {
-        browserClient->RedButton(*currentChannel->GetChannelID().ToString());
+        if (!browserClient->RedButton(*currentChannel->GetChannelID().ToString())) {
+            Skins.QueueMessage(mtInfo, tr("Browser not available"));
+        }
     } else if (nextOsdCommand == REOPEN) {
         // nothing to do
     } else if (nextOsdCommand == URL) {
         browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "URL", param_userAgent, param_referrer, param_cookie, param_url);
     } else if (nextOsdCommand == MAIN) {
-        browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "MAIN", param_userAgent, param_referrer, param_cookie);
+        browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "MAIN", param_userAgent, param_referrer, param_cookie, nullptr);
     } else if (nextOsdCommand == M3U) {
         browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "M3U", param_userAgent, param_referrer, param_cookie, param_m3uContent);
     }

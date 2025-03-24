@@ -4,7 +4,7 @@
 #include <Magick++/Image.h>
 #include <chrono>
 #include "webosdpage.h"
-#include "browserclient.h"
+#include "web.h"
 
 // #define MEASURE_SCALE_TIME 1
 
@@ -233,26 +233,10 @@ bool WebOSDPage::drawImage(uint8_t* image, int render_width, int render_height, 
     return scaleAndPaint(image, render_width, render_height, x, y, width, height);
 }
 
-bool WebOSDPage::drawImageQOI(const std::string& qoibuffer) {
-    std::string::size_type pos1 = 0, pos2 = 0, pos_rw = 0, pos_rh = 0;
-
-    // extract render_width, render_height
-    pos_rw = qoibuffer.find(':', 0);
-    int render_width = std::atoi(qoibuffer.substr(0, pos_rw).c_str());
-
-    pos_rh = qoibuffer.find(':', pos_rw + 1);
-    int render_height = std::atoi(qoibuffer.substr(pos_rw + 1, pos_rh).c_str());
-
-    // extract x,y
-    pos1 = qoibuffer.find(':', pos_rh + 1);
-    int x = std::atoi(qoibuffer.substr(pos_rh + 1, pos1).c_str());
-
-    pos2 = qoibuffer.find(':', pos1 + 1);
-    int y = std::atoi(qoibuffer.substr(pos1 + 1, pos2).c_str());
-
+bool WebOSDPage::drawImageQOI(const std::string qoibuffer, const int render_width, const int render_height, const int x, const int y) {
     // decode image data
     qoi_desc desc;
-    void *image = qoi_decode(qoibuffer.c_str() + pos2 + 1, (int)qoibuffer.size() - pos2 - 1, &desc, 4);
+    void *image = qoi_decode(qoibuffer.c_str(), (int)qoibuffer.size(), &desc, 4);
 
     if (image == nullptr) {
         // something failed

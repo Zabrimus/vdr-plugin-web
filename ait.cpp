@@ -13,7 +13,7 @@
 #include <libsi/descriptor.h>
 #include "ait.h"
 #include "status.h"
-#include "browserclient.h"
+#include "web.h"
 
 #define PMT_SCAN_IDLE     5 // 60 //300    // seconds
 

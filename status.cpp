@@ -7,9 +7,10 @@
  */
 
 #include <vdr/channels.h>
+#include "web.h"
 #include "status.h"
 #include "ait.h"
-#include "browserclient.h"
+#include "BrowserClient.h"
 #include "webosdpage.h"
 
 const char *channelJson = R"(

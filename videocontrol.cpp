@@ -1,6 +1,6 @@
 #include <chrono>
 #include <thread>
-#include "browserclient.h"
+#include "BrowserClient.h"
 #include "videocontrol.h"
 
 bool isPlayerActivated;
