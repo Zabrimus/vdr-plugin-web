@@ -48,8 +48,13 @@ CXXFLAGS += $(shell pkg-config --cflags GraphicsMagick++)
 LDFLAGS += $(shell pkg-config --libs GraphicsMagick++)
 
 # thrift
+ifeq ($(USE_THRIFT_PKGCONFIG),1)
+CXXFLAGS += $(shell pkg-config --cflags thrift) -fPIC
+LDFLAGS += $(shell pkg-config --libs thrift)
+else
 CXXFLAGS += -Ithrift-install/install/include -fPIC
 LDFLAGS += -Lthrift-install/install/lib -lthrift
+endif
 
 ### The version number of VDR's plugin API:
 
