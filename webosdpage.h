@@ -15,8 +15,8 @@ enum OSD_MODE {
 class WebOSDPage : public cControl {
 
 private:
-    cPixmap *pixmap;
-    cPixmap *pixmapVol = NULL;
+    cPixmap *pixmap = nullptr;
+    cPixmap *pixmapVol = nullptr;
     cOsd* osd;
 
     tColor clrVolumeBarUpper = clrRed;
@@ -39,7 +39,7 @@ private:
 
     bool scaleAndPaint(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height);
 
-    void DeleteVolume(void);
+    void DeleteVolume();
 
 public:
     static WebOSDPage* Create(bool useOutputDeviceScale, OSD_MODE osdMode);

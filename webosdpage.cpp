@@ -3,6 +3,7 @@
 #include <Magick++/Blob.h>
 #include <Magick++/Image.h>
 #include <chrono>
+#include <mutex>
 #include "webosdpage.h"
 #include "web.h"
 
@@ -11,6 +12,8 @@
 
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
+
+std::recursive_mutex pixmap_mutex;
 
 WebOSDPage *webOsdPage;
 WebOSDPage *playerWebOsdPage;
@@ -107,6 +110,7 @@ WebOSDPage::WebOSDPage(bool useOutputDeviceScale, OSD_MODE osdMode)
 WebOSDPage::~WebOSDPage() {
     dsyslog("[vdrweb] Destruct WebOSDPage, osdMode %d", (int)currentMode);
 
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
     if (osd != nullptr) {
         cOsd *osdtmp = osd;
         osd = nullptr;
@@ -144,6 +148,8 @@ void WebOSDPage::Show() {
 void WebOSDPage::Display() {
     dsyslog("[vdrweb] WebOSDPage Display\n");
     if (osd) {
+        std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+
         if (pixmap != nullptr) {
             osd->DestroyPixmap(pixmap);
             pixmap = nullptr;
@@ -171,6 +177,7 @@ void WebOSDPage::Display() {
 void WebOSDPage::SetOsdSize() {
     dsyslog("[vdrweb] webospage SetOsdSize()");
 
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
     if (pixmap != nullptr) {
         dsyslog("[vdrweb] webosdpage SetOsdSize, Destroy old pixmap");
 
@@ -265,12 +272,12 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
         // dsyslog("[vdrweb] no scaling required");
 
         // scaling is not needed. Draw the image as is.
-        cPoint recPoint(x, y);
         const cImage recImage(cSize(width, height), (const tColor *)image);
 
+        std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
         if (pixmap != nullptr) {
             LOCK_PIXMAPS;
-            pixmap->DrawImage(recPoint, recImage);
+            pixmap->DrawImage(cPoint(x,y), recImage);
         } else {
             esyslog("[vdrweb] Pixmap is null. OSD not available");
         }
@@ -294,18 +301,16 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
 
     // dsyslog("[vdrweb] Scaling: scalex=%2f, scaley=%2f, osd_x=%d, osd_y=%d", scalex, scaley, osd_x, osd_y);
 
-    cPoint recPoint(osd_x, osd_y);
-
 #ifdef ENABLE_FAST_SCALE
     if (useOutputDeviceScale) {
         // dsyslog("[vdrweb] scaling using outputdevice");
 
         const cImage recImage(cSize(width, height), (const tColor *)image);
 
+        std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
         if (pixmap != nullptr) {
             LOCK_PIXMAPS;
-            cPoint r(x * scalex, y * scaley);
-            pixmap->DrawScaledImage(r, recImage, scalex, scaley, true);
+            pixmap->DrawScaledImage(cPoint(x * scalex, y * scaley), recImage, scalex, scaley, true);
         } else {
             esyslog("[vdrweb] Pixmap is null. OSD not available");
         }
@@ -337,9 +342,10 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
     dsyslog("[vdrweb] Scale time = %lu [ms]", std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count());
 #endif
 
+        std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
         if (pixmap != nullptr) {
             LOCK_PIXMAPS;
-            pixmap->DrawImage(recPoint, recImage);
+            pixmap->DrawImage(cPoint(x * scalex, y * scaley), recImage);
         } else {
             esyslog("[vdrweb] Pixmap is null. OSD not available");
         }
