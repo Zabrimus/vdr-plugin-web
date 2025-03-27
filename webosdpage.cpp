@@ -7,6 +7,7 @@
 #include "web.h"
 
 // #define MEASURE_SCALE_TIME 1
+// #define DEBUG_SAVE_OSD_IMAGE 1
 
 #define QOI_IMPLEMENTATION
 #include "qoi.h"

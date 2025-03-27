@@ -82,7 +82,7 @@ template <typename F> bool VdrClient::processInternal(F&& request) {
     }
 }
 
-bool VdrClient::ProcessOsdUpdate(int disp_width, int disp_height, int x, int y, int width, int height) {
+bool VdrClient::ProcessOsdUpdate(int disp_width, int disp_height, int x, int y, int width, int height, std::string& data) {
     return processInternal([&]() -> bool {
         ProcessOsdUpdateType input;
         input.disp_width = disp_width;
@@ -91,6 +91,7 @@ bool VdrClient::ProcessOsdUpdate(int disp_width, int disp_height, int x, int y, 
         input.y = y;
         input.width = width;
         input.height = height;
+        input.data = data;
 
         return client->ProcessOsdUpdate(input);
     });

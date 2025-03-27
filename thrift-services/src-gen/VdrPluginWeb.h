@@ -122,8 +122,8 @@ typedef struct _VdrPluginWeb_ProcessOsdUpdate_args__isset {
 class VdrPluginWeb_ProcessOsdUpdate_args {
  public:
 
-  VdrPluginWeb_ProcessOsdUpdate_args(const VdrPluginWeb_ProcessOsdUpdate_args&) noexcept;
-  VdrPluginWeb_ProcessOsdUpdate_args& operator=(const VdrPluginWeb_ProcessOsdUpdate_args&) noexcept;
+  VdrPluginWeb_ProcessOsdUpdate_args(const VdrPluginWeb_ProcessOsdUpdate_args&);
+  VdrPluginWeb_ProcessOsdUpdate_args& operator=(const VdrPluginWeb_ProcessOsdUpdate_args&);
   VdrPluginWeb_ProcessOsdUpdate_args() noexcept;
 
   virtual ~VdrPluginWeb_ProcessOsdUpdate_args() noexcept;

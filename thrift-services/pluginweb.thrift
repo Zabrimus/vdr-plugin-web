@@ -11,6 +11,7 @@ struct ProcessOsdUpdateType {
     4: i32 y,
     5: i32 width,         // height and width of image
     6: i32 height
+    7: binary data        // the osd image
 }
 
 struct ProcessOsdUpdateQOIType {

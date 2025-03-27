@@ -21,7 +21,6 @@
 #include "webosdpage.h"
 #include "status.h"
 #include "videocontrol.h"
-#include "sharedmemory.h"
 #include "dummyosd.h"
 
 #define TSDIR  "%s/web/%s/%4d-%02d-%02d.%02d.%02d.%d-%d.rec"
@@ -130,7 +129,7 @@ bool VdrPluginWebServer::ProcessOsdUpdate(const ProcessOsdUpdateType &input) {
         throw createException(400, "webOsdPage is null");
     }
 
-    if (!page->drawImage(sharedMemory.Get(), input.disp_width, input.disp_height, input.x, input.y, input.width, input.height)) {
+    if (!page->drawImage((uint8_t*)input.data.c_str(), input.disp_width, input.disp_height, input.x, input.y, input.width, input.height)) {
         throw createException(400, "ProcessOsdUpdate failed");
     }
 

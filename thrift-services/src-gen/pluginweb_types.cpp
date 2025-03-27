@@ -23,7 +23,8 @@ ProcessOsdUpdateType::ProcessOsdUpdateType() noexcept
      x(0),
      y(0),
      width(0),
-     height(0) {
+     height(0),
+     data() {
 }
 
 void ProcessOsdUpdateType::__set_disp_width(const int32_t val) {
@@ -48,6 +49,10 @@ void ProcessOsdUpdateType::__set_width(const int32_t val) {
 
 void ProcessOsdUpdateType::__set_height(const int32_t val) {
   this->height = val;
+}
+
+void ProcessOsdUpdateType::__set_data(const std::string& val) {
+  this->data = val;
 }
 std::ostream& operator<<(std::ostream& out, const ProcessOsdUpdateType& obj)
 {
@@ -125,6 +130,14 @@ uint32_t ProcessOsdUpdateType::read(::apache::thrift::protocol::TProtocol* iprot
           xfer += iprot->skip(ftype);
         }
         break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readBinary(this->data);
+          this->__isset.data = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -166,6 +179,10 @@ uint32_t ProcessOsdUpdateType::write(::apache::thrift::protocol::TProtocol* opro
   xfer += oprot->writeI32(this->height);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("data", ::apache::thrift::protocol::T_STRING, 7);
+  xfer += oprot->writeBinary(this->data);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -179,6 +196,7 @@ void swap(ProcessOsdUpdateType &a, ProcessOsdUpdateType &b) {
   swap(a.y, b.y);
   swap(a.width, b.width);
   swap(a.height, b.height);
+  swap(a.data, b.data);
   swap(a.__isset, b.__isset);
 }
 
@@ -196,25 +214,29 @@ bool ProcessOsdUpdateType::operator==(const ProcessOsdUpdateType & rhs) const
     return false;
   if (!(height == rhs.height))
     return false;
+  if (!(data == rhs.data))
+    return false;
   return true;
 }
 
-ProcessOsdUpdateType::ProcessOsdUpdateType(const ProcessOsdUpdateType& other0) noexcept {
+ProcessOsdUpdateType::ProcessOsdUpdateType(const ProcessOsdUpdateType& other0) {
   disp_width = other0.disp_width;
   disp_height = other0.disp_height;
   x = other0.x;
   y = other0.y;
   width = other0.width;
   height = other0.height;
+  data = other0.data;
   __isset = other0.__isset;
 }
-ProcessOsdUpdateType& ProcessOsdUpdateType::operator=(const ProcessOsdUpdateType& other1) noexcept {
+ProcessOsdUpdateType& ProcessOsdUpdateType::operator=(const ProcessOsdUpdateType& other1) {
   disp_width = other1.disp_width;
   disp_height = other1.disp_height;
   x = other1.x;
   y = other1.y;
   width = other1.width;
   height = other1.height;
+  data = other1.data;
   __isset = other1.__isset;
   return *this;
 }
@@ -227,6 +249,7 @@ void ProcessOsdUpdateType::printTo(std::ostream& out) const {
   out << ", " << "y=" << to_string(y);
   out << ", " << "width=" << to_string(width);
   out << ", " << "height=" << to_string(height);
+  out << ", " << "data=" << to_string(data);
   out << ")";
 }
 

@@ -37,20 +37,21 @@ class ResetVideoType;
 class SelectAudioTrackType;
 
 typedef struct _ProcessOsdUpdateType__isset {
-  _ProcessOsdUpdateType__isset() : disp_width(false), disp_height(false), x(false), y(false), width(false), height(false) {}
+  _ProcessOsdUpdateType__isset() : disp_width(false), disp_height(false), x(false), y(false), width(false), height(false), data(false) {}
   bool disp_width :1;
   bool disp_height :1;
   bool x :1;
   bool y :1;
   bool width :1;
   bool height :1;
+  bool data :1;
 } _ProcessOsdUpdateType__isset;
 
 class ProcessOsdUpdateType : public virtual ::apache::thrift::TBase {
  public:
 
-  ProcessOsdUpdateType(const ProcessOsdUpdateType&) noexcept;
-  ProcessOsdUpdateType& operator=(const ProcessOsdUpdateType&) noexcept;
+  ProcessOsdUpdateType(const ProcessOsdUpdateType&);
+  ProcessOsdUpdateType& operator=(const ProcessOsdUpdateType&);
   ProcessOsdUpdateType() noexcept;
 
   virtual ~ProcessOsdUpdateType() noexcept;
@@ -60,6 +61,7 @@ class ProcessOsdUpdateType : public virtual ::apache::thrift::TBase {
   int32_t y;
   int32_t width;
   int32_t height;
+  std::string data;
 
   _ProcessOsdUpdateType__isset __isset;
 
@@ -74,6 +76,8 @@ class ProcessOsdUpdateType : public virtual ::apache::thrift::TBase {
   void __set_width(const int32_t val);
 
   void __set_height(const int32_t val);
+
+  void __set_data(const std::string& val);
 
   bool operator == (const ProcessOsdUpdateType & rhs) const;
   bool operator != (const ProcessOsdUpdateType &rhs) const {
