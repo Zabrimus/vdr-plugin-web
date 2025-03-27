@@ -258,7 +258,7 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
 
     bool scaleRequired = (disp_width != render_width) || (disp_height != render_height);
 
-    // dsyslog("RenderSize: %d x %d, DisplaySize: %d x %d, x,y=%d,%d, Scaling required: %s", render_width, render_height, disp_width, disp_height, x, y, (scaleRequired ? "yes" : "no"));
+    // dsyslog("[vdrweb] RenderSize: %d x %d, DisplaySize: %d x %d, x=%d,y=%d, Scaling required: %s", render_width, render_height, disp_width, disp_height, x, y, (scaleRequired ? "yes" : "no"));
 
     if (!scaleRequired) {
         // dsyslog("[vdrweb] no scaling required");
@@ -291,21 +291,25 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
     int osd_width = (int)lround(scalex * width);
     int osd_height = (int)lround(scaley * height);
 
+    // dsyslog("[vdrweb] Scaling: scalex=%2f, scaley=%2f, osd_x=%d, osd_y=%d", scalex, scaley, osd_x, osd_y);
+
     cPoint recPoint(osd_x, osd_y);
 
 #ifdef ENABLE_FAST_SCALE
     if (useOutputDeviceScale) {
         // dsyslog("[vdrweb] scaling using outputdevice");
+
         const cImage recImage(cSize(width, height), (const tColor *)image);
+
         if (pixmap != nullptr) {
             LOCK_PIXMAPS;
-            pixmap->DrawScaledImage(recPoint, recImage, scalex, scaley, true);
+            cPoint r(x * scalex, y * scaley);
+            pixmap->DrawScaledImage(r, recImage, scalex, scaley, true);
         } else {
             esyslog("[vdrweb] Pixmap is null. OSD not available");
         }
     } else {
 #endif // ENABLE_FAST_SCALE
-
         // dsyslog("[vdrweb] scaling using GraphicsMagick");
 
         // create image buffer for scaled image
