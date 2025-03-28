@@ -7,18 +7,11 @@ bool isPlayerActivated;
 
 static uchar buf[188], bufsize;
 
-int VideoPlayer::video_x;
-int VideoPlayer::video_y;
-int VideoPlayer::video_width;
-int VideoPlayer::video_height;
-
 VideoPlayer::VideoPlayer() {
     dsyslog("[vdrweb] Create Player...");
     pause = false;
     bufsize = 0;
     tsPlayed = false;
-
-    video_x = video_y = video_width = video_height = 0;
 }
 
 VideoPlayer::~VideoPlayer() {
@@ -55,17 +48,6 @@ void VideoPlayer::Resume() {
 }
 
 void VideoPlayer::setVideoFullscreen() {
-    if ((0 == video_x) && (0 == video_y) && (0 == video_width) && (0 == video_height)) {
-        dsyslog("[vdrweb] setVideoFullscreen ignored.");
-        // nothing to do
-        return;
-    }
-
-    video_x = 0;
-    video_y = 0;
-    video_width = 0;
-    video_height = 0;
-
     // fullscreen
     cDevice::PrimaryDevice()->ScaleVideo(cRect::Null);
 }
@@ -82,23 +64,6 @@ void VideoPlayer::ResetVideo() {
 
 void VideoPlayer::SetVideoSize(int x, int y, int width, int height) {
     dsyslog("[vdrweb] SetVideoSize in video player: x=%d, y=%d, width=%d, height=%d", x, y, width, height);
-
-    // check if resize is really necessary
-    if ((x == video_x) && (y == video_y) && (width == video_width) && (height == video_height)) {
-        dsyslog("[vdrweb] SetVideoSize ignored.");
-        // nothing to do
-        return;
-    }
-
-    video_x = x;
-    video_y = y;
-    video_width = width;
-    video_height = height;
-
-    int osdWidth;
-    int osdHeight;
-    double osdPh;
-    cDevice::PrimaryDevice()->GetOsdSize(osdWidth, osdHeight, osdPh);
 
     int newX, newY, newWidth, newHeight;
     calcVideoPosition(x, y, width,height, &newX, &newY, &newWidth, &newHeight);

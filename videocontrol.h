@@ -31,11 +31,6 @@ private:
     bool pause;
     bool tsError;
     bool tsPlayed;
-
-    static int video_x;
-    static int video_y;
-    static int video_width;
-    static int video_height;
 };
 
 extern VideoPlayer *videoPlayer;
