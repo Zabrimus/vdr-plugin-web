@@ -189,10 +189,12 @@ void WebOSDPage::SetOsdSize() {
     double ph;
     cDevice::PrimaryDevice()->GetOsdSize(disp_width, disp_height, ph);
 
+    /*
     if (disp_width <= 0 || disp_height <= 0 || disp_width > 3840 || disp_height > 2160) {
         esyslog("[vdrweb] Got illegal OSD size %dx%d", disp_width, disp_height);
         return;
     }
+    */
 
     cRect rect(0, 0, disp_width, disp_height);
 
