@@ -136,8 +136,6 @@ WebOSDPage::~WebOSDPage() {
             break;
     }
 
-    browserClient->LoadUrl("about:blank");
-
     // cDevice::PrimaryDevice()->ScaleVideo(cRect::Null);
 }
 
