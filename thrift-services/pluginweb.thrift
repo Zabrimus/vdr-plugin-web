@@ -57,5 +57,6 @@ service VdrPluginWeb extends common.CommonService {
     bool VideoSize(1: VideoSizeType input) throws (1:common.OperationFailed err),
     bool VideoFullscreen() throws (1:common.OperationFailed err),
     bool ResetVideo(1: ResetVideoType input) throws (1:common.OperationFailed err),
-    bool SelectAudioTrack(1: SelectAudioTrackType input) throws (1:common.OperationFailed err)
+    bool SelectAudioTrack(1: SelectAudioTrackType input) throws (1:common.OperationFailed err),
+    bool IsWebActive() throws (1:common.OperationFailed err)
 }

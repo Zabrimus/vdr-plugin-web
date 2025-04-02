@@ -187,3 +187,9 @@ bool VdrClient::SelectAudioTrack(std::string& nr) {
         return client->SelectAudioTrack(input);
     });
 }
+
+bool VdrClient::IsWebActive() {
+    return processInternal([&]() -> bool {
+        return client->IsWebActive();
+    });
+}

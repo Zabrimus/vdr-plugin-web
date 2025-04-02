@@ -104,6 +104,7 @@ public:
     bool VideoFullscreen() override;
     bool ResetVideo(const ResetVideoType& input) override;
     bool SelectAudioTrack(const SelectAudioTrackType& input) override;
+    bool IsWebActive() override;
 };
 
 class VdrPluginWebCloneFactory : virtual public VdrPluginWebIfFactory {

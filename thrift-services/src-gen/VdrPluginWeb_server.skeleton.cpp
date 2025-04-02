@@ -80,6 +80,11 @@ class VdrPluginWebHandler : virtual public VdrPluginWebIf {
     printf("SelectAudioTrack\n");
   }
 
+  bool IsWebActive() {
+    // Your implementation goes here
+    printf("IsWebActive\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

@@ -318,6 +318,10 @@ bool VdrPluginWebServer::SelectAudioTrack(const SelectAudioTrackType &input) {
     return true;
 }
 
+bool VdrPluginWebServer::IsWebActive() {
+    return (WebOSDPage::Get() != nullptr) || (videoPlayer != nullptr);
+}
+
 VdrPluginWebIf *VdrPluginWebCloneFactory::getHandler(const TConnectionInfo &connInfo) {
     std::shared_ptr<TSocket> sock = std::dynamic_pointer_cast<TSocket>(connInfo.transport);
 

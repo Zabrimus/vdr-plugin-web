@@ -35,6 +35,7 @@ class VdrPluginWebIf : virtual public  ::common::CommonServiceIf {
   virtual bool VideoFullscreen() = 0;
   virtual bool ResetVideo(const ResetVideoType& input) = 0;
   virtual bool SelectAudioTrack(const SelectAudioTrackType& input) = 0;
+  virtual bool IsWebActive() = 0;
 };
 
 class VdrPluginWebIfFactory : virtual public  ::common::CommonServiceIfFactory {
@@ -109,6 +110,10 @@ class VdrPluginWebNull : virtual public VdrPluginWebIf , virtual public  ::commo
     return _return;
   }
   bool SelectAudioTrack(const SelectAudioTrackType& /* input */) override {
+    bool _return = false;
+    return _return;
+  }
+  bool IsWebActive() override {
     bool _return = false;
     return _return;
   }
@@ -1240,6 +1245,94 @@ class VdrPluginWeb_SelectAudioTrack_presult {
 
 };
 
+
+class VdrPluginWeb_IsWebActive_args {
+ public:
+
+  VdrPluginWeb_IsWebActive_args(const VdrPluginWeb_IsWebActive_args&) noexcept;
+  VdrPluginWeb_IsWebActive_args& operator=(const VdrPluginWeb_IsWebActive_args&) noexcept;
+  VdrPluginWeb_IsWebActive_args() noexcept;
+
+  virtual ~VdrPluginWeb_IsWebActive_args() noexcept;
+
+  bool operator == (const VdrPluginWeb_IsWebActive_args & /* rhs */) const;
+  bool operator != (const VdrPluginWeb_IsWebActive_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VdrPluginWeb_IsWebActive_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class VdrPluginWeb_IsWebActive_pargs {
+ public:
+
+
+  virtual ~VdrPluginWeb_IsWebActive_pargs() noexcept;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _VdrPluginWeb_IsWebActive_result__isset {
+  _VdrPluginWeb_IsWebActive_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _VdrPluginWeb_IsWebActive_result__isset;
+
+class VdrPluginWeb_IsWebActive_result {
+ public:
+
+  VdrPluginWeb_IsWebActive_result(const VdrPluginWeb_IsWebActive_result&);
+  VdrPluginWeb_IsWebActive_result& operator=(const VdrPluginWeb_IsWebActive_result&);
+  VdrPluginWeb_IsWebActive_result() noexcept;
+
+  virtual ~VdrPluginWeb_IsWebActive_result() noexcept;
+  bool success;
+   ::common::OperationFailed err;
+
+  _VdrPluginWeb_IsWebActive_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  void __set_err(const  ::common::OperationFailed& val);
+
+  bool operator == (const VdrPluginWeb_IsWebActive_result & rhs) const;
+  bool operator != (const VdrPluginWeb_IsWebActive_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VdrPluginWeb_IsWebActive_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _VdrPluginWeb_IsWebActive_presult__isset {
+  _VdrPluginWeb_IsWebActive_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _VdrPluginWeb_IsWebActive_presult__isset;
+
+class VdrPluginWeb_IsWebActive_presult {
+ public:
+
+
+  virtual ~VdrPluginWeb_IsWebActive_presult() noexcept;
+  bool* success;
+   ::common::OperationFailed err;
+
+  _VdrPluginWeb_IsWebActive_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class VdrPluginWebClient : virtual public VdrPluginWebIf, public  ::common::CommonServiceClient {
  public:
   VdrPluginWebClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -1287,6 +1380,9 @@ class VdrPluginWebClient : virtual public VdrPluginWebIf, public  ::common::Comm
   bool SelectAudioTrack(const SelectAudioTrackType& input) override;
   void send_SelectAudioTrack(const SelectAudioTrackType& input);
   bool recv_SelectAudioTrack();
+  bool IsWebActive() override;
+  void send_IsWebActive();
+  bool recv_IsWebActive();
 };
 
 class VdrPluginWebProcessor : public  ::common::CommonServiceProcessor {
@@ -1309,6 +1405,7 @@ class VdrPluginWebProcessor : public  ::common::CommonServiceProcessor {
   void process_VideoFullscreen(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_ResetVideo(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_SelectAudioTrack(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_IsWebActive(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   VdrPluginWebProcessor(::std::shared_ptr<VdrPluginWebIf> iface) :
      ::common::CommonServiceProcessor(iface),
@@ -1325,6 +1422,7 @@ class VdrPluginWebProcessor : public  ::common::CommonServiceProcessor {
     processMap_["VideoFullscreen"] = &VdrPluginWebProcessor::process_VideoFullscreen;
     processMap_["ResetVideo"] = &VdrPluginWebProcessor::process_ResetVideo;
     processMap_["SelectAudioTrack"] = &VdrPluginWebProcessor::process_SelectAudioTrack;
+    processMap_["IsWebActive"] = &VdrPluginWebProcessor::process_IsWebActive;
   }
 
   virtual ~VdrPluginWebProcessor() {}
@@ -1466,6 +1564,15 @@ class VdrPluginWebMultiface : virtual public VdrPluginWebIf, public  ::common::C
     return ifaces_[i]->SelectAudioTrack(input);
   }
 
+  bool IsWebActive() override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->IsWebActive();
+    }
+    return ifaces_[i]->IsWebActive();
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -1518,6 +1625,9 @@ class VdrPluginWebConcurrentClient : virtual public VdrPluginWebIf, public  ::co
   bool SelectAudioTrack(const SelectAudioTrackType& input) override;
   int32_t send_SelectAudioTrack(const SelectAudioTrackType& input);
   bool recv_SelectAudioTrack(const int32_t seqid);
+  bool IsWebActive() override;
+  int32_t send_IsWebActive();
+  bool recv_IsWebActive(const int32_t seqid);
 };
 
 #ifdef _MSC_VER

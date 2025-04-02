@@ -39,6 +39,8 @@ public:
 
     bool SelectAudioTrack(std::string& nr);
 
+    bool IsWebActive();
+
 private:
     bool connect();
     template <typename F> bool processInternal(F &&request);
