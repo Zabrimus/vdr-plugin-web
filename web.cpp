@@ -484,6 +484,10 @@ void cPluginWeb::Stop() {
 
     regularWorker->Stop();
 
+    if (hbbtvDeviceStatus != nullptr) {
+        delete hbbtvDeviceStatus;
+    }
+
     if (currentTSDir != nullptr) {
         delete currentTSDir;
     }
