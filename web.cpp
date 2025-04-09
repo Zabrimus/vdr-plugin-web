@@ -545,7 +545,7 @@ cOsdObject *cPluginWeb::MainMenuAction() {
     } else if (nextOsdCommand == URL) {
         browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "URL", param_userAgent, param_referrer, param_cookie, param_url);
     } else if (nextOsdCommand == MAIN) {
-        browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "MAIN", param_userAgent, param_referrer, param_cookie, nullptr);
+        browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "MAIN", param_userAgent, param_referrer, param_cookie, "");
     } else if (nextOsdCommand == M3U) {
         browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "M3U", param_userAgent, param_referrer, param_cookie, param_m3uContent);
     }
