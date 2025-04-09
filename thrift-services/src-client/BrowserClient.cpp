@@ -31,12 +31,18 @@ BrowserClient::BrowserClient(std::string vdrIp, int vdrPort) {
 BrowserClient::~BrowserClient() {
     if (transport->isOpen()) {
         transport->close();
+        transport = nullptr;
     }
 
     delete client;
+    client = nullptr;
 }
 
 bool BrowserClient::connect() {
+    if (transport == nullptr) {
+        return false;
+    }
+
     if (!transport->isOpen()) {
         // connection closed. Try to connect
         try {
@@ -116,6 +122,10 @@ bool BrowserClient::StartApplication(const std::string& channelId, const std::st
         input.appReferrer = appReferrer;
         input.appUserAgent = appUserAgent;
         input.url = url;
+
+        if (!url.empty()) {
+            input.__isset.url = true;
+        }
 
         return client->StartApplication(input);
     });
