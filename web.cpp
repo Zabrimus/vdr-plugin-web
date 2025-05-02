@@ -630,13 +630,9 @@ cString cPluginWeb::SVDRPCommand(const char *Command, const char *Option, int &R
 
 bool cPluginWeb::readConfiguration(const char* configFile) {
     // check at first if configFile really exists
-    printf("Config: %s\n", configFile);
-
-    FILE *tf;
-    if (tf = fopen("demo.txt", "r")) {
-        fclose(tf);
-        printf("file exists");
-    } else {
+    struct stat path_stat;
+    stat(configFile, &path_stat);
+    if (!S_ISREG(path_stat.st_mode)) {
         esyslog("[vdrweb] Unable to read config file: %s. Reason: %s", configFile, strerror(errno));
         return false;
     }
