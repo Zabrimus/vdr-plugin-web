@@ -629,6 +629,18 @@ cString cPluginWeb::SVDRPCommand(const char *Command, const char *Option, int &R
 }
 
 bool cPluginWeb::readConfiguration(const char* configFile) {
+    // check at first if configFile really exists
+    printf("Config: %s\n", configFile);
+
+    FILE *tf;
+    if (tf = fopen("demo.txt", "r")) {
+        fclose(tf);
+        printf("file exists");
+    } else {
+        esyslog("[vdrweb] Unable to read config file: %s. Reason: %s", configFile, strerror(errno));
+        return false;
+    }
+
     mINI::INIFile file(configFile);
     mINI::INIStructure ini;
     auto result = file.read(ini);
