@@ -39,6 +39,7 @@ private:
 
 private:
     CefBrowserClient *client;
+    std::shared_ptr<TSocket> socket;
     std::shared_ptr<TTransport> transport;
     std::recursive_mutex browser_send_mutex;
 };

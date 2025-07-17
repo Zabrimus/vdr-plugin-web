@@ -181,6 +181,11 @@ void cAitFilter::Trigger(int Sid) {
 }
 
 void cAitFilter::Process(u_short Pid, u_char Tid, const u_char *Data, int Length) {
+    if (browserClient == nullptr) {
+        // there is really nothing to do
+        return;
+    }
+
     cMutexLock MutexLock(&mutex);
     int now = time(NULL);
 

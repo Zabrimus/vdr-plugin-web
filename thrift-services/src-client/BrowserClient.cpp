@@ -1,6 +1,6 @@
-#include <iostream>
-#include <utility>
+#include <memory>
 #include <mutex>
+#include <sys/socket.h>
 
 #include "BrowserClient.h"
 
@@ -19,7 +19,7 @@ void browserClientOutputFunction(const char* msg) {
 }
 
 BrowserClient::BrowserClient(std::string vdrIp, int vdrPort) {
-    std::shared_ptr<TTransport> socket(new TSocket(vdrIp, vdrPort));
+    socket = std::make_shared<TSocket>(vdrIp, vdrPort);
     transport = static_cast<const std::shared_ptr<TTransport>>(new TBufferedTransport(socket));
     std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
 
@@ -29,13 +29,15 @@ BrowserClient::BrowserClient(std::string vdrIp, int vdrPort) {
 }
 
 BrowserClient::~BrowserClient() {
-    if (transport->isOpen()) {
+    CefBrowserClient *clientOld = client;
+    client = nullptr;
+
+    if (transport && transport->isOpen()) {
         transport->close();
         transport = nullptr;
     }
 
-    delete client;
-    client = nullptr;
+    delete clientOld;
 }
 
 bool BrowserClient::connect() {
@@ -43,7 +45,7 @@ bool BrowserClient::connect() {
         return false;
     }
 
-    if (!transport->isOpen()) {
+    if (transport && !transport->isOpen()) {
         // connection closed. Try to connect
         try {
             transport->open();
@@ -51,6 +53,18 @@ bool BrowserClient::connect() {
             // connection not possible
             return false;
         }
+    }
+
+    if (socket && !socket->isOpen()) {
+        return false;
+    }
+
+    int error_code;
+    socklen_t error_code_size = sizeof(error_code);
+    getsockopt(socket->getSocketFD(), SOL_SOCKET, SO_ERROR, &error_code, &error_code_size);
+
+    if (error_code < 0) {
+        return false;
     }
 
     return true;
