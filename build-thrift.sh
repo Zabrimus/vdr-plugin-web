@@ -1,6 +1,6 @@
 #!/bin/bash
 
-THRIFT_VERSION=0.21.0
+THRIFT_VERSION=0.22.0
 
 mkdir -p thrift-install
 cd thrift-install
