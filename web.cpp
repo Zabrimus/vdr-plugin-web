@@ -481,6 +481,7 @@ void cPluginWeb::Stop() {
     thriftServer->stop();
 
     delete browserClient;
+    browserClient = nullptr;
 
     regularWorker->Stop();
 
