@@ -65,4 +65,7 @@ public:
     bool drawImageQOI(const std::string qoiBuffer, const int render_width, const int render_height, const int x, const int y);
 
     void DrawVolume(int volume = 0);
+
+    // get current OSD mode
+    OSD_MODE getCurrentOsdMode() const { return currentMode; };
 };

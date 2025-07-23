@@ -112,15 +112,13 @@ WebOSDPage::~WebOSDPage() {
 
     std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
     if (osd != nullptr) {
-        cOsd *osdtmp = osd;
-        osd = nullptr;
-
         if (pixmap != nullptr) {
-            osdtmp->DestroyPixmap(pixmap);
+            osd->DestroyPixmap(pixmap);
         }
-
-        delete osdtmp;
+        delete osd;
+        osd = nullptr;
     }
+
     pixmap = nullptr;
 
     switch (currentMode) {
@@ -147,7 +145,7 @@ void WebOSDPage::Show() {
 
 void WebOSDPage::Display() {
     dsyslog("[vdrweb] WebOSDPage Display\n");
-    if (osd) {
+    if (osd != nullptr) {
         std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
 
         if (pixmap != nullptr) {
@@ -156,6 +154,7 @@ void WebOSDPage::Display() {
         }
 
         delete osd;
+        osd = nullptr;
     }
 
     osd = cOsdProvider::NewOsd(0, 0, 5);
@@ -403,7 +402,7 @@ void WebOSDPage::DrawVolume(int volume) {
       lastVolume = volume;
       // (re)set the display volumebar timeout
       lastVolumeTime = time(NULL);
-      if (osd)
+      if (osd != nullptr)
          osd->Flush();
    }
 }

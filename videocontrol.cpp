@@ -56,6 +56,7 @@ void VideoPlayer::ResetVideo() {
     if (tsPlayed) {
         dsyslog("VideoPlayer::ResetVideo");
         DeviceClear();
+        DevicePlay();
         tsPlayed = false;
     }
 

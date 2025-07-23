@@ -22,6 +22,7 @@
 #include "status.h"
 #include "videocontrol.h"
 #include "dummyosd.h"
+#include "debuglog.h"
 
 #define TSDIR  "%s/web/%s/%4d-%02d-%02d.%02d.%02d.%d-%d.rec"
 
@@ -122,6 +123,8 @@ void VdrPluginWebServer::ping() {
 }
 
 bool VdrPluginWebServer::ProcessOsdUpdate(const ProcessOsdUpdateType &input) {
+    DEBUGLOG("[vdrweb] VdrPluginWebServer::ProcessOsdUpdate");
+
     WebOSDPage* page = WebOSDPage::Get();
     if (page == nullptr) {
         // illegal request -> abort
@@ -137,6 +140,8 @@ bool VdrPluginWebServer::ProcessOsdUpdate(const ProcessOsdUpdateType &input) {
 }
 
 bool VdrPluginWebServer::ProcessOsdUpdateQOI(const ProcessOsdUpdateQOIType &input) {
+    DEBUGLOG("[vdrweb] VdrPluginWebServer::ProcessOsdUpdateQOI");
+
     WebOSDPage* page = WebOSDPage::Get();
     if (page == nullptr) {
         // illegal request -> abort
@@ -152,6 +157,8 @@ bool VdrPluginWebServer::ProcessOsdUpdateQOI(const ProcessOsdUpdateQOIType &inpu
 }
 
 bool VdrPluginWebServer::ProcessTSPacket(const ProcessTSPacketType &input) {
+    // DEBUGLOG("VdrPluginWebServer::ProcessTSPacket");
+
     if (saveTS) {
         FILE* f = fopen(currentTSFilename, "a");
         if (f != nullptr) {
@@ -181,12 +188,18 @@ bool VdrPluginWebServer::ProcessTSPacket(const ProcessTSPacketType &input) {
 bool VdrPluginWebServer::StartVideo(const StartVideoType &input) {
     dsyslog("[vdrweb] StartVideo received");
 
-    // Close existing OSD
+    WebOSDPage* page;
     nextOsdCommand = CLOSE;
     cRemote::CallPlugin("web");
 
-    WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, PLAYER);
+    page = WebOSDPage::Create(useOutputDeviceScale, PLAYER);
     page->Display();
+
+    videoPlayer = new VideoPlayer();
+    page->SetPlayer(videoPlayer);
+
+    cControl::Launch(page);
+    cControl::Attach();
 
     if (saveTS) {
         // create directory if necessary
@@ -195,12 +208,6 @@ bool VdrPluginWebServer::StartVideo(const StartVideoType &input) {
             esyslog("[vdrweb]: can't create directory %s", currentTSDir);
         }
     }
-
-    videoPlayer = new VideoPlayer();
-    page->SetPlayer(videoPlayer);
-
-    cControl::Launch(page);
-    cControl::Attach();
 
     return true;
 }
