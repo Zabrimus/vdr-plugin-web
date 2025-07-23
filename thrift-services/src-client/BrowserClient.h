@@ -14,8 +14,6 @@ using namespace apache::thrift::protocol;
 using namespace apache::thrift::transport;
 using namespace ::cefbrowser;
 
-extern bool browserClientLogThriftMessages;
-
 class BrowserClient {
 public:
     BrowserClient(std::string vdrIp, int vdrPort);

@@ -18,6 +18,9 @@ VERSION = $(shell grep 'static const char \*VERSION *=' $(PLUGIN).cpp | awk '{ p
 # But be warned: Many images will be created if activated.
 DEBUG_SAVE_OSD_IMAGE ?= 0
 
+# Debug logging
+DEBUG_THRIFTCLIENT ?= 0
+
 # Enable fast image scaling by Output device
 # Needs a VDR patch and a patch for the desired output device
 ENABLE_FAST_SCALE ?= 0
@@ -78,9 +81,15 @@ ifeq ($(DEBUG_SAVE_OSD_IMAGE),1)
 CONFIG += -DDEBUG_SAVE_OSD_IMAGE
 endif
 
+ifeq ($(DEBUG_THRIFTCLIENT),1)
+CONFIG += -DDEBUG_THRIFTCLIENT
+endif
+
 ifeq ($(ENABLE_FAST_SCALE),1)
 CONFIG += -DENABLE_FAST_SCALE
 endif
+
+CONFIG += -DVDRLOG
 
 INCLUDES += -I. -I$(mINI_DIR)/src/mini -Ithrift-services/src-gen -Ithrift-services/src-client
 

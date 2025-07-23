@@ -2,6 +2,7 @@
 #include <mutex>
 #include <sys/socket.h>
 
+#include "debuglog.h"
 #include "BrowserClient.h"
 
 using namespace apache::thrift;
@@ -10,15 +11,13 @@ using namespace apache::thrift::transport;
 using namespace ::cefbrowser;
 using namespace ::common;
 
-bool browserClientLogThriftMessages = false;
-
 void browserClientOutputFunction(const char* msg) {
-    if (browserClientLogThriftMessages) {
-        fprintf(stderr, "%s\n", msg);
-    }
+    DEBUGLOG("%s", msg);
 }
 
 BrowserClient::BrowserClient(std::string vdrIp, int vdrPort) {
+    DEBUGLOG("Construct BrowserClient");
+
     socket = std::make_shared<TSocket>(vdrIp, vdrPort);
     transport = static_cast<const std::shared_ptr<TTransport>>(new TBufferedTransport(socket));
     std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
@@ -29,6 +28,8 @@ BrowserClient::BrowserClient(std::string vdrIp, int vdrPort) {
 }
 
 BrowserClient::~BrowserClient() {
+    DEBUGLOG("Destruct BrowserClient");
+
     CefBrowserClient *clientOld = client;
     client = nullptr;
 
@@ -41,6 +42,8 @@ BrowserClient::~BrowserClient() {
 }
 
 bool BrowserClient::connect() {
+    // DEBUGLOG("BrowserClient::connect");
+
     if (transport == nullptr) {
         return false;
     }
@@ -71,6 +74,8 @@ bool BrowserClient::connect() {
 }
 
 bool BrowserClient::ping() {
+    // DEBUGLOG("BrowserClient::ping");
+
     if (!connect()) {
         return false;
     }
@@ -104,6 +109,8 @@ template <typename F> bool BrowserClient::processInternal(F&& request) {
 }
 
 bool BrowserClient::LoadUrl(const std::string& url) {
+    DEBUGLOG("BrowserClient::LoadUrl: %s", url.c_str());
+
     return processInternal([&]() -> bool {
         LoadUrlType input;
         input.url = url;
@@ -113,6 +120,8 @@ bool BrowserClient::LoadUrl(const std::string& url) {
 }
 
 bool BrowserClient::RedButton(const std::string& channelId) {
+    DEBUGLOG("BrowserClient::RedButton");
+
     return processInternal([&]() -> bool {
         RedButtonType input;
         input.channelId = channelId;
@@ -122,12 +131,16 @@ bool BrowserClient::RedButton(const std::string& channelId) {
 }
 
 bool BrowserClient::ReloadOSD() {
+    DEBUGLOG("BrowserClient::ReloadOSD");
+
     return processInternal([&]() -> bool {
         return client->ReloadOSD();
     });
 }
 
 bool BrowserClient::StartApplication(const std::string& channelId, const std::string& appId, const std::string& appCookie, const std::string& appReferrer, const std::string& appUserAgent, const std::string& url) {
+    DEBUGLOG("BrowserClient::StartApplication");
+
     return processInternal([&]() -> bool {
         StartApplicationType input;
         input.channelId = channelId;
@@ -146,6 +159,8 @@ bool BrowserClient::StartApplication(const std::string& channelId, const std::st
 }
 
 bool BrowserClient::ProcessKey(const std::string& key) {
+    DEBUGLOG("BrowserClient::ProcessKey: %s", key.c_str());
+
     return processInternal([&]() -> bool {
         ProcessKeyType input;
         input.key = key;
@@ -155,6 +170,8 @@ bool BrowserClient::ProcessKey(const std::string& key) {
 }
 
 bool BrowserClient::StreamError(const std::string& reason) {
+    DEBUGLOG("BrowserClient::StreamError");
+
     return processInternal([&]() -> bool {
         StreamErrorType input;
         input.reason = reason;
@@ -164,6 +181,8 @@ bool BrowserClient::StreamError(const std::string& reason) {
 }
 
 bool BrowserClient::InsertHbbtv(const std::string& hbbtv) {
+    DEBUGLOG("BrowserClient::InsertHbbtv: %s", hbbtv.c_str());
+
     return processInternal([&]() -> bool {
         InsertHbbtvType input;
         input.hbbtv = hbbtv;
@@ -173,6 +192,8 @@ bool BrowserClient::InsertHbbtv(const std::string& hbbtv) {
 }
 
 bool BrowserClient::InsertChannel(const std::string& channel) {
+    DEBUGLOG("BrowserClient::InsertChannel: %s", channel.c_str());
+
     return processInternal([&]() -> bool {
         InsertChannelType input;
         input.channel = channel;
@@ -182,6 +203,8 @@ bool BrowserClient::InsertChannel(const std::string& channel) {
 }
 
 bool BrowserClient::StopVideo(const std::string& reason) {
+    DEBUGLOG("BrowserClient::StopVideo: %s", reason.c_str());
+
     return processInternal([&]() -> bool {
         StopVideoType input;
         input.reason = reason;

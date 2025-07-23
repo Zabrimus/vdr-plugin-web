@@ -2,6 +2,7 @@
 #include <mutex>
 #include <utility>
 
+#include "debuglog.h"
 #include "TranscoderClient.h"
 
 using namespace apache::thrift;
@@ -10,15 +11,13 @@ using namespace apache::thrift::transport;
 using namespace ::remotetranscoder;
 using namespace ::common;
 
-bool transcoderClientLogThriftMessages = false;
-
 void transcoderClientOutputFunction(const char* msg) {
-    if (transcoderClientLogThriftMessages) {
-        fprintf(stderr, "%s\n", msg);
-    }
+    DEBUGLOG("%s\n", msg);
 }
 
 TranscoderClient::TranscoderClient(std::string vdrIp, int vdrPort) {
+    DEBUGLOG("Construct TranscoderClient");
+
     std::shared_ptr<TTransport> socket(new TSocket(vdrIp, vdrPort));
     transport = static_cast<const std::shared_ptr<TTransport>>(new TBufferedTransport(socket));
     std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
@@ -29,6 +28,8 @@ TranscoderClient::TranscoderClient(std::string vdrIp, int vdrPort) {
 }
 
 TranscoderClient::~TranscoderClient() {
+    DEBUGLOG("Destruct TranscoderClient");
+
     if (transport->isOpen()) {
         transport->close();
     }
@@ -37,6 +38,8 @@ TranscoderClient::~TranscoderClient() {
 }
 
 bool TranscoderClient::connect() {
+    DEBUGLOG("TranscoderClient::connect");
+
     if (!transport->isOpen()) {
         // connection closed. Try to connect
         try {
@@ -89,6 +92,8 @@ bool TranscoderClient::Probe(std::string&result,
                              const std::string &responsePort, const std::string &vdrIp,
                              const std::string &vdrPort, const std::string &postfix) {
 
+    DEBUGLOG("TranscoderClient::Probe: %s", url.c_str());
+
     return processInternal([&]() -> bool {
         ProbeType input;
         input.url = url;
@@ -111,6 +116,8 @@ bool TranscoderClient::StreamUrl(const std::string &url, const std::string &cook
                                  const std::string &responsePort, const std::string &vdrIp, const std::string &vdrPort,
                                  const std::string &mpdStart) {
 
+    DEBUGLOG("TranscoderClient::StreamUrl: %s", url.c_str());
+
     return processInternal([&]() -> bool {
         StreamUrlType input;
         input.url = url;
@@ -128,6 +135,8 @@ bool TranscoderClient::StreamUrl(const std::string &url, const std::string &cook
 }
 
 bool TranscoderClient::Pause(const std::string &streamId) {
+    DEBUGLOG("TranscoderClient::Pause");
+
     return processInternal([&]() -> bool {
         PauseType input;
         input.streamId = streamId;
@@ -137,6 +146,8 @@ bool TranscoderClient::Pause(const std::string &streamId) {
 }
 
 bool TranscoderClient::SeekTo(const std::string &streamId, const std::string &seekTo) {
+    DEBUGLOG("TranscoderClient::SeekTo: %s", seekTo.c_str());
+
     return processInternal([&]() -> bool {
         SeekToType input;
         input.streamId = streamId;
@@ -147,6 +158,8 @@ bool TranscoderClient::SeekTo(const std::string &streamId, const std::string &se
 }
 
 bool TranscoderClient::Resume(const std::string &streamId, const std::string& position) {
+    DEBUGLOG("TranscoderClient::Resume: %s", position.c_str());
+
     return processInternal([&]() -> bool {
         ResumeType input;
         input.streamId = streamId;
@@ -157,6 +170,8 @@ bool TranscoderClient::Resume(const std::string &streamId, const std::string& po
 }
 
 bool TranscoderClient::Stop(const std::string& streamId, const std::string& reason) {
+    DEBUGLOG("TranscoderClient::Stop: %s", reason.c_str());
+
     return processInternal([&]() -> bool {
         StopType input;
         input.streamId = streamId;
@@ -167,6 +182,8 @@ bool TranscoderClient::Stop(const std::string& streamId, const std::string& reas
 }
 
 bool TranscoderClient::AudioInfo(std::string& result, const std::string& streamId) {
+    DEBUGLOG("TranscoderClient::AudioInfo");
+
     return processInternal([&]() -> bool {
         AudioInfoType input;
         input.streamId = streamId;
@@ -177,6 +194,8 @@ bool TranscoderClient::AudioInfo(std::string& result, const std::string& streamI
 }
 
 bool TranscoderClient::GetVideo(std::string &result, const VideoType &input) {
+    DEBUGLOG("TranscoderClient::GetVideo");
+
     return processInternal([&]() -> bool {
         client->GetVideo(result, input);
         return true;

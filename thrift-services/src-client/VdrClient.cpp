@@ -1,6 +1,7 @@
 #include <iostream>
 #include <mutex>
 
+#include "debuglog.h"
 #include "VdrClient.h"
 
 using namespace apache::thrift;
@@ -9,15 +10,14 @@ using namespace apache::thrift::transport;
 using namespace ::pluginweb;
 using namespace ::common;
 
-bool vdrClientLogThriftMessages = false;
 
 void vdrClientOutputFunction(const char* msg) {
-    if (vdrClientLogThriftMessages) {
-        fprintf(stderr, "%s\n", msg);
-    }
+    DEBUGLOG("%s\n", msg);
 }
 
 VdrClient::VdrClient(std::string vdrIp, int vdrPort) {
+    DEBUGLOG("Construct VdrClient");
+
     std::shared_ptr<TTransport> socket(new TSocket(vdrIp, vdrPort));
     transport = static_cast<const std::shared_ptr<TTransport>>(new TBufferedTransport(socket));
     std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
@@ -28,6 +28,8 @@ VdrClient::VdrClient(std::string vdrIp, int vdrPort) {
 }
 
 VdrClient::~VdrClient() {
+    DEBUGLOG("Destruct VdrClient");
+
     if (transport->isOpen()) {
         transport->close();
     }
@@ -36,6 +38,8 @@ VdrClient::~VdrClient() {
 }
 
 bool VdrClient::connect() {
+    // DEBUGLOG("VdrClient::connect");
+
     if (!transport->isOpen()) {
         // connection closed. Try to connect
         try {
@@ -83,6 +87,8 @@ template <typename F> bool VdrClient::processInternal(F&& request) {
 }
 
 bool VdrClient::ProcessOsdUpdate(int disp_width, int disp_height, int x, int y, int width, int height, std::string& data) {
+    DEBUGLOG("VdrClient::ProcessOsdUpdate");
+
     return processInternal([&]() -> bool {
         ProcessOsdUpdateType input;
         input.disp_width = disp_width;
@@ -98,6 +104,8 @@ bool VdrClient::ProcessOsdUpdate(int disp_width, int disp_height, int x, int y, 
 }
 
 bool VdrClient::ProcessOsdUpdateQoi(int disp_width, int disp_height, int x, int y, const std::string &imageQoi) {
+    DEBUGLOG("VdrClient::ProcessOsdUpdateQoi");
+
     return processInternal([&]() -> bool {
         ProcessOsdUpdateQOIType input;
         input.x = x;
@@ -111,6 +119,8 @@ bool VdrClient::ProcessOsdUpdateQoi(int disp_width, int disp_height, int x, int 
 }
 
 bool VdrClient::ProcessTSPacket(std::string& packets) {
+    // DEBUGLOG("VdrClient::ProcessTSPacket");
+
     return processInternal([&]() -> bool {
         ProcessTSPacketType input;
         input.ts = packets;
@@ -120,6 +130,8 @@ bool VdrClient::ProcessTSPacket(std::string& packets) {
 }
 
 bool VdrClient::StartVideo(std::string& videoInfo) {
+    DEBUGLOG("VdrClient::StartVideo");
+
     return processInternal([&]() -> bool {
         StartVideoType input;
         input.videoInfo = videoInfo;
@@ -129,24 +141,32 @@ bool VdrClient::StartVideo(std::string& videoInfo) {
 }
 
 bool VdrClient::StopVideo() {
+    DEBUGLOG("VdrClient::StopVideo");
+
     return processInternal([&]() -> bool {
         return client->StopVideo();
     });
 }
 
 bool VdrClient::Pause() {
+    DEBUGLOG("VdrClient::Pause");
+
     return processInternal([&]() -> bool {
         return client->PauseVideo();
     });
 }
 
 bool VdrClient::Resume() {
+    DEBUGLOG("VdrClient::Resume");
+
     return processInternal([&]() -> bool {
         return client->ResumeVideo();
     });
 }
 
 bool VdrClient::ResetVideo(std::string& videoInfo) {
+    DEBUGLOG("VdrClient::ResetVideo");
+
     return processInternal([&]() -> bool {
         ResetVideoType input;
         input.videoInfo = videoInfo;
@@ -156,12 +176,16 @@ bool VdrClient::ResetVideo(std::string& videoInfo) {
 }
 
 bool VdrClient::Seeked() {
+    DEBUGLOG("VdrClient::Seeked");
+
     return processInternal([&]() -> bool {
         return client->Seeked();
     });
 }
 
 bool VdrClient::VideoSize(int x, int y, int w, int h) {
+    DEBUGLOG("VdrClient::VideoSize");
+
     return processInternal([&]() -> bool {
         VideoSizeType input;
         input.x = x;
@@ -174,12 +198,16 @@ bool VdrClient::VideoSize(int x, int y, int w, int h) {
 }
 
 bool VdrClient::VideoFullscreen() {
+    DEBUGLOG("VdrClient::VideoFullscreen");
+
     return processInternal([&]() -> bool {
         return client->VideoFullscreen();
     });
 }
 
 bool VdrClient::SelectAudioTrack(std::string& nr) {
+    DEBUGLOG("VdrClient::SelectAudioTrack");
+
     return processInternal([&]() -> bool {
         SelectAudioTrackType input;
         input.audioTrack = nr;
@@ -189,6 +217,8 @@ bool VdrClient::SelectAudioTrack(std::string& nr) {
 }
 
 bool VdrClient::IsWebActive() {
+    DEBUGLOG("VdrClient::IsWebActive");
+
     return processInternal([&]() -> bool {
         return client->IsWebActive();
     });
