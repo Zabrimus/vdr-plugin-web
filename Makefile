@@ -71,6 +71,7 @@ APIVERSION = $(call PKGCFG,apiversion)
 
 ARCHIVE = $(PLUGIN)-$(VERSION)
 PACKAGE = vdr-$(ARCHIVE)
+HBBTV_DISCOVERY_TEST = /tmp/test_hbbtv_discovery_service
 
 ### The name of the shared object file:
 
@@ -150,13 +151,20 @@ $(I18Npot): $(wildcard *.cpp)
 $(I18Nmsgs): $(DESTDIR)$(LOCDIR)/%/LC_MESSAGES/vdr-$(PLUGIN).mo: $(PODIR)/%.mo
 	install -D -m644 $< $@
 
-.PHONY: i18n
+.PHONY: i18n test-hbbtv-discovery
 i18n: $(I18Nmo) $(I18Npot)
 
 install-i18n: $(I18Nmsgs)
 
 ### Targets:
 
+
+test-hbbtv-discovery:
+	$(CXX) -std=c++17 -Wall -Wextra -pedantic -I. \
+		tests/test_hbbtv_discovery_service.cpp \
+		-pthread -o $(HBBTV_DISCOVERY_TEST)
+	$(HBBTV_DISCOVERY_TEST)
+	rm -f $(HBBTV_DISCOVERY_TEST)
 
 $(SOFILE): $(OBJS)
 	@echo LD $@
@@ -183,4 +191,4 @@ dist: $(I18Npo) clean
 
 clean:
 	@-rm -f $(PODIR)/*.mo
-	@-rm -f $(OBJS) $(DEPFILE) *.so *.tgz core* *~
+	@-rm -f $(OBJS) $(DEPFILE) $(HBBTV_DISCOVERY_TEST) *.so *.tgz core* *~

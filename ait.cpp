@@ -14,6 +14,7 @@
 #include "ait.h"
 #include "status.h"
 #include "web.h"
+#include "service/hbbtv_discovery_service.h"
 
 #define PMT_SCAN_IDLE     5 // 60 //300    // seconds
 
@@ -147,7 +148,27 @@ cAIT::cAIT(const u_char *Data, u_short Pid) : SI::AIT(Data, true) {
         const cChannel* currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
 #endif
 
-        const char* buffer = toHbbtvJson(currentChannel->GetChannelID().ToString(), currentChannel->Name(), aitApp.getApplicationId(), aitApp.getControlCode(), nameBuffer, URLBaseBuffer, URLLocBuffer, URLExtBuffer);
+        const cString currentChannelId = currentChannel->GetChannelID().ToString();
+
+        VdrWebHbbtvDiscoveryStore::Upsert(
+            *currentChannelId,
+            static_cast<uint32_t>(aitApp.getApplicationId()),
+            static_cast<uint8_t>(aitApp.getControlCode()),
+            static_cast<uint8_t>(ApplPriority),
+            nameBuffer,
+            URLBaseBuffer,
+            URLLocBuffer,
+            URLExtBuffer);
+
+        const char* buffer = toHbbtvJson(
+            *currentChannelId,
+            currentChannel->Name(),
+            aitApp.getApplicationId(),
+            aitApp.getControlCode(),
+            nameBuffer,
+            URLBaseBuffer,
+            URLLocBuffer,
+            URLExtBuffer);
         if (browserClient != nullptr) {
             browserClient->InsertHbbtv(buffer);
         }

@@ -21,6 +21,7 @@
 #include "webosdpage.h"
 #include "status.h"
 #include "videocontrol.h"
+#include "service/hbbtv_discovery_service.h"
 #include "dummyosd.h"
 #include "debuglog.h"
 
@@ -585,6 +586,15 @@ bool cPluginWeb::SetupParse(const char *Name, const char *Value) {
 }
 
 bool cPluginWeb::Service(const char *Id, void *Data = nullptr) {
+    if (Id != nullptr &&
+        strcmp(Id, VDRWEB_SERVICE_HBBTV_DISCOVERY_V1) == 0) {
+        if (Data == nullptr)
+            return false;
+
+        return VdrWebHbbtvDiscoveryStore::Read(
+            *static_cast<VdrWebHbbtvDiscoveryV1 *>(Data));
+    }
+
     param_url = "";
     param_m3uContent = "";
     param_userAgent = "";

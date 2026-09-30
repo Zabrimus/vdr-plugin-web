@@ -12,6 +12,7 @@
 #include "ait.h"
 #include "BrowserClient.h"
 #include "webosdpage.h"
+#include "service/hbbtv_discovery_service.h"
 
 const char *channelJson = R"(
     {
@@ -82,6 +83,7 @@ void cHbbtvDeviceStatus::ChannelSwitch(const cDevice * vdrDevice, int channelNum
          device = nullptr;
          aitFilter = nullptr;
          sid = -1;
+         VdrWebHbbtvDiscoveryStore::EndChannel();
       }
 
       if (channelNumber) {
@@ -94,6 +96,9 @@ void cHbbtvDeviceStatus::ChannelSwitch(const cDevice * vdrDevice, int channelNum
          auto channel = Channels->GetByNumber(channelNumber);
 #endif
          sid = channel->Sid();
+
+         VdrWebHbbtvDiscoveryStore::BeginChannel(
+             *channel->GetChannelID().ToString());
 
          const char* buffer = toChannelJson(channel);
          browserClient->InsertChannel(buffer);
