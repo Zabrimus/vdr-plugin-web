@@ -97,11 +97,52 @@ void createTSFileName() {
     currentTSFilename = strdup(cString::sprintf("%s/00001.ts", currentTSDir));
 }
 
-void stopVideo() {
+extern WebOSDPage *playerWebOsdPage;
+
+// Returns true if c is the currently launched cControl
+static bool isCurrentControl(cControl *c) {
+#if VDRVERSNUM >= 20803
+    // cControl::Control() gives up after 100ms outside the main thread
+    for (int i = 0; i < 20; ++i) {
+        cMutexLock controlLock;
+        bool lockedOtherwise = false;
+        cControl *current = cControl::Control(controlLock, true, &lockedOtherwise);
+        if (!lockedOtherwise) {
+            return current == c;
+        }
+    }
+    return false;
+#else
+    cMutexLock controlLock;
+    return cControl::Control(controlLock, true) == c;
+#endif
+}
+
+// Removes the player page and the video player together. The page must not
+// keep a dangling cControl::player, and an existing page must not be passed to
+// cControl::Launch() again, because Launch() deletes the current control first.
+static void releasePlayer() {
+    WebOSDPage *page = playerWebOsdPage;
+    if (page != nullptr) {
+        page->SetPlayer(nullptr);
+
+        if (isCurrentControl(page)) {
+            cControl::Shutdown();
+        } else {
+            delete page;
+        }
+    }
+
     if (videoPlayer != nullptr) {
         VideoPlayer *copy = videoPlayer;
         videoPlayer = nullptr;
         delete copy;
+    }
+}
+
+void stopVideo() {
+    if (videoPlayer != nullptr) {
+        releasePlayer();
 
         nextOsdCommand = REOPEN;
         cRemote::CallPlugin("web");
@@ -191,6 +232,9 @@ bool VdrPluginWebServer::StartVideo(const StartVideoType &input) {
     WebOSDPage* page;
     nextOsdCommand = CLOSE;
     cRemote::CallPlugin("web");
+
+    // remove a player page left over from the previous video
+    releasePlayer();
 
     page = WebOSDPage::Create(useOutputDeviceScale, PLAYER);
     page->Display();
@@ -384,9 +428,7 @@ void cRegularWorker::Action() {
         m_waitCondition.TimedWait(m_mutex, loopSleep);
 
         if (WebOSDPage::Get() == nullptr && videoPlayer != nullptr) {
-            VideoPlayer *cp = videoPlayer;
-            videoPlayer = nullptr;
-            delete cp;
+            releasePlayer();
         }
     }
 }
