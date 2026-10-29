@@ -40,8 +40,12 @@ void VideoPlayer::Pause() {
 }
 
 void VideoPlayer::Resume() {
-    ResetVideo();
-    bufsize = 0;
+    // Only after a pause a new stream follows. Otherwise (e.g. unfreeze while
+    // playing) clearing the device would throw away the running stream.
+    if (pause) {
+        ResetVideo();
+        bufsize = 0;
+    }
 
     DevicePlay();
     pause = false;
