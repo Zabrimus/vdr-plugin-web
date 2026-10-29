@@ -75,18 +75,30 @@ bool TranscoderClient::ping() {
 template <typename F> bool TranscoderClient::processInternal(F&& request) {
     std::lock_guard<std::recursive_mutex> lock(transcoder_send_mutex);
 
-    if (!ping()) {
-        return false;
+    // no ping before every request, that doubles the round trips.
+    // If the connection is broken, reconnect once and repeat the request.
+    for (int attempt = 0; attempt < 2; ++attempt) {
+        if (!connect()) {
+            return false;
+        }
+
+        try {
+            return request();
+        } catch (OperationFailed &err) {
+            return false;
+        } catch (TTransportException &err) {
+            transport->close();
+            if (err.getType() == TTransportException::TIMED_OUT) {
+                // the request may have been processed, don't repeat it
+                return false;
+            }
+        } catch (TException &err) {
+            transport->close();
+            return false;
+        }
     }
 
-    try {
-        return request();
-    } catch (OperationFailed &err) {
-        return false;
-    } catch (TException &err) {
-        transport->close();
-        return false;
-    }
+    return false;
 }
 
 bool TranscoderClient::Probe(std::string&result,
