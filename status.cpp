@@ -93,6 +93,11 @@ void cHbbtvDeviceStatus::ChannelSwitch(const cDevice * vdrDevice, int channelNum
 #else
          auto channel = Channels->GetByNumber(channelNumber);
 #endif
+         if (channel == nullptr) {
+            device = nullptr;
+            return;
+         }
+
          sid = channel->Sid();
 
          const char* buffer = toChannelJson(channel);
