@@ -18,7 +18,10 @@ void vdrClientOutputFunction(const char* msg) {
 VdrClient::VdrClient(std::string vdrIp, int vdrPort) {
     DEBUGLOG("Construct VdrClient");
 
-    std::shared_ptr<TTransport> socket(new TSocket(vdrIp, vdrPort));
+    std::shared_ptr<TSocket> socket(new TSocket(vdrIp, vdrPort));
+    socket->setConnTimeout(3000);
+    socket->setSendTimeout(10000);
+    socket->setRecvTimeout(10000);   // ProcessTSPacket may wait up to 5s for the device
     transport = static_cast<const std::shared_ptr<TTransport>>(new TBufferedTransport(socket));
     std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
 

@@ -19,6 +19,9 @@ BrowserClient::BrowserClient(std::string vdrIp, int vdrPort) {
     DEBUGLOG("Construct BrowserClient");
 
     socket = std::make_shared<TSocket>(vdrIp, vdrPort);
+    socket->setConnTimeout(3000);
+    socket->setSendTimeout(10000);
+    socket->setRecvTimeout(10000);
     transport = static_cast<const std::shared_ptr<TTransport>>(new TBufferedTransport(socket));
     std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
 

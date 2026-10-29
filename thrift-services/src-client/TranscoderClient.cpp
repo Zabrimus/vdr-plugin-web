@@ -18,7 +18,10 @@ void transcoderClientOutputFunction(const char* msg) {
 TranscoderClient::TranscoderClient(std::string vdrIp, int vdrPort) {
     DEBUGLOG("Construct TranscoderClient");
 
-    std::shared_ptr<TTransport> socket(new TSocket(vdrIp, vdrPort));
+    std::shared_ptr<TSocket> socket(new TSocket(vdrIp, vdrPort));
+    socket->setConnTimeout(3000);
+    socket->setSendTimeout(10000);
+    socket->setRecvTimeout(60000);   // Probe of a slow stream can take a while
     transport = static_cast<const std::shared_ptr<TTransport>>(new TBufferedTransport(socket));
     std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
 
