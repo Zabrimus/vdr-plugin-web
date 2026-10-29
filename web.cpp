@@ -99,6 +99,9 @@ void createTSFileName() {
 
 extern WebOSDPage *playerWebOsdPage;
 
+// videoPlayer is used by the thrift worker threads and cRegularWorker
+std::recursive_mutex playerMutex;
+
 // Returns true if c is the currently launched cControl
 static bool isCurrentControl(cControl *c) {
 #if VDRVERSNUM >= 20803
@@ -122,6 +125,8 @@ static bool isCurrentControl(cControl *c) {
 // keep a dangling cControl::player, and an existing page must not be passed to
 // cControl::Launch() again, because Launch() deletes the current control first.
 static void releasePlayer() {
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
     WebOSDPage *page = playerWebOsdPage;
     if (page != nullptr) {
         page->SetPlayer(nullptr);
@@ -141,6 +146,8 @@ static void releasePlayer() {
 }
 
 void stopVideo() {
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
     if (videoPlayer != nullptr) {
         releasePlayer();
 
@@ -208,6 +215,8 @@ bool VdrPluginWebServer::ProcessTSPacket(const ProcessTSPacketType &input) {
         }
     }
 
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
     if (videoPlayer != nullptr) {
         videoPlayer->PlayPacket((uint8_t *) input.ts.c_str(), (int) input.ts.length());
 
@@ -228,6 +237,8 @@ bool VdrPluginWebServer::ProcessTSPacket(const ProcessTSPacketType &input) {
 
 bool VdrPluginWebServer::StartVideo(const StartVideoType &input) {
     dsyslog("[vdrweb] StartVideo received");
+
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
 
     WebOSDPage* page;
     nextOsdCommand = CLOSE;
@@ -266,6 +277,8 @@ bool VdrPluginWebServer::StopVideo() {
 bool VdrPluginWebServer::PauseVideo() {
     dsyslog("[vdrweb] PauseVideo received");
 
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
     if (videoPlayer != nullptr) {
         videoPlayer->Pause();
     }
@@ -276,6 +289,8 @@ bool VdrPluginWebServer::PauseVideo() {
 bool VdrPluginWebServer::ResumeVideo() {
     dsyslog("[vdrweb] ResumeVideo received");
 
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
     if (videoPlayer != nullptr) {
         videoPlayer->Resume();
     }
@@ -285,6 +300,8 @@ bool VdrPluginWebServer::ResumeVideo() {
 
 bool VdrPluginWebServer::Seeked() {
     dsyslog("[vdrweb] Seeked received");
+
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
 
     if (videoPlayer != nullptr) {
         videoPlayer->ResetVideo();
@@ -326,6 +343,8 @@ bool VdrPluginWebServer::ResetVideo(const ResetVideoType &input) {
         }
     }
 
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
     if (videoPlayer != nullptr) {
         // TODO: Compare saved videoInfo with new value to determine
         //   if DeviceClear is sufficient or a complete reset is necessary
@@ -362,6 +381,8 @@ bool VdrPluginWebServer::ResetVideo(const ResetVideoType &input) {
 bool VdrPluginWebServer::SelectAudioTrack(const SelectAudioTrackType &input) {
     dsyslog("[vdrweb] SelectAudioTrack received");
 
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
     if (videoPlayer != nullptr) {
         auto track = input.audioTrack;
         videoPlayer->SelectAudioTrack(track);
@@ -371,6 +392,7 @@ bool VdrPluginWebServer::SelectAudioTrack(const SelectAudioTrackType &input) {
 }
 
 bool VdrPluginWebServer::IsWebActive() {
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
     return (WebOSDPage::Get() != nullptr) || (videoPlayer != nullptr);
 }
 
@@ -428,6 +450,7 @@ void cRegularWorker::Action() {
     while (Running()) {
         m_waitCondition.TimedWait(m_mutex, loopSleep);
 
+        std::lock_guard<std::recursive_mutex> lock(playerMutex);
         if (WebOSDPage::Get() == nullptr && videoPlayer != nullptr) {
             releasePlayer();
         }
