@@ -14,6 +14,7 @@
 #include "ait.h"
 #include "status.h"
 #include "web.h"
+#include "jsonescape.h"
 
 #define PMT_SCAN_IDLE     5 // 60 //300    // seconds
 
@@ -40,7 +41,8 @@ const char *hbbtvJson = R"(
 
 inline const char* toHbbtvJson(const char* channelId, const char* channelName, int applicationId, int controlCode, const char* name, const char* urlBase, const char* urlLoc, const char* urlExt) {
     char *buffer;
-    asprintf(&buffer, hbbtvJson, channelId, channelName, applicationId, controlCode, name, urlBase, urlLoc, urlExt);
+    asprintf(&buffer, hbbtvJson, jsonEscape(channelId).c_str(), jsonEscape(channelName).c_str(), applicationId, controlCode,
+             jsonEscape(name).c_str(), jsonEscape(urlBase).c_str(), jsonEscape(urlLoc).c_str(), jsonEscape(urlExt).c_str());
     return buffer;
 }
 

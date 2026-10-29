@@ -12,6 +12,7 @@
 #include "ait.h"
 #include "BrowserClient.h"
 #include "webosdpage.h"
+#include "jsonescape.h"
 
 const char *channelJson = R"(
     {
@@ -57,7 +58,8 @@ inline const char* toChannelJson(const cChannel* channel) {
     }
 
     char *cmd;
-    asprintf(&cmd, channelJson, *channel->GetChannelID().ToString(), channelType, 1, channel->Nid(), channel->Tid(), channel->Sid(), channel->Name(), channel->Name(), 15);
+    std::string name = jsonEscape(channel->Name());
+    asprintf(&cmd, channelJson, *channel->GetChannelID().ToString(), channelType, 1, channel->Nid(), channel->Tid(), channel->Sid(), name.c_str(), name.c_str(), 15);
     return cmd;
 }
 
