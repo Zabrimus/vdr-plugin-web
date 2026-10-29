@@ -100,6 +100,13 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
     if (len) { // at least one tspacket
         // play saved partial packet
         if (bufsize) {
+            if (len < 188 - bufsize) {
+                // still not a complete packet
+                memcpy(buf + bufsize, buffer, len);
+                bufsize += len;
+                return;
+            }
+
             memcpy(buf + bufsize, buffer, 188 - bufsize);
             if (videoPlayer != nullptr) {
                 PlayTs(buf, 188);
