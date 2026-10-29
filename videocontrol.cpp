@@ -108,9 +108,8 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
             }
 
             memcpy(buf + bufsize, buffer, 188 - bufsize);
-            if (videoPlayer != nullptr) {
-                PlayTs(buf, 188);
-            } else {
+            if (!PlayData(buf, 188)) {
+                bufsize = 0;
                 return;
             }
 
