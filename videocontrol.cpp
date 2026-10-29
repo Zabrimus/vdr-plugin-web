@@ -128,44 +128,50 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
         }
 
         // now play packets
-        int retry_loop_count = 0;
-        while (len >= 188) {
-            int result = -1;
-            if (videoPlayer != nullptr) {
-                result = PlayTs(buffer, len);
-            } else {
-                return;
-            }
-
-            // play error.
-            if (result < 0) {
-                tsError = true;
-                return;
-            }
-
-            // packets not played
-            if (result == 0) {
-                // retry after some time, but increase retry_loop_count
-                if (retry_loop_count >= 10) {
-                    tsError = true;
-                    return;
-                } else {
-                    retry_loop_count++;
-                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-                    continue;
-                }
-            }
-
-            // packets accepted
-            len -= result;
-            buffer += result;
-
-            tsPlayed = true;
-        }
+        PlayData(buffer, len);
     }
 
 
+}
+
+bool VideoPlayer::PlayData(uint8_t *data, int len) {
+    // the device buffer may be full, wait up to 5 seconds without progress
+    int waited = 0;
+
+    while (len >= 188) {
+        if (videoPlayer == nullptr) {
+            return false;
+        }
+
+        int result = PlayTs(data, len);
+
+        // play error
+        if (result < 0) {
+            tsError = true;
+            return false;
+        }
+
+        // packets not played, retry after a short time
+        if (result == 0) {
+            if (waited >= 5000) {
+                tsError = true;
+                return false;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            waited += 5;
+            continue;
+        }
+
+        // packets accepted
+        len -= result;
+        data += result;
+        waited = 0;
+
+        tsPlayed = true;
+    }
+
+    return true;
 }
 
 void VideoPlayer::SelectAudioTrack(std::string track) {
