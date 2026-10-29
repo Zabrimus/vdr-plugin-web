@@ -26,7 +26,7 @@
 
 #define TSDIR  "%s/web/%s/%4d-%02d-%02d.%02d.%02d.%d-%d.rec"
 
-TThreadPoolServer *thriftServer;
+TThreadedServer *thriftServer;
 
 bool saveTS;
 char* currentTSFilename;
@@ -415,19 +415,15 @@ void VdrPluginWebCloneFactory::releaseHandler(CommonServiceIf* handler) {
 }
 
 void startServer() {
-    const int workerCount = 4;
-    std::shared_ptr<ThreadManager> threadManager = ThreadManager::newSimpleThreadManager(workerCount);
-    threadManager->threadFactory(std::make_shared<ThreadFactory>());
-    threadManager->start();
-
     std::string listenIp = bindAll ? "0.0.0.0" : vdrIp;
 
-    thriftServer = new TThreadPoolServer(
+    // one thread per connection: the clients keep their connections open, a fixed
+    // pool of 4 workers blocks any further client (e.g. a new transcoder stream)
+    thriftServer = new TThreadedServer(
             std::make_shared<VdrPluginWebProcessorFactory>(std::make_shared<VdrPluginWebCloneFactory>()),
             std::make_shared<TServerSocket>(listenIp, vdrPort),
             std::make_shared<TBufferedTransportFactory>(),
-            std::make_shared<TBinaryProtocolFactory>(),
-            threadManager);
+            std::make_shared<TBinaryProtocolFactory>());
 
     thriftServer->serve();
 }
