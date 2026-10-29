@@ -335,13 +335,14 @@ bool VdrPluginWebServer::ResetVideo(const ResetVideoType &input) {
         if (videoInfo != input.videoInfo) {
             dsyslog("[vdrweb] Device res requested, because of a video format change");
             // videoPlayer->ResetVideo();
-            cControl::Shutdown();
+            releasePlayer();
 
             WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, PLAYER);
             page->Display();
             videoPlayer = new VideoPlayer();
-            cControl::Launch(page);
             page->SetPlayer(videoPlayer);
+            cControl::Launch(page);
+            cControl::Attach();
         } else {
             dsyslog("[vdrweb] Device reset is sufficent, because video format does not change");
             videoPlayer->ResetVideo();
