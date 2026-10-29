@@ -553,6 +553,12 @@ cOsdObject *cPluginWeb::MainMenuAction() {
     LOCK_CHANNELS_READ
     const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
 
+    if (currentChannel == nullptr) {
+        esyslog("[vdrweb] MainMenuAction: no current channel");
+        nextOsdCommand = OPEN;
+        return nullptr;
+    }
+
     WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, OSD);
 
     if (nextOsdCommand == OPEN) {
