@@ -368,10 +368,26 @@ eOSState WebOSDPage::ProcessKey(eKeys Key) {
     if (pixmapVol && (time(NULL) - lastVolumeTime > 3))
         DeleteVolume();
 
-    auto search = ::keyMap.find(Key);
-    if (search != ::keyMap.end()) {
-        browserClient->ProcessKey(search->second);
+    if (Key & k_Release) {
         return osContinue;
+    }
+
+    // repeated keys (e.g. scrolling with a held arrow key) are sent as normal keys
+    eKeys key = NORMALKEY(Key);
+
+    auto search = ::keyMap.find(key);
+    if (search != ::keyMap.end() && browserClient->ProcessKey(search->second)) {
+        return osContinue;
+    }
+
+    // The application doesn't use this key (not in its keyset or not mapped).
+    // Like a TV: the numeric and channel keys switch the channel. Close the page
+    // and let VDR handle the key in normal viewing mode.
+    bool isChannelKey = (key >= k0 && key <= k9) || key == kChanUp || key == kChanDn || key == kChanPrev;
+    if (isChannelKey && !(Key & k_Repeat)) {
+        dsyslog("[vdrweb] key %d not used by the application, pass it to VDR", (int)key);
+        cRemote::Put(key);
+        return osEnd;
     }
 
     return osContinue;
