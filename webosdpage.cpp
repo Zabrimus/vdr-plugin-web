@@ -419,5 +419,6 @@ void WebOSDPage::DeleteVolume(void) {
 cOsdObject *WebOSDPage::GetInfo() {
     dsyslog("[vdrweb] WebOSDPage::GetInfo...");
 
-    return this;
+    // VDR deletes the returned object after closing the info menu
+    return nullptr;
 }
