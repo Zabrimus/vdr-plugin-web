@@ -7,6 +7,9 @@
  */
 
 #include <vdr/channels.h>
+#include <string>
+#include <vector>
+#include <algorithm>
 #include "web.h"
 #include "status.h"
 #include "ait.h"
@@ -39,6 +42,51 @@ const char *channelJson = R"(
     }
 )";
 
+// The audio and subtitle tracks of the channel, ordered by PID like the
+// track list VDR uses for the track selection (VideoPlayer::SelectTrack).
+static std::string channelComponentsJson(const cChannel* channel) {
+    struct track {
+        int pid;
+        std::string json;
+    };
+
+    std::vector<track> audio;
+    for (int i = 0; channel->Apid(i); ++i) {
+        int type = channel->Atype(i);
+        const char *encoding = (type == 0x0F || type == 0x11) ? "audio/mp4" : "audio/mpeg";
+        audio.push_back({ channel->Apid(i), *cString::sprintf("{\"pid\":%d,\"language\":\"%s\",\"encoding\":\"%s\"}",
+                                                           channel->Apid(i), jsonEscape(channel->Alang(i)).c_str(), encoding) });
+    }
+    for (int i = 0; channel->Dpid(i); ++i) {
+        audio.push_back({ channel->Dpid(i), *cString::sprintf("{\"pid\":%d,\"language\":\"%s\",\"encoding\":\"audio/ac3\"}",
+                                                           channel->Dpid(i), jsonEscape(channel->Dlang(i)).c_str()) });
+    }
+
+    std::vector<track> subtitles;
+    for (int i = 0; channel->Spid(i); ++i) {
+        // subtitling types 0x20-0x25: for the hard of hearing
+        bool hearingImpaired = channel->SubtitlingType(i) >= 0x20 && channel->SubtitlingType(i) <= 0x25;
+        subtitles.push_back({ channel->Spid(i), *cString::sprintf("{\"pid\":%d,\"language\":\"%s\",\"hearingImpaired\":%s}",
+                                                               channel->Spid(i), jsonEscape(channel->Slang(i)).c_str(), hearingImpaired ? "true" : "false") });
+    }
+
+    auto byPid = [](const track& a, const track& b) { return a.pid < b.pid; };
+    std::sort(audio.begin(), audio.end(), byPid);
+    std::sort(subtitles.begin(), subtitles.end(), byPid);
+
+    std::string result = "{\"audio\":[";
+    for (size_t i = 0; i < audio.size(); ++i) {
+        result += (i ? "," : "") + audio[i].json;
+    }
+    result += "],\"subtitle\":[";
+    for (size_t i = 0; i < subtitles.size(); ++i) {
+        result += (i ? "," : "") + subtitles[i].json;
+    }
+    result += "]}";
+
+    return result;
+}
+
 inline const char* toChannelJson(const cChannel* channel) {
     // longName, Name => currentChannel
     // nid            => ??? (use 1 as default)
@@ -60,7 +108,15 @@ inline const char* toChannelJson(const cChannel* channel) {
     char *cmd;
     std::string name = jsonEscape(channel->Name());
     asprintf(&cmd, channelJson, *channel->GetChannelID().ToString(), channelType, 1, channel->Nid(), channel->Tid(), channel->Sid(), name.c_str(), name.c_str(), 15);
-    return cmd;
+
+    // add the tracks of the channel
+    std::string json = cmd;
+    free(cmd);
+
+    auto end = json.find_last_of('}');
+    json = json.substr(0, end) + ",\n        \"components\": " + channelComponentsJson(channel) + "\n    }\n";
+
+    return strdup(json.c_str());
 }
 
 cHbbtvDeviceStatus::cHbbtvDeviceStatus() {
