@@ -9,6 +9,7 @@
 #pragma once
 
 #include <vdr/status.h>
+#include <vdr/epg.h>
 #include "ait.h"
 
 class cHbbtvDeviceStatus : public cStatus
@@ -18,6 +19,7 @@ private:
    cAitFilter *aitFilter;
    int sid;
    int volume = 0;
+   tEventID lastPresentEventId = 0;
 protected:
    void ChannelSwitch(const cDevice *device, int channelNumber, bool LiveView) override;
    virtual void SetVolume(int Volume, bool Absolute);
@@ -26,4 +28,7 @@ public:
    cHbbtvDeviceStatus();
    ~cHbbtvDeviceStatus() override;
    int Sid() const { return sid; }
+
+   // called regularly, sends the channel again if the present programme changes
+   void CheckProgramme();
 };

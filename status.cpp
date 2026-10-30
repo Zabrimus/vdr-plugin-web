@@ -87,6 +87,50 @@ static std::string channelComponentsJson(const cChannel* channel) {
     return result;
 }
 
+static std::string programmeJson(const cEvent *event) {
+    if (event == nullptr) {
+        return "";
+    }
+
+    std::string ratings = "[]";
+    if (event->ParentalRating() > 0) {
+        // dvb-si scheme: the name is the minimum age, the value the rating of the descriptor
+        ratings = *cString::sprintf("[{\"name\":\"%d\",\"scheme\":\"dvb-si\",\"value\":%d,\"region\":\"de\"}]",
+                                    event->ParentalRating(), event->ParentalRating() - 3);
+    }
+
+    return *cString::sprintf("{\"programmeID\":\"%u\",\"name\":\"%s\",\"description\":\"%s\",\"longDescription\":\"%s\","
+                             "\"startTime\":%ld,\"duration\":%d,\"parentalRatings\":%s}",
+                             event->EventID(), jsonEscape(event->Title()).c_str(), jsonEscape(event->ShortText()).c_str(),
+                             jsonEscape(event->Description()).c_str(), (long) event->StartTime(), event->Duration(), ratings.c_str());
+}
+
+// present and following programme of the channel (video/broadcast programmes)
+static std::string channelProgrammesJson(const cChannel* channel, tEventID *presentId = nullptr) {
+    std::string result = "[";
+
+    LOCK_SCHEDULES_READ
+    const cSchedule *schedule = Schedules->GetSchedule(channel);
+    if (schedule != nullptr) {
+        const cEvent *present = schedule->GetPresentEvent();
+        const cEvent *following = schedule->GetFollowingEvent();
+
+        if (presentId != nullptr) {
+            *presentId = present ? present->EventID() : 0;
+        }
+
+        std::string p = programmeJson(present);
+        std::string f = programmeJson(following);
+        result += p;
+        if (!p.empty() && !f.empty()) {
+            result += ",";
+        }
+        result += f;
+    }
+
+    return result + "]";
+}
+
 inline const char* toChannelJson(const cChannel* channel) {
     // longName, Name => currentChannel
     // nid            => ??? (use 1 as default)
@@ -114,7 +158,8 @@ inline const char* toChannelJson(const cChannel* channel) {
     free(cmd);
 
     auto end = json.find_last_of('}');
-    json = json.substr(0, end) + ",\n        \"components\": " + channelComponentsJson(channel) + "\n    }\n";
+    json = json.substr(0, end) + ",\n        \"components\": " + channelComponentsJson(channel) +
+                                 ",\n        \"programmes\": " + channelProgrammesJson(channel) + "\n    }\n";
 
     return strdup(json.c_str());
 }
@@ -157,6 +202,7 @@ void cHbbtvDeviceStatus::ChannelSwitch(const cDevice * vdrDevice, int channelNum
          }
 
          sid = channel->Sid();
+         lastPresentEventId = 0;
 
          const char* buffer = toChannelJson(channel);
          browserClient->InsertChannel(buffer);
@@ -166,6 +212,37 @@ void cHbbtvDeviceStatus::ChannelSwitch(const cDevice * vdrDevice, int channelNum
          isyslog("[vdrweb] Attached HbbTV ait filter to device %d, vdrDev=%d actDev=%d, Sid=0x%04x", device->CardIndex()+1, vdrDevice->CardIndex()+1,cDevice::ActualDevice()->CardIndex()+1, sid);
       }
    }
+}
+
+// The present programme changes, or the EPG arrives after the channel switch.
+// Send the channel again, the browser updates the running application.
+void cHbbtvDeviceStatus::CheckProgramme() {
+    if (sid < 0 || browserClient == nullptr) {
+        return;
+    }
+
+    std::string buffer;
+    {
+        LOCK_CHANNELS_READ
+        const cChannel *channel = Channels->GetByNumber(cDevice::CurrentChannel());
+        if (channel == nullptr) {
+            return;
+        }
+
+        tEventID presentId = 0;
+        channelProgrammesJson(channel, &presentId);
+
+        if (presentId == lastPresentEventId) {
+            return;
+        }
+        lastPresentEventId = presentId;
+
+        const char *json = toChannelJson(channel);
+        buffer = json;
+        free((void *) json);
+    }
+
+    browserClient->InsertChannel(buffer);
 }
 
 void cHbbtvDeviceStatus::SetVolume(int Volume, bool Absolute) {

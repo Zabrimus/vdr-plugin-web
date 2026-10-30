@@ -481,6 +481,10 @@ void cRegularWorker::Action() {
             }
         }
 
+        if (hbbtvDeviceStatus != nullptr) {
+            hbbtvDeviceStatus->CheckProgramme();
+        }
+
         // tell the browser what is really displayed, the transparent video in the
         // browser runs independently (position, end of video, buffering)
         if (sendStatus && browserClient != nullptr) {
