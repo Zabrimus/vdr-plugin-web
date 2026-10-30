@@ -23,6 +23,7 @@
 #include "videocontrol.h"
 #include "dummyosd.h"
 #include "debuglog.h"
+#include "streamevent.h"
 
 #define TSDIR  "%s/web/%s/%4d-%02d-%02d.%02d.%02d.%d-%d.rec"
 
@@ -411,8 +412,8 @@ bool VdrPluginWebServer::EndOfStream() {
 }
 
 bool VdrPluginWebServer::StreamEventFilter(const StreamEventFilterType &input) {
-    // not supported yet
-    return false;
+    dsyslog("[vdrweb] StreamEventFilter: component tag %d, %s", input.componentTag, input.enable ? "on" : "off");
+    return StreamEventsRequest(input.componentTag, input.enable);
 }
 
 VdrPluginWebIf *VdrPluginWebCloneFactory::getHandler(const TConnectionInfo &connInfo) {
@@ -604,6 +605,8 @@ void cPluginWeb::Stop() {
     browserClient = nullptr;
 
     regularWorker->Stop();
+
+    StreamEventsShutdown();
 
     if (hbbtvDeviceStatus != nullptr) {
         delete hbbtvDeviceStatus;

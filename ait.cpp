@@ -15,6 +15,7 @@
 #include "status.h"
 #include "web.h"
 #include "jsonescape.h"
+#include "streamevent.h"
 
 #define PMT_SCAN_IDLE     5 // 60 //300    // seconds
 
@@ -241,6 +242,13 @@ void cAitFilter::Process(u_short Pid, u_char Tid, const u_char *Data, int Length
             // Scan the stream-specific loop:
             SI::PMT::Stream stream;
             for (SI::Loop::Iterator it; pmt.streamLoop.getNext(stream, it);) {
+                // component tags for the stream events
+                SI::Descriptor *sd;
+                for (SI::Loop::Iterator its; (sd = stream.streamDescriptors.getNext(its, SI::StreamIdentifierDescriptorTag));) {
+                    StreamEventsComponent(((SI::StreamIdentifierDescriptor *) sd)->getComponentTag(), stream.getPid());
+                    delete sd;
+                }
+
                 if (stream.getStreamType() == 0x05) {
                     SI::Descriptor *d;
                     for (SI::Loop::Iterator it2; (d = stream.streamDescriptors.getNext(it2,
