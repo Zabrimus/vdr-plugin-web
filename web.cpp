@@ -401,7 +401,12 @@ bool VdrPluginWebServer::SelectSubtitleTrack(const SelectSubtitleTrackType &inpu
 }
 
 bool VdrPluginWebServer::EndOfStream() {
-    // not supported yet
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
+    if (videoPlayer != nullptr) {
+        videoPlayer->SetEndOfStream();
+    }
+
     return true;
 }
 
@@ -460,9 +465,26 @@ void cRegularWorker::Action() {
     while (Running()) {
         m_waitCondition.TimedWait(m_mutex, loopSleep);
 
-        std::lock_guard<std::recursive_mutex> lock(playerMutex);
-        if (WebOSDPage::Get() == nullptr && videoPlayer != nullptr) {
-            releasePlayer();
+        bool sendStatus = false;
+        int64_t position = -1;
+        int state = 0;
+
+        {
+            std::lock_guard<std::recursive_mutex> lock(playerMutex);
+            if (WebOSDPage::Get() == nullptr && videoPlayer != nullptr) {
+                releasePlayer();
+            }
+
+            if (videoPlayer != nullptr) {
+                videoPlayer->GetStatus(position, state);
+                sendStatus = true;
+            }
+        }
+
+        // tell the browser what is really displayed, the transparent video in the
+        // browser runs independently (position, end of video, buffering)
+        if (sendStatus && browserClient != nullptr) {
+            browserClient->PlayerStatus(position, state);
         }
     }
 }

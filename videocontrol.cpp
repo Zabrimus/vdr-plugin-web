@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "BrowserClient.h"
 #include "videocontrol.h"
+#include <vdr/remux.h>
 
 bool isPlayerActivated;
 
@@ -14,6 +15,7 @@ VideoPlayer::VideoPlayer() {
     pause = false;
     bufsize = 0;
     tsPlayed = false;
+    ResetStatus();
 }
 
 VideoPlayer::~VideoPlayer() {
@@ -58,6 +60,74 @@ void VideoPlayer::setVideoFullscreen() {
     cDevice::PrimaryDevice()->ScaleVideo(cRect::Null);
 }
 
+void VideoPlayer::ResetStatus() {
+    firstPts = -1;
+    lastPts = -1;
+    endOfStream = false;
+    lastStc = -1;
+    stcStall.Set();
+    lastData.Set();
+}
+
+void VideoPlayer::SetEndOfStream() {
+    dsyslog("[vdrweb] end of stream");
+    endOfStream = true;
+}
+
+// remember the first and the last PTS of the video stream
+void VideoPlayer::ScanPts(const uint8_t *data, int len) {
+    for (; len >= TS_SIZE; data += TS_SIZE, len -= TS_SIZE) {
+        if (data[0] != TS_SYNC_BYTE || !TsHasPayload(data) || !TsPayloadStart(data)) {
+            continue;
+        }
+
+        const uchar *payload = data;
+        int length = TsGetPayload(&payload);
+
+        // PES of a video stream (stream id 0xE0 - 0xEF)
+        if (length >= 14 && payload[0] == 0 && payload[1] == 0 && payload[2] == 1 &&
+            (payload[3] & 0xF0) == 0xE0 && PesHasPts(payload)) {
+            lastPts = PesGetPts(payload);
+            if (firstPts < 0) {
+                firstPts = lastPts;
+            }
+        }
+    }
+
+    lastData.Set();
+}
+
+void VideoPlayer::GetStatus(int64_t &position, int &state) {
+    int64_t stc = (int64_t) DeviceGetSTC();
+    bool stcValid = stc >= 0 && stc != (int64_t) -1 && firstPts >= 0;
+
+    if (stcValid && stc != lastStc) {
+        lastStc = stc;
+        stcStall.Set();
+    }
+
+    position = -1;
+    if (stcValid) {
+        int64_t diff = PtsDiff(firstPts, stc);
+        // ignore an STC which doesn't belong to this stream yet
+        if (diff >= 0 && diff < 24LL * 3600 * PTSTICKS) {
+            position = diff / (PTSTICKS / 1000);
+        }
+    }
+
+    if (pause) {
+        state = STATE_PAUSED;
+    } else if (endOfStream && (stcValid ? stcStall.Elapsed() >= 1000 : lastData.Elapsed() >= 3000)) {
+        // the decoder has shown the last picture
+        state = STATE_ENDED;
+    } else if (!endOfStream && stcValid && stcStall.Elapsed() >= 1500) {
+        // waiting for data
+        state = STATE_BUFFERING;
+    } else {
+        state = STATE_PLAYING;
+    }
+}
+
 void VideoPlayer::ResetVideo() {
     if (tsPlayed) {
         dsyslog("VideoPlayer::ResetVideo");
@@ -67,6 +137,9 @@ void VideoPlayer::ResetVideo() {
     }
 
     bufsize = 0;
+
+    // a new stream starts
+    ResetStatus();
 }
 
 void VideoPlayer::SetVideoSize(int x, int y, int width, int height) {
@@ -140,6 +213,8 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
 }
 
 bool VideoPlayer::PlayData(uint8_t *data, int len) {
+    ScanPts(data, len);
+
     // the device buffer may be full, wait up to 5 seconds without progress
     int waited = 0;
 
