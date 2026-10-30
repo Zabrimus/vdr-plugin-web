@@ -231,6 +231,37 @@ bool VdrClient::SelectAudioTrack(std::string& nr) {
     });
 }
 
+bool VdrClient::SelectSubtitleTrack(const std::string& nr) {
+    DEBUGLOG("VdrClient::SelectSubtitleTrack");
+
+    return processInternal([&]() -> bool {
+        SelectSubtitleTrackType input;
+        input.subtitleTrack = nr;
+
+        return client->SelectSubtitleTrack(input);
+    });
+}
+
+bool VdrClient::EndOfStream() {
+    DEBUGLOG("VdrClient::EndOfStream");
+
+    return processInternal([&]() -> bool {
+        return client->EndOfStream();
+    });
+}
+
+bool VdrClient::StreamEventFilter(int componentTag, bool enable) {
+    DEBUGLOG("VdrClient::StreamEventFilter");
+
+    return processInternal([&]() -> bool {
+        StreamEventFilterType input;
+        input.componentTag = componentTag;
+        input.enable = enable;
+
+        return client->StreamEventFilter(input);
+    });
+}
+
 bool VdrClient::IsWebActive() {
     // DEBUGLOG("VdrClient::IsWebActive");
 

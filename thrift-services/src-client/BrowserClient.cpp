@@ -227,3 +227,27 @@ bool BrowserClient::StopVideo(const std::string& reason) {
         return client->StopVideo(input);
     });
 }
+
+bool BrowserClient::PlayerStatus(int64_t position, int state) {
+    return processInternal([&]() -> bool {
+        PlayerStatusType input;
+        input.position = position;
+        input.state = state;
+
+        return client->PlayerStatus(input);
+    });
+}
+
+bool BrowserClient::StreamEvent(int componentTag, int eventId, const std::string& privateData, const std::string& status) {
+    DEBUGLOG("BrowserClient::StreamEvent: tag %d, id %d, %s", componentTag, eventId, status.c_str());
+
+    return processInternal([&]() -> bool {
+        StreamEventType input;
+        input.componentTag = componentTag;
+        input.eventId = eventId;
+        input.privateData = privateData;
+        input.status = status;
+
+        return client->StreamEvent(input);
+    });
+}

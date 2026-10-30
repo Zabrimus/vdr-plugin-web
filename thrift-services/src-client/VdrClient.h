@@ -38,6 +38,9 @@ public:
     bool VideoFullscreen();
 
     bool SelectAudioTrack(std::string& nr);
+    bool SelectSubtitleTrack(const std::string& nr);
+    bool EndOfStream();
+    bool StreamEventFilter(int componentTag, bool enable);
 
     bool IsWebActive();
 

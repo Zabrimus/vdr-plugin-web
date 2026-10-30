@@ -105,6 +105,9 @@ public:
     bool ResetVideo(const ResetVideoType& input) override;
     bool SelectAudioTrack(const SelectAudioTrackType& input) override;
     bool IsWebActive() override;
+    bool SelectSubtitleTrack(const SelectSubtitleTrackType& input) override;
+    bool EndOfStream() override;
+    bool StreamEventFilter(const StreamEventFilterType& input) override;
 };
 
 class VdrPluginWebCloneFactory : virtual public VdrPluginWebIfFactory {

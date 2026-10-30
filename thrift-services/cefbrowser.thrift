@@ -41,6 +41,18 @@ struct StopVideoType {
     1: string reason
 }
 
+struct PlayerStatusType {
+    1: i64 position,           // position of the displayed picture in ms
+    2: i32 state               // 0 = playing, 1 = paused, 2 = buffering, 3 = ended
+}
+
+struct StreamEventType {
+    1: i32 componentTag,
+    2: i32 eventId,
+    3: binary privateData,
+    4: string status           // "trigger" or "error"
+}
+
 service CefBrowser extends common.CommonService {
     bool LoadUrl(1: LoadUrlType input) throws (1:common.OperationFailed err),
     bool RedButton(1: RedButtonType input) throws (1:common.OperationFailed err),
@@ -50,5 +62,7 @@ service CefBrowser extends common.CommonService {
     bool StreamError(1: StreamErrorType input) throws (1:common.OperationFailed err),
     bool InsertHbbtv(1: InsertHbbtvType input) throws (1:common.OperationFailed err),
     bool InsertChannel(1: InsertChannelType input) throws (1:common.OperationFailed err),
-    bool StopVideo(1: StopVideoType input) throws (1:common.OperationFailed err)
+    bool StopVideo(1: StopVideoType input) throws (1:common.OperationFailed err),
+    bool PlayerStatus(1: PlayerStatusType input) throws (1:common.OperationFailed err),
+    bool StreamEvent(1: StreamEventType input) throws (1:common.OperationFailed err)
 }

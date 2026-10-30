@@ -36,6 +36,10 @@ class ResetVideoType;
 
 class SelectAudioTrackType;
 
+class SelectSubtitleTrackType;
+
+class StreamEventFilterType;
+
 typedef struct _ProcessOsdUpdateType__isset {
   _ProcessOsdUpdateType__isset() : disp_width(false), disp_height(false), x(false), y(false), width(false), height(false), data(false) {}
   bool disp_width :1;
@@ -339,6 +343,82 @@ class SelectAudioTrackType : public virtual ::apache::thrift::TBase {
 void swap(SelectAudioTrackType &a, SelectAudioTrackType &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const SelectAudioTrackType& obj);
+
+typedef struct _SelectSubtitleTrackType__isset {
+  _SelectSubtitleTrackType__isset() : subtitleTrack(false) {}
+  bool subtitleTrack :1;
+} _SelectSubtitleTrackType__isset;
+
+class SelectSubtitleTrackType : public virtual ::apache::thrift::TBase {
+ public:
+
+  SelectSubtitleTrackType(const SelectSubtitleTrackType&);
+  SelectSubtitleTrackType& operator=(const SelectSubtitleTrackType&);
+  SelectSubtitleTrackType() noexcept;
+
+  virtual ~SelectSubtitleTrackType() noexcept;
+  std::string subtitleTrack;
+
+  _SelectSubtitleTrackType__isset __isset;
+
+  void __set_subtitleTrack(const std::string& val);
+
+  bool operator == (const SelectSubtitleTrackType & rhs) const;
+  bool operator != (const SelectSubtitleTrackType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SelectSubtitleTrackType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SelectSubtitleTrackType &a, SelectSubtitleTrackType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const SelectSubtitleTrackType& obj);
+
+typedef struct _StreamEventFilterType__isset {
+  _StreamEventFilterType__isset() : componentTag(false), enable(false) {}
+  bool componentTag :1;
+  bool enable :1;
+} _StreamEventFilterType__isset;
+
+class StreamEventFilterType : public virtual ::apache::thrift::TBase {
+ public:
+
+  StreamEventFilterType(const StreamEventFilterType&) noexcept;
+  StreamEventFilterType& operator=(const StreamEventFilterType&) noexcept;
+  StreamEventFilterType() noexcept;
+
+  virtual ~StreamEventFilterType() noexcept;
+  int32_t componentTag;
+  bool enable;
+
+  _StreamEventFilterType__isset __isset;
+
+  void __set_componentTag(const int32_t val);
+
+  void __set_enable(const bool val);
+
+  bool operator == (const StreamEventFilterType & rhs) const;
+  bool operator != (const StreamEventFilterType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const StreamEventFilterType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(StreamEventFilterType &a, StreamEventFilterType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const StreamEventFilterType& obj);
 
 } // namespace
 

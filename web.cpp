@@ -396,6 +396,21 @@ bool VdrPluginWebServer::IsWebActive() {
     return (WebOSDPage::Get() != nullptr) || (videoPlayer != nullptr);
 }
 
+bool VdrPluginWebServer::SelectSubtitleTrack(const SelectSubtitleTrackType &input) {
+    // not supported yet
+    return false;
+}
+
+bool VdrPluginWebServer::EndOfStream() {
+    // not supported yet
+    return true;
+}
+
+bool VdrPluginWebServer::StreamEventFilter(const StreamEventFilterType &input) {
+    // not supported yet
+    return false;
+}
+
 VdrPluginWebIf *VdrPluginWebCloneFactory::getHandler(const TConnectionInfo &connInfo) {
     std::shared_ptr<TSocket> sock = std::dynamic_pointer_cast<TSocket>(connInfo.transport);
 

@@ -1026,4 +1026,231 @@ void SelectAudioTrackType::printTo(std::ostream& out) const {
   out << ")";
 }
 
+
+SelectSubtitleTrackType::~SelectSubtitleTrackType() noexcept {
+}
+
+SelectSubtitleTrackType::SelectSubtitleTrackType() noexcept
+   : subtitleTrack() {
+}
+
+void SelectSubtitleTrackType::__set_subtitleTrack(const std::string& val) {
+  this->subtitleTrack = val;
+}
+std::ostream& operator<<(std::ostream& out, const SelectSubtitleTrackType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t SelectSubtitleTrackType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->subtitleTrack);
+          this->__isset.subtitleTrack = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t SelectSubtitleTrackType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("SelectSubtitleTrackType");
+
+  xfer += oprot->writeFieldBegin("subtitleTrack", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->subtitleTrack);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(SelectSubtitleTrackType &a, SelectSubtitleTrackType &b) noexcept {
+  using ::std::swap;
+  swap(a.subtitleTrack, b.subtitleTrack);
+  swap(a.__isset, b.__isset);
+}
+
+bool SelectSubtitleTrackType::operator==(const SelectSubtitleTrackType & rhs) const
+{
+  if (!(subtitleTrack == rhs.subtitleTrack))
+    return false;
+  return true;
+}
+
+SelectSubtitleTrackType::SelectSubtitleTrackType(const SelectSubtitleTrackType& other14) {
+  subtitleTrack = other14.subtitleTrack;
+  __isset = other14.__isset;
+}
+SelectSubtitleTrackType& SelectSubtitleTrackType::operator=(const SelectSubtitleTrackType& other15) {
+  subtitleTrack = other15.subtitleTrack;
+  __isset = other15.__isset;
+  return *this;
+}
+void SelectSubtitleTrackType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "SelectSubtitleTrackType(";
+  out << "subtitleTrack=" << to_string(subtitleTrack);
+  out << ")";
+}
+
+
+StreamEventFilterType::~StreamEventFilterType() noexcept {
+}
+
+StreamEventFilterType::StreamEventFilterType() noexcept
+   : componentTag(0),
+     enable(0) {
+}
+
+void StreamEventFilterType::__set_componentTag(const int32_t val) {
+  this->componentTag = val;
+}
+
+void StreamEventFilterType::__set_enable(const bool val) {
+  this->enable = val;
+}
+std::ostream& operator<<(std::ostream& out, const StreamEventFilterType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t StreamEventFilterType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->componentTag);
+          this->__isset.componentTag = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->enable);
+          this->__isset.enable = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t StreamEventFilterType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("StreamEventFilterType");
+
+  xfer += oprot->writeFieldBegin("componentTag", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->componentTag);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("enable", ::apache::thrift::protocol::T_BOOL, 2);
+  xfer += oprot->writeBool(this->enable);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(StreamEventFilterType &a, StreamEventFilterType &b) noexcept {
+  using ::std::swap;
+  swap(a.componentTag, b.componentTag);
+  swap(a.enable, b.enable);
+  swap(a.__isset, b.__isset);
+}
+
+bool StreamEventFilterType::operator==(const StreamEventFilterType & rhs) const
+{
+  if (!(componentTag == rhs.componentTag))
+    return false;
+  if (!(enable == rhs.enable))
+    return false;
+  return true;
+}
+
+StreamEventFilterType::StreamEventFilterType(const StreamEventFilterType& other16) noexcept {
+  componentTag = other16.componentTag;
+  enable = other16.enable;
+  __isset = other16.__isset;
+}
+StreamEventFilterType& StreamEventFilterType::operator=(const StreamEventFilterType& other17) noexcept {
+  componentTag = other17.componentTag;
+  enable = other17.enable;
+  __isset = other17.__isset;
+  return *this;
+}
+void StreamEventFilterType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "StreamEventFilterType(";
+  out << "componentTag=" << to_string(componentTag);
+  out << ", " << "enable=" << to_string(enable);
+  out << ")";
+}
+
 } // namespace

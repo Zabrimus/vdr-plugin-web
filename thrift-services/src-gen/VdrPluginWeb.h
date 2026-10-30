@@ -36,6 +36,9 @@ class VdrPluginWebIf : virtual public  ::common::CommonServiceIf {
   virtual bool ResetVideo(const ResetVideoType& input) = 0;
   virtual bool SelectAudioTrack(const SelectAudioTrackType& input) = 0;
   virtual bool IsWebActive() = 0;
+  virtual bool SelectSubtitleTrack(const SelectSubtitleTrackType& input) = 0;
+  virtual bool EndOfStream() = 0;
+  virtual bool StreamEventFilter(const StreamEventFilterType& input) = 0;
 };
 
 class VdrPluginWebIfFactory : virtual public  ::common::CommonServiceIfFactory {
@@ -114,6 +117,18 @@ class VdrPluginWebNull : virtual public VdrPluginWebIf , virtual public  ::commo
     return _return;
   }
   bool IsWebActive() override {
+    bool _return = false;
+    return _return;
+  }
+  bool SelectSubtitleTrack(const SelectSubtitleTrackType& /* input */) override {
+    bool _return = false;
+    return _return;
+  }
+  bool EndOfStream() override {
+    bool _return = false;
+    return _return;
+  }
+  bool StreamEventFilter(const StreamEventFilterType& /* input */) override {
     bool _return = false;
     return _return;
   }
@@ -1333,6 +1348,290 @@ class VdrPluginWeb_IsWebActive_presult {
 
 };
 
+typedef struct _VdrPluginWeb_SelectSubtitleTrack_args__isset {
+  _VdrPluginWeb_SelectSubtitleTrack_args__isset() : input(false) {}
+  bool input :1;
+} _VdrPluginWeb_SelectSubtitleTrack_args__isset;
+
+class VdrPluginWeb_SelectSubtitleTrack_args {
+ public:
+
+  VdrPluginWeb_SelectSubtitleTrack_args(const VdrPluginWeb_SelectSubtitleTrack_args&);
+  VdrPluginWeb_SelectSubtitleTrack_args& operator=(const VdrPluginWeb_SelectSubtitleTrack_args&);
+  VdrPluginWeb_SelectSubtitleTrack_args() noexcept;
+
+  virtual ~VdrPluginWeb_SelectSubtitleTrack_args() noexcept;
+  SelectSubtitleTrackType input;
+
+  _VdrPluginWeb_SelectSubtitleTrack_args__isset __isset;
+
+  void __set_input(const SelectSubtitleTrackType& val);
+
+  bool operator == (const VdrPluginWeb_SelectSubtitleTrack_args & rhs) const;
+  bool operator != (const VdrPluginWeb_SelectSubtitleTrack_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VdrPluginWeb_SelectSubtitleTrack_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class VdrPluginWeb_SelectSubtitleTrack_pargs {
+ public:
+
+
+  virtual ~VdrPluginWeb_SelectSubtitleTrack_pargs() noexcept;
+  const SelectSubtitleTrackType* input;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _VdrPluginWeb_SelectSubtitleTrack_result__isset {
+  _VdrPluginWeb_SelectSubtitleTrack_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _VdrPluginWeb_SelectSubtitleTrack_result__isset;
+
+class VdrPluginWeb_SelectSubtitleTrack_result {
+ public:
+
+  VdrPluginWeb_SelectSubtitleTrack_result(const VdrPluginWeb_SelectSubtitleTrack_result&);
+  VdrPluginWeb_SelectSubtitleTrack_result& operator=(const VdrPluginWeb_SelectSubtitleTrack_result&);
+  VdrPluginWeb_SelectSubtitleTrack_result() noexcept;
+
+  virtual ~VdrPluginWeb_SelectSubtitleTrack_result() noexcept;
+  bool success;
+   ::common::OperationFailed err;
+
+  _VdrPluginWeb_SelectSubtitleTrack_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  void __set_err(const  ::common::OperationFailed& val);
+
+  bool operator == (const VdrPluginWeb_SelectSubtitleTrack_result & rhs) const;
+  bool operator != (const VdrPluginWeb_SelectSubtitleTrack_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VdrPluginWeb_SelectSubtitleTrack_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _VdrPluginWeb_SelectSubtitleTrack_presult__isset {
+  _VdrPluginWeb_SelectSubtitleTrack_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _VdrPluginWeb_SelectSubtitleTrack_presult__isset;
+
+class VdrPluginWeb_SelectSubtitleTrack_presult {
+ public:
+
+
+  virtual ~VdrPluginWeb_SelectSubtitleTrack_presult() noexcept;
+  bool* success;
+   ::common::OperationFailed err;
+
+  _VdrPluginWeb_SelectSubtitleTrack_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+
+class VdrPluginWeb_EndOfStream_args {
+ public:
+
+  VdrPluginWeb_EndOfStream_args(const VdrPluginWeb_EndOfStream_args&) noexcept;
+  VdrPluginWeb_EndOfStream_args& operator=(const VdrPluginWeb_EndOfStream_args&) noexcept;
+  VdrPluginWeb_EndOfStream_args() noexcept;
+
+  virtual ~VdrPluginWeb_EndOfStream_args() noexcept;
+
+  bool operator == (const VdrPluginWeb_EndOfStream_args & /* rhs */) const;
+  bool operator != (const VdrPluginWeb_EndOfStream_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VdrPluginWeb_EndOfStream_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class VdrPluginWeb_EndOfStream_pargs {
+ public:
+
+
+  virtual ~VdrPluginWeb_EndOfStream_pargs() noexcept;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _VdrPluginWeb_EndOfStream_result__isset {
+  _VdrPluginWeb_EndOfStream_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _VdrPluginWeb_EndOfStream_result__isset;
+
+class VdrPluginWeb_EndOfStream_result {
+ public:
+
+  VdrPluginWeb_EndOfStream_result(const VdrPluginWeb_EndOfStream_result&);
+  VdrPluginWeb_EndOfStream_result& operator=(const VdrPluginWeb_EndOfStream_result&);
+  VdrPluginWeb_EndOfStream_result() noexcept;
+
+  virtual ~VdrPluginWeb_EndOfStream_result() noexcept;
+  bool success;
+   ::common::OperationFailed err;
+
+  _VdrPluginWeb_EndOfStream_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  void __set_err(const  ::common::OperationFailed& val);
+
+  bool operator == (const VdrPluginWeb_EndOfStream_result & rhs) const;
+  bool operator != (const VdrPluginWeb_EndOfStream_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VdrPluginWeb_EndOfStream_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _VdrPluginWeb_EndOfStream_presult__isset {
+  _VdrPluginWeb_EndOfStream_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _VdrPluginWeb_EndOfStream_presult__isset;
+
+class VdrPluginWeb_EndOfStream_presult {
+ public:
+
+
+  virtual ~VdrPluginWeb_EndOfStream_presult() noexcept;
+  bool* success;
+   ::common::OperationFailed err;
+
+  _VdrPluginWeb_EndOfStream_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _VdrPluginWeb_StreamEventFilter_args__isset {
+  _VdrPluginWeb_StreamEventFilter_args__isset() : input(false) {}
+  bool input :1;
+} _VdrPluginWeb_StreamEventFilter_args__isset;
+
+class VdrPluginWeb_StreamEventFilter_args {
+ public:
+
+  VdrPluginWeb_StreamEventFilter_args(const VdrPluginWeb_StreamEventFilter_args&) noexcept;
+  VdrPluginWeb_StreamEventFilter_args& operator=(const VdrPluginWeb_StreamEventFilter_args&) noexcept;
+  VdrPluginWeb_StreamEventFilter_args() noexcept;
+
+  virtual ~VdrPluginWeb_StreamEventFilter_args() noexcept;
+  StreamEventFilterType input;
+
+  _VdrPluginWeb_StreamEventFilter_args__isset __isset;
+
+  void __set_input(const StreamEventFilterType& val);
+
+  bool operator == (const VdrPluginWeb_StreamEventFilter_args & rhs) const;
+  bool operator != (const VdrPluginWeb_StreamEventFilter_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VdrPluginWeb_StreamEventFilter_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class VdrPluginWeb_StreamEventFilter_pargs {
+ public:
+
+
+  virtual ~VdrPluginWeb_StreamEventFilter_pargs() noexcept;
+  const StreamEventFilterType* input;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _VdrPluginWeb_StreamEventFilter_result__isset {
+  _VdrPluginWeb_StreamEventFilter_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _VdrPluginWeb_StreamEventFilter_result__isset;
+
+class VdrPluginWeb_StreamEventFilter_result {
+ public:
+
+  VdrPluginWeb_StreamEventFilter_result(const VdrPluginWeb_StreamEventFilter_result&);
+  VdrPluginWeb_StreamEventFilter_result& operator=(const VdrPluginWeb_StreamEventFilter_result&);
+  VdrPluginWeb_StreamEventFilter_result() noexcept;
+
+  virtual ~VdrPluginWeb_StreamEventFilter_result() noexcept;
+  bool success;
+   ::common::OperationFailed err;
+
+  _VdrPluginWeb_StreamEventFilter_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  void __set_err(const  ::common::OperationFailed& val);
+
+  bool operator == (const VdrPluginWeb_StreamEventFilter_result & rhs) const;
+  bool operator != (const VdrPluginWeb_StreamEventFilter_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VdrPluginWeb_StreamEventFilter_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _VdrPluginWeb_StreamEventFilter_presult__isset {
+  _VdrPluginWeb_StreamEventFilter_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _VdrPluginWeb_StreamEventFilter_presult__isset;
+
+class VdrPluginWeb_StreamEventFilter_presult {
+ public:
+
+
+  virtual ~VdrPluginWeb_StreamEventFilter_presult() noexcept;
+  bool* success;
+   ::common::OperationFailed err;
+
+  _VdrPluginWeb_StreamEventFilter_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class VdrPluginWebClient : virtual public VdrPluginWebIf, public  ::common::CommonServiceClient {
  public:
   VdrPluginWebClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -1383,6 +1682,15 @@ class VdrPluginWebClient : virtual public VdrPluginWebIf, public  ::common::Comm
   bool IsWebActive() override;
   void send_IsWebActive();
   bool recv_IsWebActive();
+  bool SelectSubtitleTrack(const SelectSubtitleTrackType& input) override;
+  void send_SelectSubtitleTrack(const SelectSubtitleTrackType& input);
+  bool recv_SelectSubtitleTrack();
+  bool EndOfStream() override;
+  void send_EndOfStream();
+  bool recv_EndOfStream();
+  bool StreamEventFilter(const StreamEventFilterType& input) override;
+  void send_StreamEventFilter(const StreamEventFilterType& input);
+  bool recv_StreamEventFilter();
 };
 
 class VdrPluginWebProcessor : public  ::common::CommonServiceProcessor {
@@ -1406,6 +1714,9 @@ class VdrPluginWebProcessor : public  ::common::CommonServiceProcessor {
   void process_ResetVideo(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_SelectAudioTrack(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_IsWebActive(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_SelectSubtitleTrack(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_EndOfStream(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_StreamEventFilter(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   VdrPluginWebProcessor(::std::shared_ptr<VdrPluginWebIf> iface) :
      ::common::CommonServiceProcessor(iface),
@@ -1423,6 +1734,9 @@ class VdrPluginWebProcessor : public  ::common::CommonServiceProcessor {
     processMap_["ResetVideo"] = &VdrPluginWebProcessor::process_ResetVideo;
     processMap_["SelectAudioTrack"] = &VdrPluginWebProcessor::process_SelectAudioTrack;
     processMap_["IsWebActive"] = &VdrPluginWebProcessor::process_IsWebActive;
+    processMap_["SelectSubtitleTrack"] = &VdrPluginWebProcessor::process_SelectSubtitleTrack;
+    processMap_["EndOfStream"] = &VdrPluginWebProcessor::process_EndOfStream;
+    processMap_["StreamEventFilter"] = &VdrPluginWebProcessor::process_StreamEventFilter;
   }
 
   virtual ~VdrPluginWebProcessor() {}
@@ -1573,6 +1887,33 @@ class VdrPluginWebMultiface : virtual public VdrPluginWebIf, public  ::common::C
     return ifaces_[i]->IsWebActive();
   }
 
+  bool SelectSubtitleTrack(const SelectSubtitleTrackType& input) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->SelectSubtitleTrack(input);
+    }
+    return ifaces_[i]->SelectSubtitleTrack(input);
+  }
+
+  bool EndOfStream() override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->EndOfStream();
+    }
+    return ifaces_[i]->EndOfStream();
+  }
+
+  bool StreamEventFilter(const StreamEventFilterType& input) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->StreamEventFilter(input);
+    }
+    return ifaces_[i]->StreamEventFilter(input);
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -1628,6 +1969,15 @@ class VdrPluginWebConcurrentClient : virtual public VdrPluginWebIf, public  ::co
   bool IsWebActive() override;
   int32_t send_IsWebActive();
   bool recv_IsWebActive(const int32_t seqid);
+  bool SelectSubtitleTrack(const SelectSubtitleTrackType& input) override;
+  int32_t send_SelectSubtitleTrack(const SelectSubtitleTrackType& input);
+  bool recv_SelectSubtitleTrack(const int32_t seqid);
+  bool EndOfStream() override;
+  int32_t send_EndOfStream();
+  bool recv_EndOfStream(const int32_t seqid);
+  bool StreamEventFilter(const StreamEventFilterType& input) override;
+  int32_t send_StreamEventFilter(const StreamEventFilterType& input);
+  bool recv_StreamEventFilter(const int32_t seqid);
 };
 
 #ifdef _MSC_VER

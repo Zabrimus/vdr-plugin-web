@@ -45,6 +45,15 @@ struct SelectAudioTrackType {
     1: string audioTrack;
 }
 
+struct SelectSubtitleTrackType {
+    1: string subtitleTrack;   // index of the subtitle track, -1 switches subtitles off
+}
+
+struct StreamEventFilterType {
+    1: i32 componentTag,       // component tag of the elementary stream with the stream events
+    2: bool enable
+}
+
 service VdrPluginWeb extends common.CommonService {
     bool ProcessOsdUpdate(1: ProcessOsdUpdateType input) throws (1:common.OperationFailed err),
     bool ProcessOsdUpdateQOI(1: ProcessOsdUpdateQOIType input) throws (1:common.OperationFailed err),
@@ -58,5 +67,8 @@ service VdrPluginWeb extends common.CommonService {
     bool VideoFullscreen() throws (1:common.OperationFailed err),
     bool ResetVideo(1: ResetVideoType input) throws (1:common.OperationFailed err),
     bool SelectAudioTrack(1: SelectAudioTrackType input) throws (1:common.OperationFailed err),
-    bool IsWebActive() throws (1:common.OperationFailed err)
+    bool IsWebActive() throws (1:common.OperationFailed err),
+    bool SelectSubtitleTrack(1: SelectSubtitleTrackType input) throws (1:common.OperationFailed err),
+    bool EndOfStream() throws (1:common.OperationFailed err),
+    bool StreamEventFilter(1: StreamEventFilterType input) throws (1:common.OperationFailed err)
 }
