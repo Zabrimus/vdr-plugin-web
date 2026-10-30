@@ -383,12 +383,8 @@ bool VdrPluginWebServer::SelectAudioTrack(const SelectAudioTrackType &input) {
 
     std::lock_guard<std::recursive_mutex> lock(playerMutex);
 
-    if (videoPlayer != nullptr) {
-        auto track = input.audioTrack;
-        videoPlayer->SelectAudioTrack(track);
-    }
-
-    return true;
+    // also for live TV (video/broadcast), the tracks belong to the device
+    return VideoPlayer::SelectTrack(false, atoi(input.audioTrack.c_str()));
 }
 
 bool VdrPluginWebServer::IsWebActive() {
@@ -397,8 +393,11 @@ bool VdrPluginWebServer::IsWebActive() {
 }
 
 bool VdrPluginWebServer::SelectSubtitleTrack(const SelectSubtitleTrackType &input) {
-    // not supported yet
-    return false;
+    dsyslog("[vdrweb] SelectSubtitleTrack received");
+
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
+    return VideoPlayer::SelectTrack(true, atoi(input.subtitleTrack.c_str()));
 }
 
 bool VdrPluginWebServer::EndOfStream() {

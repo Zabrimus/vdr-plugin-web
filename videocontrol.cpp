@@ -1,5 +1,7 @@
 #include <chrono>
 #include <thread>
+#include <vector>
+#include <algorithm>
 #include "BrowserClient.h"
 #include "videocontrol.h"
 
@@ -177,7 +179,46 @@ bool VideoPlayer::PlayData(uint8_t *data, int len) {
     return true;
 }
 
-void VideoPlayer::SelectAudioTrack(std::string track) {
-    // TODO: Wie wechselt man den Audiotrack?
-    // printf("Anzahl der Audio-Tracks: %d\n", cDevice::PrimaryDevice()->NumAudioTracks());
+// Select a track by its index in the list of audio (subtitle) tracks ordered by PID.
+// The transcoder and the channel list (live TV) report the tracks in this order.
+// Works for the web video player and for live TV, the tracks belong to the device.
+bool VideoPlayer::SelectTrack(bool subtitle, int index) {
+    cDevice *device = cDevice::PrimaryDevice();
+
+    if (subtitle && index < 0) {
+        return device->SetCurrentSubtitleTrack(ttNone, true);
+    }
+
+    std::vector<std::pair<uint16_t, eTrackType>> tracks;
+
+    if (subtitle) {
+        for (int t = ttSubtitleFirst; t <= ttSubtitleLast; ++t) {
+            const tTrackId *track = device->GetTrack(eTrackType(t));
+            if (track && track->id) {
+                tracks.emplace_back(track->id, eTrackType(t));
+            }
+        }
+    } else {
+        for (int t = ttAudioFirst; t <= ttDolbyLast; ++t) {
+            const tTrackId *track = device->GetTrack(eTrackType(t));
+            if (track && track->id) {
+                tracks.emplace_back(track->id, eTrackType(t));
+            }
+        }
+    }
+
+    std::sort(tracks.begin(), tracks.end());
+
+    if (index < 0 || index >= (int)tracks.size()) {
+        esyslog("[vdrweb] %s track %d not available (%d tracks)", subtitle ? "subtitle" : "audio", index, (int)tracks.size());
+        return false;
+    }
+
+    dsyslog("[vdrweb] select %s track %d, pid %d", subtitle ? "subtitle" : "audio", index, tracks[index].first);
+
+    if (subtitle) {
+        return device->SetCurrentSubtitleTrack(tracks[index].second, true);
+    }
+
+    return device->SetCurrentAudioTrack(tracks[index].second);
 }
