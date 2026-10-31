@@ -20,5 +20,29 @@ msgstr ""
 msgid "Browser not available"
 msgstr "Der Browser ist nicht verfügbar"
 
+msgid "HbbTV available"
+msgstr "HbbTV verfügbar"
+
+msgid "bottom right"
+msgstr "unten rechts"
+
+msgid "bottom left"
+msgstr "unten links"
+
+msgid "top right"
+msgstr "oben rechts"
+
+msgid "top left"
+msgstr "oben links"
+
+msgid "Show HbbTV hint"
+msgstr "Hinweis \"HbbTV verfügbar\" anzeigen"
+
+msgid "HbbTV hint duration (s)"
+msgstr "Anzeigedauer des Hinweises (s)"
+
+msgid "HbbTV hint position"
+msgstr "Position des Hinweises"
+
 #~ msgid "RedButton Application not available"
 #~ msgstr "RedButton Applikation ist nicht verfügbar"

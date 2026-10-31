@@ -15,6 +15,7 @@
 #include "status.h"
 #include "web.h"
 #include "jsonescape.h"
+#include "hbbtvhint.h"
 #include "streamevent.h"
 
 #define PMT_SCAN_IDLE     5 // 60 //300    // seconds
@@ -152,6 +153,12 @@ cAIT::cAIT(const u_char *Data, u_short Pid) : SI::AIT(Data, true) {
 
         if (currentChannel == nullptr) {
             continue;
+        }
+
+        // an HbbTV application which starts automatically: show the HbbTV hint.
+        // The highest bit of the application type is the test application flag.
+        if ((getApplicationType() & 0x7FFF) == 0x0010 && aitApp.getControlCode() == acc_Autostart) {
+            cHbbtvHint::AutostartApplicationFound();
         }
 
         const char* buffer = toHbbtvJson(currentChannel->GetChannelID().ToString(), currentChannel->Name(), aitApp.getApplicationId(), aitApp.getControlCode(), nameBuffer, URLBaseBuffer, URLLocBuffer, URLExtBuffer);

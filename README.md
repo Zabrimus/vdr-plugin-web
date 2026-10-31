@@ -55,6 +55,23 @@ If set, then bind the internal HTTP server to all available network devices. Oth
 ### - / --name
 If set, then the menu entry will have a different name. Instead default ```web``` another name can be choosed.
 
+## Setup
+
+### HbbTV hint
+Like a TV, a small hint "HbbTV available" is shown after a channel switch, if the channel
+signals an HbbTV application which starts automatically (AIT control code AUTOSTART).
+The hint waits until other OSDs (e.g. the channel display) are closed and disappears
+after the configured time, on the next channel switch or if a menu is opened.
+
+VDR uses the red key itself. To start HbbTV with a key, map it to the plugin in
+`keymacros.conf`, e.g. `Red @web`.
+
+| Setup entry              | Default      | Description                    |
+|--------------------------|--------------|--------------------------------|
+| Show HbbTV hint          | yes          | Enables the hint               |
+| HbbTV hint duration (s)  | 7            | Display time in seconds (1-60) |
+| HbbTV hint position      | bottom right | Corner of the OSD area         |
+
 ## Logging
 Uses the VDR logging mechanism. Log entries can be found in ```/var/log/syslog``` with ```[vdrweb]``` prefix.
 

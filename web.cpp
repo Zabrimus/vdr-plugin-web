@@ -23,6 +23,7 @@
 #include "videocontrol.h"
 #include "dummyosd.h"
 #include "debuglog.h"
+#include "hbbtvhint.h"
 #include "streamevent.h"
 
 #define TSDIR  "%s/web/%s/%4d-%02d-%02d.%02d.%02d.%d-%d.rec"
@@ -628,6 +629,7 @@ void cPluginWeb::Housekeeping() {
 void cPluginWeb::MainThreadHook() {
     // Perform actions in the context of the main program thread.
     // WARNING: Use with great care - see PLUGINS.html!
+    cHbbtvHint::Process();
 }
 
 cString cPluginWeb::Active() {
@@ -642,6 +644,9 @@ time_t cPluginWeb::WakeupTime() {
 
 cOsdObject *cPluginWeb::MainMenuAction() {
     dsyslog("[vdrweb] MainMenuAction: command = %d\n", (int)nextOsdCommand);
+
+    // the application is started, the hint is not needed anymore
+    cHbbtvHint::Hide();
 
     if (nextOsdCommand == CLOSE) {
         nextOsdCommand = OPEN;
@@ -686,13 +691,21 @@ cOsdObject *cPluginWeb::MainMenuAction() {
 }
 
 cMenuSetupPage *cPluginWeb::SetupMenu() {
-    // Return a setup menu in case the plugin supports one.
-    return nullptr;
+    return new cMenuSetupWeb();
 }
 
 bool cPluginWeb::SetupParse(const char *Name, const char *Value) {
-    // Parse your own setup parameters and store their values.
-    return false;
+    if (!strcasecmp(Name, "HbbtvHint")) {
+        hbbtvHintSetup.enabled = atoi(Value);
+    } else if (!strcasecmp(Name, "HbbtvHintDuration")) {
+        hbbtvHintSetup.duration = constrain(atoi(Value), 1, 60);
+    } else if (!strcasecmp(Name, "HbbtvHintPosition")) {
+        hbbtvHintSetup.position = constrain(atoi(Value), 0, 3);
+    } else {
+        return false;
+    }
+
+    return true;
 }
 
 bool cPluginWeb::Service(const char *Id, void *Data = nullptr) {

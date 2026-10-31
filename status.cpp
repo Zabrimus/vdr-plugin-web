@@ -16,6 +16,7 @@
 #include "BrowserClient.h"
 #include "webosdpage.h"
 #include "jsonescape.h"
+#include "hbbtvhint.h"
 #include "streamevent.h"
 
 const char *channelJson = R"(
@@ -180,6 +181,9 @@ void cHbbtvDeviceStatus::ChannelSwitch(const cDevice * vdrDevice, int channelNum
    // otherwise ChannelNumber is the number of the channel that has been switched to.
    // LiveView tells whether this channel switch is for live viewing.
    if (LiveView) {
+      // a new channel needs its own HbbTV hint
+      cHbbtvHint::ChannelSwitch();
+
       // stream events belong to the channel
       StreamEventsChannelSwitch(nullptr);
 
