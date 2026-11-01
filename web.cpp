@@ -256,6 +256,7 @@ bool VdrPluginWebServer::StartVideo(const StartVideoType &input) {
     page->Display();
 
     videoPlayer = new VideoPlayer();
+    videoPlayer->SetMse(input.mse);
     page->SetPlayer(videoPlayer);
 
     cControl::Launch(page);
@@ -372,6 +373,7 @@ bool VdrPluginWebServer::ResetVideo(const ResetVideoType &input) {
             videoPlayer->ResetVideo();
         }
 
+        videoPlayer->SetMse(input.mse);
         VideoPlayer::SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
     } else {
         // TODO: Is it necessary to create a new Player?

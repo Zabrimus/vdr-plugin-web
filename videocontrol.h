@@ -12,6 +12,9 @@ public:
     void Pause();
     void Resume();
 
+    // MSE: the transcoder doesn't restart the stream after a pause, keep the data
+    void SetMse(bool on) { mse = on; }
+
     void PlayPacket(uint8_t *buffer, int len);
     static void SetVideoSize(int x, int y, int width, int height);
     static void setVideoFullscreen();
@@ -42,6 +45,7 @@ private:
 
 private:
     bool pause;
+    bool mse;
     bool tsError;
     bool tsPlayed;
 

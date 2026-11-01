@@ -13,6 +13,7 @@ static uchar buf[188], bufsize;
 VideoPlayer::VideoPlayer() {
     dsyslog("[vdrweb] Create Player...");
     pause = false;
+    mse = false;
     bufsize = 0;
     tsPlayed = false;
     ResetStatus();
@@ -46,7 +47,8 @@ void VideoPlayer::Pause() {
 void VideoPlayer::Resume() {
     // Only after a pause a new stream follows. Otherwise (e.g. unfreeze while
     // playing) clearing the device would throw away the running stream.
-    if (pause) {
+    // A MSE stream continues after the pause.
+    if (pause && !mse) {
         ResetVideo();
         bufsize = 0;
     }
@@ -171,7 +173,7 @@ void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {
     tsError = false;
 
     // if player is paused, discard all incoming packets
-    if (pause) {
+    if (pause && !mse) {
         // drop all packets if video is paused
         return;
     }
