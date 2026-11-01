@@ -417,6 +417,11 @@ bool VdrPluginWebServer::StreamEventFilter(const StreamEventFilterType &input) {
     return StreamEventsRequest(input.componentTag, input.enable);
 }
 
+bool VdrPluginWebServer::ProcessOsdFrame(const ProcessOsdFrameType &input) {
+    // not supported yet
+    throw createException(400, "ProcessOsdFrame not supported");
+}
+
 VdrPluginWebIf *VdrPluginWebCloneFactory::getHandler(const TConnectionInfo &connInfo) {
     std::shared_ptr<TSocket> sock = std::dynamic_pointer_cast<TSocket>(connInfo.transport);
 

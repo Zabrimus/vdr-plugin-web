@@ -75,6 +75,11 @@ class CefBrowserHandler : virtual public CefBrowserIf {
     printf("StreamEvent\n");
   }
 
+  bool SetRenderParameters(const RenderParametersType& input) {
+    // Your implementation goes here
+    printf("SetRenderParameters\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

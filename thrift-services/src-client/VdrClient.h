@@ -26,6 +26,7 @@ public:
     bool ProcessOsdUpdate(int disp_width, int disp_height, int x, int y, int width, int height, std::string& data);
     bool ProcessOsdUpdateQoi(int disp_width, int disp_height, int x, int y, const std::string& imageQoi);
     bool ProcessTSPacket(std::string& packets);
+    bool ProcessOsdFrame(int render_width, int render_height, bool qoi, const std::vector<OsdRectType>& rects);
 
     bool StartVideo(std::string& videoInfo);
     bool StopVideo();

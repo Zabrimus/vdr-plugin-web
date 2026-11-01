@@ -231,6 +231,18 @@ bool VdrClient::SelectAudioTrack(std::string& nr) {
     });
 }
 
+bool VdrClient::ProcessOsdFrame(int render_width, int render_height, bool qoi, const std::vector<OsdRectType>& rects) {
+    return processInternal([&]() -> bool {
+        ProcessOsdFrameType input;
+        input.render_width = render_width;
+        input.render_height = render_height;
+        input.qoi = qoi;
+        input.rects = rects;
+
+        return client->ProcessOsdFrame(input);
+    });
+}
+
 bool VdrClient::SelectSubtitleTrack(const std::string& nr) {
     DEBUGLOG("VdrClient::SelectSubtitleTrack");
 

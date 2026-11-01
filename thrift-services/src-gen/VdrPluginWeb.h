@@ -39,6 +39,7 @@ class VdrPluginWebIf : virtual public  ::common::CommonServiceIf {
   virtual bool SelectSubtitleTrack(const SelectSubtitleTrackType& input) = 0;
   virtual bool EndOfStream() = 0;
   virtual bool StreamEventFilter(const StreamEventFilterType& input) = 0;
+  virtual bool ProcessOsdFrame(const ProcessOsdFrameType& input) = 0;
 };
 
 class VdrPluginWebIfFactory : virtual public  ::common::CommonServiceIfFactory {
@@ -129,6 +130,10 @@ class VdrPluginWebNull : virtual public VdrPluginWebIf , virtual public  ::commo
     return _return;
   }
   bool StreamEventFilter(const StreamEventFilterType& /* input */) override {
+    bool _return = false;
+    return _return;
+  }
+  bool ProcessOsdFrame(const ProcessOsdFrameType& /* input */) override {
     bool _return = false;
     return _return;
   }
@@ -1632,6 +1637,104 @@ class VdrPluginWeb_StreamEventFilter_presult {
 
 };
 
+typedef struct _VdrPluginWeb_ProcessOsdFrame_args__isset {
+  _VdrPluginWeb_ProcessOsdFrame_args__isset() : input(false) {}
+  bool input :1;
+} _VdrPluginWeb_ProcessOsdFrame_args__isset;
+
+class VdrPluginWeb_ProcessOsdFrame_args {
+ public:
+
+  VdrPluginWeb_ProcessOsdFrame_args(const VdrPluginWeb_ProcessOsdFrame_args&);
+  VdrPluginWeb_ProcessOsdFrame_args& operator=(const VdrPluginWeb_ProcessOsdFrame_args&);
+  VdrPluginWeb_ProcessOsdFrame_args() noexcept;
+
+  virtual ~VdrPluginWeb_ProcessOsdFrame_args() noexcept;
+  ProcessOsdFrameType input;
+
+  _VdrPluginWeb_ProcessOsdFrame_args__isset __isset;
+
+  void __set_input(const ProcessOsdFrameType& val);
+
+  bool operator == (const VdrPluginWeb_ProcessOsdFrame_args & rhs) const;
+  bool operator != (const VdrPluginWeb_ProcessOsdFrame_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VdrPluginWeb_ProcessOsdFrame_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class VdrPluginWeb_ProcessOsdFrame_pargs {
+ public:
+
+
+  virtual ~VdrPluginWeb_ProcessOsdFrame_pargs() noexcept;
+  const ProcessOsdFrameType* input;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _VdrPluginWeb_ProcessOsdFrame_result__isset {
+  _VdrPluginWeb_ProcessOsdFrame_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _VdrPluginWeb_ProcessOsdFrame_result__isset;
+
+class VdrPluginWeb_ProcessOsdFrame_result {
+ public:
+
+  VdrPluginWeb_ProcessOsdFrame_result(const VdrPluginWeb_ProcessOsdFrame_result&);
+  VdrPluginWeb_ProcessOsdFrame_result& operator=(const VdrPluginWeb_ProcessOsdFrame_result&);
+  VdrPluginWeb_ProcessOsdFrame_result() noexcept;
+
+  virtual ~VdrPluginWeb_ProcessOsdFrame_result() noexcept;
+  bool success;
+   ::common::OperationFailed err;
+
+  _VdrPluginWeb_ProcessOsdFrame_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  void __set_err(const  ::common::OperationFailed& val);
+
+  bool operator == (const VdrPluginWeb_ProcessOsdFrame_result & rhs) const;
+  bool operator != (const VdrPluginWeb_ProcessOsdFrame_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const VdrPluginWeb_ProcessOsdFrame_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _VdrPluginWeb_ProcessOsdFrame_presult__isset {
+  _VdrPluginWeb_ProcessOsdFrame_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _VdrPluginWeb_ProcessOsdFrame_presult__isset;
+
+class VdrPluginWeb_ProcessOsdFrame_presult {
+ public:
+
+
+  virtual ~VdrPluginWeb_ProcessOsdFrame_presult() noexcept;
+  bool* success;
+   ::common::OperationFailed err;
+
+  _VdrPluginWeb_ProcessOsdFrame_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class VdrPluginWebClient : virtual public VdrPluginWebIf, public  ::common::CommonServiceClient {
  public:
   VdrPluginWebClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -1691,6 +1794,9 @@ class VdrPluginWebClient : virtual public VdrPluginWebIf, public  ::common::Comm
   bool StreamEventFilter(const StreamEventFilterType& input) override;
   void send_StreamEventFilter(const StreamEventFilterType& input);
   bool recv_StreamEventFilter();
+  bool ProcessOsdFrame(const ProcessOsdFrameType& input) override;
+  void send_ProcessOsdFrame(const ProcessOsdFrameType& input);
+  bool recv_ProcessOsdFrame();
 };
 
 class VdrPluginWebProcessor : public  ::common::CommonServiceProcessor {
@@ -1717,6 +1823,7 @@ class VdrPluginWebProcessor : public  ::common::CommonServiceProcessor {
   void process_SelectSubtitleTrack(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_EndOfStream(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_StreamEventFilter(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_ProcessOsdFrame(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   VdrPluginWebProcessor(::std::shared_ptr<VdrPluginWebIf> iface) :
      ::common::CommonServiceProcessor(iface),
@@ -1737,6 +1844,7 @@ class VdrPluginWebProcessor : public  ::common::CommonServiceProcessor {
     processMap_["SelectSubtitleTrack"] = &VdrPluginWebProcessor::process_SelectSubtitleTrack;
     processMap_["EndOfStream"] = &VdrPluginWebProcessor::process_EndOfStream;
     processMap_["StreamEventFilter"] = &VdrPluginWebProcessor::process_StreamEventFilter;
+    processMap_["ProcessOsdFrame"] = &VdrPluginWebProcessor::process_ProcessOsdFrame;
   }
 
   virtual ~VdrPluginWebProcessor() {}
@@ -1914,6 +2022,15 @@ class VdrPluginWebMultiface : virtual public VdrPluginWebIf, public  ::common::C
     return ifaces_[i]->StreamEventFilter(input);
   }
 
+  bool ProcessOsdFrame(const ProcessOsdFrameType& input) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->ProcessOsdFrame(input);
+    }
+    return ifaces_[i]->ProcessOsdFrame(input);
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -1978,6 +2095,9 @@ class VdrPluginWebConcurrentClient : virtual public VdrPluginWebIf, public  ::co
   bool StreamEventFilter(const StreamEventFilterType& input) override;
   int32_t send_StreamEventFilter(const StreamEventFilterType& input);
   bool recv_StreamEventFilter(const int32_t seqid);
+  bool ProcessOsdFrame(const ProcessOsdFrameType& input) override;
+  int32_t send_ProcessOsdFrame(const ProcessOsdFrameType& input);
+  bool recv_ProcessOsdFrame(const int32_t seqid);
 };
 
 #ifdef _MSC_VER

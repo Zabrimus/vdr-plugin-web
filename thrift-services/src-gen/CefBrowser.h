@@ -34,6 +34,7 @@ class CefBrowserIf : virtual public  ::common::CommonServiceIf {
   virtual bool StopVideo(const StopVideoType& input) = 0;
   virtual bool PlayerStatus(const PlayerStatusType& input) = 0;
   virtual bool StreamEvent(const StreamEventType& input) = 0;
+  virtual bool SetRenderParameters(const RenderParametersType& input) = 0;
 };
 
 class CefBrowserIfFactory : virtual public  ::common::CommonServiceIfFactory {
@@ -104,6 +105,10 @@ class CefBrowserNull : virtual public CefBrowserIf , virtual public  ::common::C
     return _return;
   }
   bool StreamEvent(const StreamEventType& /* input */) override {
+    bool _return = false;
+    return _return;
+  }
+  bool SetRenderParameters(const RenderParametersType& /* input */) override {
     bool _return = false;
     return _return;
   }
@@ -1177,6 +1182,104 @@ class CefBrowser_StreamEvent_presult {
 
 };
 
+typedef struct _CefBrowser_SetRenderParameters_args__isset {
+  _CefBrowser_SetRenderParameters_args__isset() : input(false) {}
+  bool input :1;
+} _CefBrowser_SetRenderParameters_args__isset;
+
+class CefBrowser_SetRenderParameters_args {
+ public:
+
+  CefBrowser_SetRenderParameters_args(const CefBrowser_SetRenderParameters_args&) noexcept;
+  CefBrowser_SetRenderParameters_args& operator=(const CefBrowser_SetRenderParameters_args&) noexcept;
+  CefBrowser_SetRenderParameters_args() noexcept;
+
+  virtual ~CefBrowser_SetRenderParameters_args() noexcept;
+  RenderParametersType input;
+
+  _CefBrowser_SetRenderParameters_args__isset __isset;
+
+  void __set_input(const RenderParametersType& val);
+
+  bool operator == (const CefBrowser_SetRenderParameters_args & rhs) const;
+  bool operator != (const CefBrowser_SetRenderParameters_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CefBrowser_SetRenderParameters_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class CefBrowser_SetRenderParameters_pargs {
+ public:
+
+
+  virtual ~CefBrowser_SetRenderParameters_pargs() noexcept;
+  const RenderParametersType* input;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _CefBrowser_SetRenderParameters_result__isset {
+  _CefBrowser_SetRenderParameters_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _CefBrowser_SetRenderParameters_result__isset;
+
+class CefBrowser_SetRenderParameters_result {
+ public:
+
+  CefBrowser_SetRenderParameters_result(const CefBrowser_SetRenderParameters_result&);
+  CefBrowser_SetRenderParameters_result& operator=(const CefBrowser_SetRenderParameters_result&);
+  CefBrowser_SetRenderParameters_result() noexcept;
+
+  virtual ~CefBrowser_SetRenderParameters_result() noexcept;
+  bool success;
+   ::common::OperationFailed err;
+
+  _CefBrowser_SetRenderParameters_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  void __set_err(const  ::common::OperationFailed& val);
+
+  bool operator == (const CefBrowser_SetRenderParameters_result & rhs) const;
+  bool operator != (const CefBrowser_SetRenderParameters_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CefBrowser_SetRenderParameters_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _CefBrowser_SetRenderParameters_presult__isset {
+  _CefBrowser_SetRenderParameters_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _CefBrowser_SetRenderParameters_presult__isset;
+
+class CefBrowser_SetRenderParameters_presult {
+ public:
+
+
+  virtual ~CefBrowser_SetRenderParameters_presult() noexcept;
+  bool* success;
+   ::common::OperationFailed err;
+
+  _CefBrowser_SetRenderParameters_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class CefBrowserClient : virtual public CefBrowserIf, public  ::common::CommonServiceClient {
  public:
   CefBrowserClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -1221,6 +1324,9 @@ class CefBrowserClient : virtual public CefBrowserIf, public  ::common::CommonSe
   bool StreamEvent(const StreamEventType& input) override;
   void send_StreamEvent(const StreamEventType& input);
   bool recv_StreamEvent();
+  bool SetRenderParameters(const RenderParametersType& input) override;
+  void send_SetRenderParameters(const RenderParametersType& input);
+  bool recv_SetRenderParameters();
 };
 
 class CefBrowserProcessor : public  ::common::CommonServiceProcessor {
@@ -1242,6 +1348,7 @@ class CefBrowserProcessor : public  ::common::CommonServiceProcessor {
   void process_StopVideo(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_PlayerStatus(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_StreamEvent(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_SetRenderParameters(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   CefBrowserProcessor(::std::shared_ptr<CefBrowserIf> iface) :
      ::common::CommonServiceProcessor(iface),
@@ -1257,6 +1364,7 @@ class CefBrowserProcessor : public  ::common::CommonServiceProcessor {
     processMap_["StopVideo"] = &CefBrowserProcessor::process_StopVideo;
     processMap_["PlayerStatus"] = &CefBrowserProcessor::process_PlayerStatus;
     processMap_["StreamEvent"] = &CefBrowserProcessor::process_StreamEvent;
+    processMap_["SetRenderParameters"] = &CefBrowserProcessor::process_SetRenderParameters;
   }
 
   virtual ~CefBrowserProcessor() {}
@@ -1389,6 +1497,15 @@ class CefBrowserMultiface : virtual public CefBrowserIf, public  ::common::Commo
     return ifaces_[i]->StreamEvent(input);
   }
 
+  bool SetRenderParameters(const RenderParametersType& input) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->SetRenderParameters(input);
+    }
+    return ifaces_[i]->SetRenderParameters(input);
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -1438,6 +1555,9 @@ class CefBrowserConcurrentClient : virtual public CefBrowserIf, public  ::common
   bool StreamEvent(const StreamEventType& input) override;
   int32_t send_StreamEvent(const StreamEventType& input);
   bool recv_StreamEvent(const int32_t seqid);
+  bool SetRenderParameters(const RenderParametersType& input) override;
+  int32_t send_SetRenderParameters(const RenderParametersType& input);
+  bool recv_SetRenderParameters(const int32_t seqid);
 };
 
 #ifdef _MSC_VER

@@ -46,6 +46,11 @@ struct PlayerStatusType {
     2: i32 state               // 0 = playing, 1 = paused, 2 = buffering, 3 = ended
 }
 
+struct RenderParametersType {
+    1: i32 width,              // width of the page: 1280, 1920, 2560 or 3840, 0 = unchanged
+    2: i32 frameRate           // frames per second, 0 = unchanged
+}
+
 struct StreamEventType {
     1: i32 componentTag,
     2: i32 eventId,
@@ -64,5 +69,6 @@ service CefBrowser extends common.CommonService {
     bool InsertChannel(1: InsertChannelType input) throws (1:common.OperationFailed err),
     bool StopVideo(1: StopVideoType input) throws (1:common.OperationFailed err),
     bool PlayerStatus(1: PlayerStatusType input) throws (1:common.OperationFailed err),
-    bool StreamEvent(1: StreamEventType input) throws (1:common.OperationFailed err)
+    bool StreamEvent(1: StreamEventType input) throws (1:common.OperationFailed err),
+    bool SetRenderParameters(1: RenderParametersType input) throws (1:common.OperationFailed err)
 }

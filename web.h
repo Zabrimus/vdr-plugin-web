@@ -108,6 +108,7 @@ public:
     bool SelectSubtitleTrack(const SelectSubtitleTrackType& input) override;
     bool EndOfStream() override;
     bool StreamEventFilter(const StreamEventFilterType& input) override;
+    bool ProcessOsdFrame(const ProcessOsdFrameType& input) override;
 };
 
 class VdrPluginWebCloneFactory : virtual public VdrPluginWebIfFactory {

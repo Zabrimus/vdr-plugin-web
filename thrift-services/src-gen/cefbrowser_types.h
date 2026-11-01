@@ -40,6 +40,8 @@ class StopVideoType;
 
 class PlayerStatusType;
 
+class RenderParametersType;
+
 class StreamEventType;
 
 typedef struct _LoadUrlType__isset {
@@ -389,6 +391,46 @@ class PlayerStatusType : public virtual ::apache::thrift::TBase {
 void swap(PlayerStatusType &a, PlayerStatusType &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const PlayerStatusType& obj);
+
+typedef struct _RenderParametersType__isset {
+  _RenderParametersType__isset() : width(false), frameRate(false) {}
+  bool width :1;
+  bool frameRate :1;
+} _RenderParametersType__isset;
+
+class RenderParametersType : public virtual ::apache::thrift::TBase {
+ public:
+
+  RenderParametersType(const RenderParametersType&) noexcept;
+  RenderParametersType& operator=(const RenderParametersType&) noexcept;
+  RenderParametersType() noexcept;
+
+  virtual ~RenderParametersType() noexcept;
+  int32_t width;
+  int32_t frameRate;
+
+  _RenderParametersType__isset __isset;
+
+  void __set_width(const int32_t val);
+
+  void __set_frameRate(const int32_t val);
+
+  bool operator == (const RenderParametersType & rhs) const;
+  bool operator != (const RenderParametersType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RenderParametersType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(RenderParametersType &a, RenderParametersType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const RenderParametersType& obj);
 
 typedef struct _StreamEventType__isset {
   _StreamEventType__isset() : componentTag(false), eventId(false), privateData(false), status(false) {}

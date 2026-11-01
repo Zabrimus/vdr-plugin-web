@@ -32,6 +32,7 @@ public:
     bool StopVideo(const std::string& reason);
     bool PlayerStatus(int64_t position, int state);
     bool StreamEvent(int componentTag, int eventId, const std::string& privateData, const std::string& status);
+    bool SetRenderParameters(int width, int frameRate);
 
 private:
     bool connect();

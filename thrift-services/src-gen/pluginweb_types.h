@@ -26,6 +26,10 @@ class ProcessOsdUpdateType;
 
 class ProcessOsdUpdateQOIType;
 
+class OsdRectType;
+
+class ProcessOsdFrameType;
+
 class ProcessTSPacketType;
 
 class StartVideoType;
@@ -151,6 +155,106 @@ class ProcessOsdUpdateQOIType : public virtual ::apache::thrift::TBase {
 void swap(ProcessOsdUpdateQOIType &a, ProcessOsdUpdateQOIType &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const ProcessOsdUpdateQOIType& obj);
+
+typedef struct _OsdRectType__isset {
+  _OsdRectType__isset() : x(false), y(false), width(false), height(false), data(false) {}
+  bool x :1;
+  bool y :1;
+  bool width :1;
+  bool height :1;
+  bool data :1;
+} _OsdRectType__isset;
+
+class OsdRectType : public virtual ::apache::thrift::TBase {
+ public:
+
+  OsdRectType(const OsdRectType&);
+  OsdRectType& operator=(const OsdRectType&);
+  OsdRectType() noexcept;
+
+  virtual ~OsdRectType() noexcept;
+  int32_t x;
+  int32_t y;
+  int32_t width;
+  int32_t height;
+  std::string data;
+
+  _OsdRectType__isset __isset;
+
+  void __set_x(const int32_t val);
+
+  void __set_y(const int32_t val);
+
+  void __set_width(const int32_t val);
+
+  void __set_height(const int32_t val);
+
+  void __set_data(const std::string& val);
+
+  bool operator == (const OsdRectType & rhs) const;
+  bool operator != (const OsdRectType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const OsdRectType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(OsdRectType &a, OsdRectType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const OsdRectType& obj);
+
+typedef struct _ProcessOsdFrameType__isset {
+  _ProcessOsdFrameType__isset() : render_width(false), render_height(false), qoi(false), rects(false) {}
+  bool render_width :1;
+  bool render_height :1;
+  bool qoi :1;
+  bool rects :1;
+} _ProcessOsdFrameType__isset;
+
+class ProcessOsdFrameType : public virtual ::apache::thrift::TBase {
+ public:
+
+  ProcessOsdFrameType(const ProcessOsdFrameType&);
+  ProcessOsdFrameType& operator=(const ProcessOsdFrameType&);
+  ProcessOsdFrameType() noexcept;
+
+  virtual ~ProcessOsdFrameType() noexcept;
+  int32_t render_width;
+  int32_t render_height;
+  bool qoi;
+  std::vector<OsdRectType>  rects;
+
+  _ProcessOsdFrameType__isset __isset;
+
+  void __set_render_width(const int32_t val);
+
+  void __set_render_height(const int32_t val);
+
+  void __set_qoi(const bool val);
+
+  void __set_rects(const std::vector<OsdRectType> & val);
+
+  bool operator == (const ProcessOsdFrameType & rhs) const;
+  bool operator != (const ProcessOsdFrameType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ProcessOsdFrameType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ProcessOsdFrameType &a, ProcessOsdFrameType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const ProcessOsdFrameType& obj);
 
 typedef struct _ProcessTSPacketType__isset {
   _ProcessTSPacketType__isset() : ts(false) {}

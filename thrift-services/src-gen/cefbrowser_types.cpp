@@ -1074,6 +1074,131 @@ void PlayerStatusType::printTo(std::ostream& out) const {
 }
 
 
+RenderParametersType::~RenderParametersType() noexcept {
+}
+
+RenderParametersType::RenderParametersType() noexcept
+   : width(0),
+     frameRate(0) {
+}
+
+void RenderParametersType::__set_width(const int32_t val) {
+  this->width = val;
+}
+
+void RenderParametersType::__set_frameRate(const int32_t val) {
+  this->frameRate = val;
+}
+std::ostream& operator<<(std::ostream& out, const RenderParametersType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t RenderParametersType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->width);
+          this->__isset.width = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->frameRate);
+          this->__isset.frameRate = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t RenderParametersType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("RenderParametersType");
+
+  xfer += oprot->writeFieldBegin("width", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->width);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("frameRate", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->frameRate);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(RenderParametersType &a, RenderParametersType &b) noexcept {
+  using ::std::swap;
+  swap(a.width, b.width);
+  swap(a.frameRate, b.frameRate);
+  swap(a.__isset, b.__isset);
+}
+
+bool RenderParametersType::operator==(const RenderParametersType & rhs) const
+{
+  if (!(width == rhs.width))
+    return false;
+  if (!(frameRate == rhs.frameRate))
+    return false;
+  return true;
+}
+
+RenderParametersType::RenderParametersType(const RenderParametersType& other18) noexcept {
+  width = other18.width;
+  frameRate = other18.frameRate;
+  __isset = other18.__isset;
+}
+RenderParametersType& RenderParametersType::operator=(const RenderParametersType& other19) noexcept {
+  width = other19.width;
+  frameRate = other19.frameRate;
+  __isset = other19.__isset;
+  return *this;
+}
+void RenderParametersType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "RenderParametersType(";
+  out << "width=" << to_string(width);
+  out << ", " << "frameRate=" << to_string(frameRate);
+  out << ")";
+}
+
+
 StreamEventType::~StreamEventType() noexcept {
 }
 
@@ -1219,19 +1344,19 @@ bool StreamEventType::operator==(const StreamEventType & rhs) const
   return true;
 }
 
-StreamEventType::StreamEventType(const StreamEventType& other18) {
-  componentTag = other18.componentTag;
-  eventId = other18.eventId;
-  privateData = other18.privateData;
-  status = other18.status;
-  __isset = other18.__isset;
+StreamEventType::StreamEventType(const StreamEventType& other20) {
+  componentTag = other20.componentTag;
+  eventId = other20.eventId;
+  privateData = other20.privateData;
+  status = other20.status;
+  __isset = other20.__isset;
 }
-StreamEventType& StreamEventType::operator=(const StreamEventType& other19) {
-  componentTag = other19.componentTag;
-  eventId = other19.eventId;
-  privateData = other19.privateData;
-  status = other19.status;
-  __isset = other19.__isset;
+StreamEventType& StreamEventType::operator=(const StreamEventType& other21) {
+  componentTag = other21.componentTag;
+  eventId = other21.eventId;
+  privateData = other21.privateData;
+  status = other21.status;
+  __isset = other21.__isset;
   return *this;
 }
 void StreamEventType::printTo(std::ostream& out) const {

@@ -100,6 +100,11 @@ class VdrPluginWebHandler : virtual public VdrPluginWebIf {
     printf("StreamEventFilter\n");
   }
 
+  bool ProcessOsdFrame(const ProcessOsdFrameType& input) {
+    // Your implementation goes here
+    printf("ProcessOsdFrame\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

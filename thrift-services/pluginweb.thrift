@@ -22,6 +22,21 @@ struct ProcessOsdUpdateQOIType {
     5: binary image_data
 }
 
+struct OsdRectType {
+    1: i32 x,
+    2: i32 y,
+    3: i32 width,
+    4: i32 height,
+    5: binary data        // BGRA, QOI encoded if qoi is set
+}
+
+struct ProcessOsdFrameType {
+    1: i32 render_width,  // width of page
+    2: i32 render_height, // height of page
+    3: bool qoi,
+    4: list<OsdRectType> rects
+}
+
 struct ProcessTSPacketType {
     1: binary ts;
 }
@@ -70,5 +85,6 @@ service VdrPluginWeb extends common.CommonService {
     bool IsWebActive() throws (1:common.OperationFailed err),
     bool SelectSubtitleTrack(1: SelectSubtitleTrackType input) throws (1:common.OperationFailed err),
     bool EndOfStream() throws (1:common.OperationFailed err),
-    bool StreamEventFilter(1: StreamEventFilterType input) throws (1:common.OperationFailed err)
+    bool StreamEventFilter(1: StreamEventFilterType input) throws (1:common.OperationFailed err),
+    bool ProcessOsdFrame(1: ProcessOsdFrameType input) throws (1:common.OperationFailed err)
 }
