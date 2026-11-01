@@ -70,6 +70,7 @@ enum OSD_COMMAND {
 OSD_COMMAND nextOsdCommand = OPEN;
 bool useOutputDeviceScale = false;
 bool useDummyOsd = false;
+bool measureOsd = false;
 
 int nr = 0;
 
@@ -530,7 +531,8 @@ const char *cPluginWeb::CommandLineHelp() {
            "  -o,          --dummyosd    opens a dummy osd while playing videos\n"
            "  -s,          --savets      Saves all incoming ts streams\n"
            "  -b,          --bindall     bind the web server to all interfaces\n"
-           "  -n,          --name        Menu entry name\n";
+           "  -n,          --name        Menu entry name\n"
+           "  -m,          --measure     Logs the time from a key to the OSD frame and OSD statistics\n";
 }
 
 bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
@@ -541,13 +543,14 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
             { "savets",      optional_argument, nullptr, 's' },
             { "bindall",     optional_argument, nullptr, 'b' },
             { "name",        optional_argument, nullptr, 'n' },
+            { "measure",     no_argument,       nullptr, 'm' },
             { nullptr }
     };
 
     int c, option_index = 0;
     std::string configFilename;
 
-    while ((c = getopt_long(argc, argv, "c:fosbn:", long_options, &option_index)) != -1)
+    while ((c = getopt_long(argc, argv, "c:fosbn:m", long_options, &option_index)) != -1)
     {
         switch (c)
         {
@@ -569,6 +572,10 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
 
             case 'b':
                 bindAll = true;
+                break;
+
+            case 'm':
+                measureOsd = true;
                 break;
 
             case 'n':

@@ -49,6 +49,10 @@ Creates a dummy osd while streaming a video. It could be necessary.
 ### -s / --savets
 Used for debugging. The incoming TS streams will be saved in the recordings/web directory. 
 
+### -m / --measure
+Logs the time from a key to the OSD frame drawn by VDR and every 5 seconds statistics
+of the OSD frames (size, draw and flush time).
+
 ### -b / --bindall
 If set, then bind the internal HTTP server to all available network devices. Otherwise use the configured IP.
 
