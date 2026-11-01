@@ -23,9 +23,16 @@ int cWebSetup::FrameRate() const {
 }
 
 void SendRenderParameters() {
-    if (browserClient != nullptr && (webSetup.Width() > 0 || webSetup.FrameRate() > 0)) {
+    if (browserClient == nullptr) {
+        return;
+    }
+
+    if (webSetup.Width() > 0 || webSetup.FrameRate() > 0) {
         browserClient->SetRenderParameters(webSetup.Width(), webSetup.FrameRate());
     }
+
+    // used by the next page
+    browserClient->SetBrowserOptions(webSetup.mse != 0, webSetup.zdfQuirks != 0);
 }
 
 cMenuSetupWeb::cMenuSetupWeb() {
@@ -58,6 +65,8 @@ cMenuSetupWeb::cMenuSetupWeb() {
     Add(new cMenuEditBoolItem(tr("Scale by output device"), &web.deviceScale));
 #endif
     Add(new cMenuEditStraItem(tr("Browser frame rate"), &web.frameRate, 5, frameRates));
+    Add(new cMenuEditBoolItem(tr("Media Source Extensions"), &web.mse));
+    Add(new cMenuEditBoolItem(tr("ZDF special handling"), &web.zdfQuirks));
 }
 
 void cMenuSetupWeb::Store() {
@@ -72,6 +81,8 @@ void cMenuSetupWeb::Store() {
     SetupStore("Resolution", webSetup.resolution);
     SetupStore("DeviceScale", webSetup.deviceScale);
     SetupStore("FrameRate", webSetup.frameRate);
+    SetupStore("Mse", webSetup.mse);
+    SetupStore("ZdfQuirks", webSetup.zdfQuirks);
 
     SendRenderParameters();
 }

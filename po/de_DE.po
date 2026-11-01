@@ -56,5 +56,11 @@ msgstr "Skalierung durch Ausgabegerät"
 msgid "Browser frame rate"
 msgstr "Bildrate des Browsers"
 
+msgid "Media Source Extensions"
+msgstr "Media Source Extensions"
+
+msgid "ZDF special handling"
+msgstr "ZDF-Sonderbehandlung"
+
 msgid "browser default"
 msgstr "Vorgabe des Browsers"

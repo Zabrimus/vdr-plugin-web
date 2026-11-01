@@ -745,6 +745,10 @@ bool cPluginWeb::SetupParse(const char *Name, const char *Value) {
         useOutputDeviceScale = webSetup.deviceScale;
     } else if (!strcasecmp(Name, "FrameRate")) {
         webSetup.frameRate = constrain(atoi(Value), 0, 4);
+    } else if (!strcasecmp(Name, "Mse")) {
+        webSetup.mse = atoi(Value) ? 1 : 0;
+    } else if (!strcasecmp(Name, "ZdfQuirks")) {
+        webSetup.zdfQuirks = atoi(Value) ? 1 : 0;
     } else {
         return false;
     }

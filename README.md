@@ -85,6 +85,14 @@ VDR uses the red key itself. To start HbbTV with a key, map it to the plugin in
 
 "browser default" keeps the values the browser was started with (`--zoom`, 25 fps).
 
+### Browser
+| Setup entry             | Default | Description |
+|-------------------------|---------|-------------|
+| Media Source Extensions | yes     | Videos of players like dash.js are sent to VDR via the transcoder. Switch it off if an application worked better without. |
+| ZDF special handling    | yes     | The ZDF applications are forced to plain HTML5 videos. Without it they use their dash player (needs Media Source Extensions). |
+
+Both take effect with the next application.
+
 ## Logging
 Uses the VDR logging mechanism. Log entries can be found in ```/var/log/syslog``` with ```[vdrweb]``` prefix.
 
