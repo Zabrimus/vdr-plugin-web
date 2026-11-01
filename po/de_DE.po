@@ -46,3 +46,15 @@ msgstr "Position des Hinweises"
 
 #~ msgid "RedButton Application not available"
 #~ msgstr "RedButton Applikation ist nicht verfügbar"
+
+msgid "Browser resolution"
+msgstr "Auflösung des Browsers"
+
+msgid "Scale by output device"
+msgstr "Skalierung durch Ausgabegerät"
+
+msgid "Browser frame rate"
+msgstr "Bildrate des Browsers"
+
+msgid "browser default"
+msgstr "Vorgabe des Browsers"

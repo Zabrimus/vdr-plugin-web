@@ -10,7 +10,6 @@
 #include <vdr/osd.h>
 #include <vdr/thread.h>
 #include <vdr/tools.h>
-#include <vdr/menuitems.h>
 
 struct cHbbtvHintSetup {
     int enabled = 1;    // show the hint at all
@@ -45,16 +44,4 @@ public:
 
     // must be called from the main thread (MainThreadHook)
     static void Process();
-};
-
-class cMenuSetupWeb : public cMenuSetupPage {
-private:
-    cHbbtvHintSetup data;
-    const char *positions[4];
-
-protected:
-    void Store() override;
-
-public:
-    cMenuSetupWeb();
 };

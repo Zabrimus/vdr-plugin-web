@@ -154,26 +154,3 @@ void cHbbtvHint::Process() {
         showTimeout.Set(hbbtvHintSetup.duration * 1000);
     }
 }
-
-// --- setup -------------------------------------------------------------
-
-cMenuSetupWeb::cMenuSetupWeb() {
-    data = hbbtvHintSetup;
-
-    positions[0] = tr("bottom right");
-    positions[1] = tr("bottom left");
-    positions[2] = tr("top right");
-    positions[3] = tr("top left");
-
-    Add(new cMenuEditBoolItem(tr("Show HbbTV hint"), &data.enabled));
-    Add(new cMenuEditIntItem(tr("HbbTV hint duration (s)"), &data.duration, 1, 60));
-    Add(new cMenuEditStraItem(tr("HbbTV hint position"), &data.position, 4, positions));
-}
-
-void cMenuSetupWeb::Store() {
-    hbbtvHintSetup = data;
-
-    SetupStore("HbbtvHint", hbbtvHintSetup.enabled);
-    SetupStore("HbbtvHintDuration", hbbtvHintSetup.duration);
-    SetupStore("HbbtvHintPosition", hbbtvHintSetup.position);
-}

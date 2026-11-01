@@ -24,6 +24,7 @@
 #include "dummyosd.h"
 #include "debuglog.h"
 #include "hbbtvhint.h"
+#include "setup.h"
 #include "streamevent.h"
 
 #define TSDIR  "%s/web/%s/%4d-%02d-%02d.%02d.%02d.%d-%d.rec"
@@ -599,6 +600,11 @@ bool cPluginWeb::Initialize() {
 }
 
 bool cPluginWeb::Start() {
+    // without a setup entry the command line option -f decides
+    if (webSetup.deviceScale < 0) {
+        webSetup.deviceScale = useOutputDeviceScale ? 1 : 0;
+    }
+
     isyslog("[vdrweb] Start hbbtv url collector");
     hbbtvDeviceStatus = new cHbbtvDeviceStatus();
 
@@ -686,6 +692,11 @@ cOsdObject *cPluginWeb::MainMenuAction() {
 
     WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, OSD);
 
+    // resolution and frame rate from the setup, the browser may have been restarted
+    if (nextOsdCommand != REOPEN) {
+        SendRenderParameters();
+    }
+
     if (nextOsdCommand == OPEN) {
         if (!browserClient->RedButton(*currentChannel->GetChannelID().ToString())) {
             Skins.QueueMessage(mtInfo, tr("Browser not available"));
@@ -716,6 +727,14 @@ bool cPluginWeb::SetupParse(const char *Name, const char *Value) {
         hbbtvHintSetup.duration = constrain(atoi(Value), 1, 60);
     } else if (!strcasecmp(Name, "HbbtvHintPosition")) {
         hbbtvHintSetup.position = constrain(atoi(Value), 0, 3);
+    } else if (!strcasecmp(Name, "Resolution")) {
+        webSetup.resolution = constrain(atoi(Value), 0, 4);
+    } else if (!strcasecmp(Name, "DeviceScale")) {
+        // overrides the command line option -f
+        webSetup.deviceScale = atoi(Value) ? 1 : 0;
+        useOutputDeviceScale = webSetup.deviceScale;
+    } else if (!strcasecmp(Name, "FrameRate")) {
+        webSetup.frameRate = constrain(atoi(Value), 0, 4);
     } else {
         return false;
     }

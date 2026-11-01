@@ -72,6 +72,15 @@ VDR uses the red key itself. To start HbbTV with a key, map it to the plugin in
 | HbbTV hint duration (s)  | 7            | Display time in seconds (1-60) |
 | HbbTV hint position      | bottom right | Corner of the OSD area         |
 
+### Display
+| Setup entry             | Default         | Description |
+|-------------------------|-----------------|-------------|
+| Browser resolution      | browser default | Size of the page rendered by the browser. 1280x720 is the native size of HbbTV applications and the fastest one. Use it together with scaling by the output device. |
+| Scale by output device  | command line -f | Only if built with `ENABLE_FAST_SCALE=1`. Scales the OSD of the browser with the output device (e.g. by the GPU) instead of GraphicsMagick. |
+| Browser frame rate      | browser default | Frame rate of the browser (25, 30, 50, 60). A higher rate reacts faster to keys, but needs more CPU. |
+
+"browser default" keeps the values the browser was started with (`--zoom`, 25 fps).
+
 ## Logging
 Uses the VDR logging mechanism. Log entries can be found in ```/var/log/syslog``` with ```[vdrweb]``` prefix.
 
