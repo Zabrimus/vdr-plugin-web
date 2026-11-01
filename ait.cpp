@@ -144,15 +144,22 @@ cAIT::cAIT(const u_char *Data, u_short Pid) : SI::AIT(Data, true) {
             delete d;
         }
 
+        std::string json;
+        {
 #if APIVERSNUM >= 20301
-        LOCK_CHANNELS_READ
-        const cChannel* currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
+            LOCK_CHANNELS_READ
+            const cChannel* currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
 #else
-        const cChannel* currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
+            const cChannel* currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
 #endif
 
-        if (currentChannel == nullptr) {
-            continue;
+            if (currentChannel == nullptr) {
+                continue;
+            }
+
+            const char* buffer = toHbbtvJson(currentChannel->GetChannelID().ToString(), currentChannel->Name(), aitApp.getApplicationId(), aitApp.getControlCode(), nameBuffer, URLBaseBuffer, URLLocBuffer, URLExtBuffer);
+            json = buffer;
+            free((void *) buffer);
         }
 
         // an HbbTV application which starts automatically: show the HbbTV hint.
@@ -161,12 +168,10 @@ cAIT::cAIT(const u_char *Data, u_short Pid) : SI::AIT(Data, true) {
             cHbbtvHint::AutostartApplicationFound();
         }
 
-        const char* buffer = toHbbtvJson(currentChannel->GetChannelID().ToString(), currentChannel->Name(), aitApp.getApplicationId(), aitApp.getControlCode(), nameBuffer, URLBaseBuffer, URLLocBuffer, URLExtBuffer);
+        // not with the lock of the channels: the browser may answer slowly
         if (browserClient != nullptr) {
-            browserClient->InsertHbbtv(buffer);
+            browserClient->InsertHbbtv(json);
         }
-
-        free((void *) buffer);
     }
 }
 

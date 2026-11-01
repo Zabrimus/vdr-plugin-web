@@ -199,23 +199,31 @@ void cHbbtvDeviceStatus::ChannelSwitch(const cDevice * vdrDevice, int channelNum
       if (channelNumber) {
          device = cDevice::ActualDevice();
 
+         std::string json;
+         {
 #if APIVERSNUM >= 20301
-         LOCK_CHANNELS_READ
-         auto channel = Channels->GetByNumber(channelNumber);
+            LOCK_CHANNELS_READ
+            auto channel = Channels->GetByNumber(channelNumber);
 #else
-         auto channel = Channels->GetByNumber(channelNumber);
+            auto channel = Channels->GetByNumber(channelNumber);
 #endif
-         if (channel == nullptr) {
-            device = nullptr;
-            return;
+            if (channel == nullptr) {
+               device = nullptr;
+               return;
+            }
+
+            sid = channel->Sid();
+            lastPresentEventId = 0;
+
+            const char* buffer = toChannelJson(channel);
+            json = buffer;
+            free((void *) buffer);
          }
 
-         sid = channel->Sid();
-         lastPresentEventId = 0;
-
-         const char* buffer = toChannelJson(channel);
-         browserClient->InsertChannel(buffer);
-         free((void *) buffer);
+         // not with the lock of the channels: the browser may answer slowly
+         if (browserClient != nullptr) {
+            browserClient->InsertChannel(json);
+         }
 
          device->AttachFilter(aitFilter = new cAitFilter(sid));
          StreamEventsChannelSwitch(device);
