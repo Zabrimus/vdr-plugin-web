@@ -1,5 +1,7 @@
 #pragma once
 
+#include <mutex>
+
 #include <string>
 #include <map>
 #include <thread>
@@ -12,6 +14,9 @@ enum OSD_MODE {
     PLAYER,
     CLOSED
 };
+
+// protects the pages and their OSD, the thrift threads draw while VDR may close a page
+extern std::recursive_mutex pixmap_mutex;
 
 class WebOSDPage : public cControl {
 

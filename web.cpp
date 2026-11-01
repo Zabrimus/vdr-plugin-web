@@ -178,6 +178,9 @@ void VdrPluginWebServer::ping() {
 bool VdrPluginWebServer::ProcessOsdUpdate(const ProcessOsdUpdateType &input) {
     DEBUGLOG("[vdrweb] VdrPluginWebServer::ProcessOsdUpdate");
 
+    // the page must not be deleted while drawing
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+
     WebOSDPage* page = WebOSDPage::Get();
     if (page == nullptr) {
         // illegal request -> abort
@@ -194,6 +197,9 @@ bool VdrPluginWebServer::ProcessOsdUpdate(const ProcessOsdUpdateType &input) {
 
 bool VdrPluginWebServer::ProcessOsdUpdateQOI(const ProcessOsdUpdateQOIType &input) {
     DEBUGLOG("[vdrweb] VdrPluginWebServer::ProcessOsdUpdateQOI");
+
+    // the page must not be deleted while drawing
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
 
     WebOSDPage* page = WebOSDPage::Get();
     if (page == nullptr) {
@@ -423,6 +429,9 @@ bool VdrPluginWebServer::StreamEventFilter(const StreamEventFilterType &input) {
 }
 
 bool VdrPluginWebServer::ProcessOsdFrame(const ProcessOsdFrameType &input) {
+    // the page must not be deleted while drawing
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+
     WebOSDPage* page = WebOSDPage::Get();
     if (page == nullptr) {
         // illegal request -> abort
