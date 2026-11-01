@@ -80,6 +80,11 @@ class CefBrowserHandler : virtual public CefBrowserIf {
     printf("SetRenderParameters\n");
   }
 
+  bool SetBrowserOptions(const BrowserOptionsType& input) {
+    // Your implementation goes here
+    printf("SetBrowserOptions\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

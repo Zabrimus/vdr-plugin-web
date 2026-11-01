@@ -1199,6 +1199,131 @@ void RenderParametersType::printTo(std::ostream& out) const {
 }
 
 
+BrowserOptionsType::~BrowserOptionsType() noexcept {
+}
+
+BrowserOptionsType::BrowserOptionsType() noexcept
+   : mse(true),
+     zdfQuirks(true) {
+}
+
+void BrowserOptionsType::__set_mse(const bool val) {
+  this->mse = val;
+}
+
+void BrowserOptionsType::__set_zdfQuirks(const bool val) {
+  this->zdfQuirks = val;
+}
+std::ostream& operator<<(std::ostream& out, const BrowserOptionsType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t BrowserOptionsType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->mse);
+          this->__isset.mse = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->zdfQuirks);
+          this->__isset.zdfQuirks = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t BrowserOptionsType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("BrowserOptionsType");
+
+  xfer += oprot->writeFieldBegin("mse", ::apache::thrift::protocol::T_BOOL, 1);
+  xfer += oprot->writeBool(this->mse);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("zdfQuirks", ::apache::thrift::protocol::T_BOOL, 2);
+  xfer += oprot->writeBool(this->zdfQuirks);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(BrowserOptionsType &a, BrowserOptionsType &b) noexcept {
+  using ::std::swap;
+  swap(a.mse, b.mse);
+  swap(a.zdfQuirks, b.zdfQuirks);
+  swap(a.__isset, b.__isset);
+}
+
+bool BrowserOptionsType::operator==(const BrowserOptionsType & rhs) const
+{
+  if (!(mse == rhs.mse))
+    return false;
+  if (!(zdfQuirks == rhs.zdfQuirks))
+    return false;
+  return true;
+}
+
+BrowserOptionsType::BrowserOptionsType(const BrowserOptionsType& other20) noexcept {
+  mse = other20.mse;
+  zdfQuirks = other20.zdfQuirks;
+  __isset = other20.__isset;
+}
+BrowserOptionsType& BrowserOptionsType::operator=(const BrowserOptionsType& other21) noexcept {
+  mse = other21.mse;
+  zdfQuirks = other21.zdfQuirks;
+  __isset = other21.__isset;
+  return *this;
+}
+void BrowserOptionsType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "BrowserOptionsType(";
+  out << "mse=" << to_string(mse);
+  out << ", " << "zdfQuirks=" << to_string(zdfQuirks);
+  out << ")";
+}
+
+
 StreamEventType::~StreamEventType() noexcept {
 }
 
@@ -1344,19 +1469,19 @@ bool StreamEventType::operator==(const StreamEventType & rhs) const
   return true;
 }
 
-StreamEventType::StreamEventType(const StreamEventType& other20) {
-  componentTag = other20.componentTag;
-  eventId = other20.eventId;
-  privateData = other20.privateData;
-  status = other20.status;
-  __isset = other20.__isset;
+StreamEventType::StreamEventType(const StreamEventType& other22) {
+  componentTag = other22.componentTag;
+  eventId = other22.eventId;
+  privateData = other22.privateData;
+  status = other22.status;
+  __isset = other22.__isset;
 }
-StreamEventType& StreamEventType::operator=(const StreamEventType& other21) {
-  componentTag = other21.componentTag;
-  eventId = other21.eventId;
-  privateData = other21.privateData;
-  status = other21.status;
-  __isset = other21.__isset;
+StreamEventType& StreamEventType::operator=(const StreamEventType& other23) {
+  componentTag = other23.componentTag;
+  eventId = other23.eventId;
+  privateData = other23.privateData;
+  status = other23.status;
+  __isset = other23.__isset;
   return *this;
 }
 void StreamEventType::printTo(std::ostream& out) const {

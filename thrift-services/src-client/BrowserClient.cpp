@@ -264,3 +264,15 @@ bool BrowserClient::SetRenderParameters(int width, int frameRate) {
         return client->SetRenderParameters(input);
     });
 }
+
+bool BrowserClient::SetBrowserOptions(bool mse, bool zdfQuirks) {
+    DEBUGLOG("BrowserClient::SetBrowserOptions: mse %d, zdf quirks %d", mse, zdfQuirks);
+
+    return processInternal([&]() -> bool {
+        BrowserOptionsType input;
+        input.mse = mse;
+        input.zdfQuirks = zdfQuirks;
+
+        return client->SetBrowserOptions(input);
+    });
+}

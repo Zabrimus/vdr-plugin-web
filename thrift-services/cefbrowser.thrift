@@ -51,6 +51,11 @@ struct RenderParametersType {
     2: i32 frameRate           // frames per second, 0 = unchanged
 }
 
+struct BrowserOptionsType {
+    1: bool mse = true,        // Media Source Extensions for VDR
+    2: bool zdfQuirks = true   // special handling of the ZDF applications
+}
+
 struct StreamEventType {
     1: i32 componentTag,
     2: i32 eventId,
@@ -70,5 +75,6 @@ service CefBrowser extends common.CommonService {
     bool StopVideo(1: StopVideoType input) throws (1:common.OperationFailed err),
     bool PlayerStatus(1: PlayerStatusType input) throws (1:common.OperationFailed err),
     bool StreamEvent(1: StreamEventType input) throws (1:common.OperationFailed err),
-    bool SetRenderParameters(1: RenderParametersType input) throws (1:common.OperationFailed err)
+    bool SetRenderParameters(1: RenderParametersType input) throws (1:common.OperationFailed err),
+    bool SetBrowserOptions(1: BrowserOptionsType input) throws (1:common.OperationFailed err)
 }

@@ -42,6 +42,8 @@ class PlayerStatusType;
 
 class RenderParametersType;
 
+class BrowserOptionsType;
+
 class StreamEventType;
 
 typedef struct _LoadUrlType__isset {
@@ -431,6 +433,46 @@ class RenderParametersType : public virtual ::apache::thrift::TBase {
 void swap(RenderParametersType &a, RenderParametersType &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const RenderParametersType& obj);
+
+typedef struct _BrowserOptionsType__isset {
+  _BrowserOptionsType__isset() : mse(true), zdfQuirks(true) {}
+  bool mse :1;
+  bool zdfQuirks :1;
+} _BrowserOptionsType__isset;
+
+class BrowserOptionsType : public virtual ::apache::thrift::TBase {
+ public:
+
+  BrowserOptionsType(const BrowserOptionsType&) noexcept;
+  BrowserOptionsType& operator=(const BrowserOptionsType&) noexcept;
+  BrowserOptionsType() noexcept;
+
+  virtual ~BrowserOptionsType() noexcept;
+  bool mse;
+  bool zdfQuirks;
+
+  _BrowserOptionsType__isset __isset;
+
+  void __set_mse(const bool val);
+
+  void __set_zdfQuirks(const bool val);
+
+  bool operator == (const BrowserOptionsType & rhs) const;
+  bool operator != (const BrowserOptionsType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const BrowserOptionsType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(BrowserOptionsType &a, BrowserOptionsType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const BrowserOptionsType& obj);
 
 typedef struct _StreamEventType__isset {
   _StreamEventType__isset() : componentTag(false), eventId(false), privateData(false), status(false) {}
