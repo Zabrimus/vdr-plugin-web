@@ -4,6 +4,7 @@
 
 #include "debuglog.h"
 #include "BrowserClient.h"
+#include "TransportBuffer.h"
 
 using namespace apache::thrift;
 using namespace apache::thrift::protocol;
@@ -22,7 +23,7 @@ BrowserClient::BrowserClient(std::string vdrIp, int vdrPort) {
     socket->setConnTimeout(3000);
     socket->setSendTimeout(10000);
     socket->setRecvTimeout(10000);
-    transport = static_cast<const std::shared_ptr<TTransport>>(new TBufferedTransport(socket));
+    transport = static_cast<const std::shared_ptr<TTransport>>(new TBufferedTransport(socket, THRIFT_TRANSPORT_BUFFER_SIZE, THRIFT_TRANSPORT_BUFFER_SIZE));
     std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
 
     client = new CefBrowserClient(protocol);

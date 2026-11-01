@@ -4,6 +4,7 @@
 
 #include "debuglog.h"
 #include "TranscoderClient.h"
+#include "TransportBuffer.h"
 
 using namespace apache::thrift;
 using namespace apache::thrift::protocol;
@@ -22,7 +23,7 @@ TranscoderClient::TranscoderClient(std::string vdrIp, int vdrPort) {
     socket->setConnTimeout(3000);
     socket->setSendTimeout(10000);
     socket->setRecvTimeout(60000);   // Probe of a slow stream can take a while
-    transport = static_cast<const std::shared_ptr<TTransport>>(new TBufferedTransport(socket));
+    transport = static_cast<const std::shared_ptr<TTransport>>(new TBufferedTransport(socket, THRIFT_TRANSPORT_BUFFER_SIZE, THRIFT_TRANSPORT_BUFFER_SIZE));
     std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
 
     client = new RemoteTranscoderClient(protocol);

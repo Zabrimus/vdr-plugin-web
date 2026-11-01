@@ -17,6 +17,7 @@
 #include <memory>
 #include "web.h"
 #include "BrowserClient.h"
+#include "TransportBuffer.h"
 #include "ini.h"
 #include "webosdpage.h"
 #include "status.h"
@@ -459,7 +460,7 @@ void startServer() {
     thriftServer = new TThreadedServer(
             std::make_shared<VdrPluginWebProcessorFactory>(std::make_shared<VdrPluginWebCloneFactory>()),
             std::make_shared<TServerSocket>(listenIp, vdrPort),
-            std::make_shared<TBufferedTransportFactory>(),
+            std::make_shared<TLargeBufferedTransportFactory>(),
             std::make_shared<TBinaryProtocolFactory>());
 
     thriftServer->serve();
