@@ -43,6 +43,7 @@ struct ProcessTSPacketType {
 
 struct StartVideoType {
     1: string videoInfo;
+    2: bool mse = false;       // MSE stream: the stream continues after a pause
 }
 
 struct VideoSizeType {
@@ -54,6 +55,7 @@ struct VideoSizeType {
 
 struct ResetVideoType {
     1: string videoInfo;
+    2: bool mse = false;
 }
 
 struct SelectAudioTrackType {

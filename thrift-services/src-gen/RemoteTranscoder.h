@@ -31,6 +31,10 @@ class RemoteTranscoderIf : virtual public  ::common::CommonServiceIf {
   virtual bool Stop(const StopType& input) = 0;
   virtual void AudioInfo(std::string& _return, const AudioInfoType& input) = 0;
   virtual void GetVideo(std::string& _return, const VideoType& input) = 0;
+  virtual void MseStart(std::string& _return, const MseStartType& input) = 0;
+  virtual bool MseAppend(const MseAppendType& input) = 0;
+  virtual bool MseReset(const MseResetType& input) = 0;
+  virtual bool MseEndOfStream(const MseEndOfStreamType& input) = 0;
 };
 
 class RemoteTranscoderIfFactory : virtual public  ::common::CommonServiceIfFactory {
@@ -88,6 +92,21 @@ class RemoteTranscoderNull : virtual public RemoteTranscoderIf , virtual public 
   }
   void GetVideo(std::string& /* _return */, const VideoType& /* input */) override {
     return;
+  }
+  void MseStart(std::string& /* _return */, const MseStartType& /* input */) override {
+    return;
+  }
+  bool MseAppend(const MseAppendType& /* input */) override {
+    bool _return = false;
+    return _return;
+  }
+  bool MseReset(const MseResetType& /* input */) override {
+    bool _return = false;
+    return _return;
+  }
+  bool MseEndOfStream(const MseEndOfStreamType& /* input */) override {
+    bool _return = false;
+    return _return;
   }
 };
 
@@ -875,6 +894,398 @@ class RemoteTranscoder_GetVideo_presult {
 
 };
 
+typedef struct _RemoteTranscoder_MseStart_args__isset {
+  _RemoteTranscoder_MseStart_args__isset() : input(false) {}
+  bool input :1;
+} _RemoteTranscoder_MseStart_args__isset;
+
+class RemoteTranscoder_MseStart_args {
+ public:
+
+  RemoteTranscoder_MseStart_args(const RemoteTranscoder_MseStart_args&);
+  RemoteTranscoder_MseStart_args& operator=(const RemoteTranscoder_MseStart_args&);
+  RemoteTranscoder_MseStart_args() noexcept;
+
+  virtual ~RemoteTranscoder_MseStart_args() noexcept;
+  MseStartType input;
+
+  _RemoteTranscoder_MseStart_args__isset __isset;
+
+  void __set_input(const MseStartType& val);
+
+  bool operator == (const RemoteTranscoder_MseStart_args & rhs) const;
+  bool operator != (const RemoteTranscoder_MseStart_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_MseStart_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class RemoteTranscoder_MseStart_pargs {
+ public:
+
+
+  virtual ~RemoteTranscoder_MseStart_pargs() noexcept;
+  const MseStartType* input;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_MseStart_result__isset {
+  _RemoteTranscoder_MseStart_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_MseStart_result__isset;
+
+class RemoteTranscoder_MseStart_result {
+ public:
+
+  RemoteTranscoder_MseStart_result(const RemoteTranscoder_MseStart_result&);
+  RemoteTranscoder_MseStart_result& operator=(const RemoteTranscoder_MseStart_result&);
+  RemoteTranscoder_MseStart_result() noexcept;
+
+  virtual ~RemoteTranscoder_MseStart_result() noexcept;
+  std::string success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_MseStart_result__isset __isset;
+
+  void __set_success(const std::string& val);
+
+  void __set_err(const  ::common::OperationFailed& val);
+
+  bool operator == (const RemoteTranscoder_MseStart_result & rhs) const;
+  bool operator != (const RemoteTranscoder_MseStart_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_MseStart_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_MseStart_presult__isset {
+  _RemoteTranscoder_MseStart_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_MseStart_presult__isset;
+
+class RemoteTranscoder_MseStart_presult {
+ public:
+
+
+  virtual ~RemoteTranscoder_MseStart_presult() noexcept;
+  std::string* success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_MseStart_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _RemoteTranscoder_MseAppend_args__isset {
+  _RemoteTranscoder_MseAppend_args__isset() : input(false) {}
+  bool input :1;
+} _RemoteTranscoder_MseAppend_args__isset;
+
+class RemoteTranscoder_MseAppend_args {
+ public:
+
+  RemoteTranscoder_MseAppend_args(const RemoteTranscoder_MseAppend_args&);
+  RemoteTranscoder_MseAppend_args& operator=(const RemoteTranscoder_MseAppend_args&);
+  RemoteTranscoder_MseAppend_args() noexcept;
+
+  virtual ~RemoteTranscoder_MseAppend_args() noexcept;
+  MseAppendType input;
+
+  _RemoteTranscoder_MseAppend_args__isset __isset;
+
+  void __set_input(const MseAppendType& val);
+
+  bool operator == (const RemoteTranscoder_MseAppend_args & rhs) const;
+  bool operator != (const RemoteTranscoder_MseAppend_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_MseAppend_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class RemoteTranscoder_MseAppend_pargs {
+ public:
+
+
+  virtual ~RemoteTranscoder_MseAppend_pargs() noexcept;
+  const MseAppendType* input;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_MseAppend_result__isset {
+  _RemoteTranscoder_MseAppend_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_MseAppend_result__isset;
+
+class RemoteTranscoder_MseAppend_result {
+ public:
+
+  RemoteTranscoder_MseAppend_result(const RemoteTranscoder_MseAppend_result&);
+  RemoteTranscoder_MseAppend_result& operator=(const RemoteTranscoder_MseAppend_result&);
+  RemoteTranscoder_MseAppend_result() noexcept;
+
+  virtual ~RemoteTranscoder_MseAppend_result() noexcept;
+  bool success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_MseAppend_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  void __set_err(const  ::common::OperationFailed& val);
+
+  bool operator == (const RemoteTranscoder_MseAppend_result & rhs) const;
+  bool operator != (const RemoteTranscoder_MseAppend_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_MseAppend_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_MseAppend_presult__isset {
+  _RemoteTranscoder_MseAppend_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_MseAppend_presult__isset;
+
+class RemoteTranscoder_MseAppend_presult {
+ public:
+
+
+  virtual ~RemoteTranscoder_MseAppend_presult() noexcept;
+  bool* success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_MseAppend_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _RemoteTranscoder_MseReset_args__isset {
+  _RemoteTranscoder_MseReset_args__isset() : input(false) {}
+  bool input :1;
+} _RemoteTranscoder_MseReset_args__isset;
+
+class RemoteTranscoder_MseReset_args {
+ public:
+
+  RemoteTranscoder_MseReset_args(const RemoteTranscoder_MseReset_args&);
+  RemoteTranscoder_MseReset_args& operator=(const RemoteTranscoder_MseReset_args&);
+  RemoteTranscoder_MseReset_args() noexcept;
+
+  virtual ~RemoteTranscoder_MseReset_args() noexcept;
+  MseResetType input;
+
+  _RemoteTranscoder_MseReset_args__isset __isset;
+
+  void __set_input(const MseResetType& val);
+
+  bool operator == (const RemoteTranscoder_MseReset_args & rhs) const;
+  bool operator != (const RemoteTranscoder_MseReset_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_MseReset_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class RemoteTranscoder_MseReset_pargs {
+ public:
+
+
+  virtual ~RemoteTranscoder_MseReset_pargs() noexcept;
+  const MseResetType* input;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_MseReset_result__isset {
+  _RemoteTranscoder_MseReset_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_MseReset_result__isset;
+
+class RemoteTranscoder_MseReset_result {
+ public:
+
+  RemoteTranscoder_MseReset_result(const RemoteTranscoder_MseReset_result&);
+  RemoteTranscoder_MseReset_result& operator=(const RemoteTranscoder_MseReset_result&);
+  RemoteTranscoder_MseReset_result() noexcept;
+
+  virtual ~RemoteTranscoder_MseReset_result() noexcept;
+  bool success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_MseReset_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  void __set_err(const  ::common::OperationFailed& val);
+
+  bool operator == (const RemoteTranscoder_MseReset_result & rhs) const;
+  bool operator != (const RemoteTranscoder_MseReset_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_MseReset_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_MseReset_presult__isset {
+  _RemoteTranscoder_MseReset_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_MseReset_presult__isset;
+
+class RemoteTranscoder_MseReset_presult {
+ public:
+
+
+  virtual ~RemoteTranscoder_MseReset_presult() noexcept;
+  bool* success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_MseReset_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _RemoteTranscoder_MseEndOfStream_args__isset {
+  _RemoteTranscoder_MseEndOfStream_args__isset() : input(false) {}
+  bool input :1;
+} _RemoteTranscoder_MseEndOfStream_args__isset;
+
+class RemoteTranscoder_MseEndOfStream_args {
+ public:
+
+  RemoteTranscoder_MseEndOfStream_args(const RemoteTranscoder_MseEndOfStream_args&);
+  RemoteTranscoder_MseEndOfStream_args& operator=(const RemoteTranscoder_MseEndOfStream_args&);
+  RemoteTranscoder_MseEndOfStream_args() noexcept;
+
+  virtual ~RemoteTranscoder_MseEndOfStream_args() noexcept;
+  MseEndOfStreamType input;
+
+  _RemoteTranscoder_MseEndOfStream_args__isset __isset;
+
+  void __set_input(const MseEndOfStreamType& val);
+
+  bool operator == (const RemoteTranscoder_MseEndOfStream_args & rhs) const;
+  bool operator != (const RemoteTranscoder_MseEndOfStream_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_MseEndOfStream_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class RemoteTranscoder_MseEndOfStream_pargs {
+ public:
+
+
+  virtual ~RemoteTranscoder_MseEndOfStream_pargs() noexcept;
+  const MseEndOfStreamType* input;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_MseEndOfStream_result__isset {
+  _RemoteTranscoder_MseEndOfStream_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_MseEndOfStream_result__isset;
+
+class RemoteTranscoder_MseEndOfStream_result {
+ public:
+
+  RemoteTranscoder_MseEndOfStream_result(const RemoteTranscoder_MseEndOfStream_result&);
+  RemoteTranscoder_MseEndOfStream_result& operator=(const RemoteTranscoder_MseEndOfStream_result&);
+  RemoteTranscoder_MseEndOfStream_result() noexcept;
+
+  virtual ~RemoteTranscoder_MseEndOfStream_result() noexcept;
+  bool success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_MseEndOfStream_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  void __set_err(const  ::common::OperationFailed& val);
+
+  bool operator == (const RemoteTranscoder_MseEndOfStream_result & rhs) const;
+  bool operator != (const RemoteTranscoder_MseEndOfStream_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_MseEndOfStream_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_MseEndOfStream_presult__isset {
+  _RemoteTranscoder_MseEndOfStream_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_MseEndOfStream_presult__isset;
+
+class RemoteTranscoder_MseEndOfStream_presult {
+ public:
+
+
+  virtual ~RemoteTranscoder_MseEndOfStream_presult() noexcept;
+  bool* success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_MseEndOfStream_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class RemoteTranscoderClient : virtual public RemoteTranscoderIf, public  ::common::CommonServiceClient {
  public:
   RemoteTranscoderClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -910,6 +1321,18 @@ class RemoteTranscoderClient : virtual public RemoteTranscoderIf, public  ::comm
   void GetVideo(std::string& _return, const VideoType& input) override;
   void send_GetVideo(const VideoType& input);
   void recv_GetVideo(std::string& _return);
+  void MseStart(std::string& _return, const MseStartType& input) override;
+  void send_MseStart(const MseStartType& input);
+  void recv_MseStart(std::string& _return);
+  bool MseAppend(const MseAppendType& input) override;
+  void send_MseAppend(const MseAppendType& input);
+  bool recv_MseAppend();
+  bool MseReset(const MseResetType& input) override;
+  void send_MseReset(const MseResetType& input);
+  bool recv_MseReset();
+  bool MseEndOfStream(const MseEndOfStreamType& input) override;
+  void send_MseEndOfStream(const MseEndOfStreamType& input);
+  bool recv_MseEndOfStream();
 };
 
 class RemoteTranscoderProcessor : public  ::common::CommonServiceProcessor {
@@ -928,6 +1351,10 @@ class RemoteTranscoderProcessor : public  ::common::CommonServiceProcessor {
   void process_Stop(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_AudioInfo(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_GetVideo(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_MseStart(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_MseAppend(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_MseReset(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_MseEndOfStream(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   RemoteTranscoderProcessor(::std::shared_ptr<RemoteTranscoderIf> iface) :
      ::common::CommonServiceProcessor(iface),
@@ -940,6 +1367,10 @@ class RemoteTranscoderProcessor : public  ::common::CommonServiceProcessor {
     processMap_["Stop"] = &RemoteTranscoderProcessor::process_Stop;
     processMap_["AudioInfo"] = &RemoteTranscoderProcessor::process_AudioInfo;
     processMap_["GetVideo"] = &RemoteTranscoderProcessor::process_GetVideo;
+    processMap_["MseStart"] = &RemoteTranscoderProcessor::process_MseStart;
+    processMap_["MseAppend"] = &RemoteTranscoderProcessor::process_MseAppend;
+    processMap_["MseReset"] = &RemoteTranscoderProcessor::process_MseReset;
+    processMap_["MseEndOfStream"] = &RemoteTranscoderProcessor::process_MseEndOfStream;
   }
 
   virtual ~RemoteTranscoderProcessor() {}
@@ -1048,6 +1479,43 @@ class RemoteTranscoderMultiface : virtual public RemoteTranscoderIf, public  ::c
     return;
   }
 
+  void MseStart(std::string& _return, const MseStartType& input) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->MseStart(_return, input);
+    }
+    ifaces_[i]->MseStart(_return, input);
+    return;
+  }
+
+  bool MseAppend(const MseAppendType& input) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->MseAppend(input);
+    }
+    return ifaces_[i]->MseAppend(input);
+  }
+
+  bool MseReset(const MseResetType& input) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->MseReset(input);
+    }
+    return ifaces_[i]->MseReset(input);
+  }
+
+  bool MseEndOfStream(const MseEndOfStreamType& input) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->MseEndOfStream(input);
+    }
+    return ifaces_[i]->MseEndOfStream(input);
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -1088,6 +1556,18 @@ class RemoteTranscoderConcurrentClient : virtual public RemoteTranscoderIf, publ
   void GetVideo(std::string& _return, const VideoType& input) override;
   int32_t send_GetVideo(const VideoType& input);
   void recv_GetVideo(std::string& _return, const int32_t seqid);
+  void MseStart(std::string& _return, const MseStartType& input) override;
+  int32_t send_MseStart(const MseStartType& input);
+  void recv_MseStart(std::string& _return, const int32_t seqid);
+  bool MseAppend(const MseAppendType& input) override;
+  int32_t send_MseAppend(const MseAppendType& input);
+  bool recv_MseAppend(const int32_t seqid);
+  bool MseReset(const MseResetType& input) override;
+  int32_t send_MseReset(const MseResetType& input);
+  bool recv_MseReset(const int32_t seqid);
+  bool MseEndOfStream(const MseEndOfStreamType& input) override;
+  int32_t send_MseEndOfStream(const MseEndOfStreamType& input);
+  bool recv_MseEndOfStream(const int32_t seqid);
 };
 
 #ifdef _MSC_VER

@@ -145,12 +145,13 @@ bool VdrClient::ProcessTSPacket(std::string& packets) {
     });
 }
 
-bool VdrClient::StartVideo(std::string& videoInfo) {
+bool VdrClient::StartVideo(std::string& videoInfo, bool mse) {
     DEBUGLOG("VdrClient::StartVideo");
 
     return processInternal([&]() -> bool {
         StartVideoType input;
         input.videoInfo = videoInfo;
+        input.mse = mse;
 
         return client->StartVideo(input);
     });
@@ -180,12 +181,13 @@ bool VdrClient::Resume() {
     });
 }
 
-bool VdrClient::ResetVideo(std::string& videoInfo) {
+bool VdrClient::ResetVideo(std::string& videoInfo, bool mse) {
     DEBUGLOG("VdrClient::ResetVideo");
 
     return processInternal([&]() -> bool {
         ResetVideoType input;
         input.videoInfo = videoInfo;
+        input.mse = mse;
 
         return client->ResetVideo(input);
     });

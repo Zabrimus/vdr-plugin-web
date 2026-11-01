@@ -293,8 +293,9 @@ void swap(ProcessTSPacketType &a, ProcessTSPacketType &b) noexcept;
 std::ostream& operator<<(std::ostream& out, const ProcessTSPacketType& obj);
 
 typedef struct _StartVideoType__isset {
-  _StartVideoType__isset() : videoInfo(false) {}
+  _StartVideoType__isset() : videoInfo(false), mse(true) {}
   bool videoInfo :1;
+  bool mse :1;
 } _StartVideoType__isset;
 
 class StartVideoType : public virtual ::apache::thrift::TBase {
@@ -306,10 +307,13 @@ class StartVideoType : public virtual ::apache::thrift::TBase {
 
   virtual ~StartVideoType() noexcept;
   std::string videoInfo;
+  bool mse;
 
   _StartVideoType__isset __isset;
 
   void __set_videoInfo(const std::string& val);
+
+  void __set_mse(const bool val);
 
   bool operator == (const StartVideoType & rhs) const;
   bool operator != (const StartVideoType &rhs) const {
@@ -377,8 +381,9 @@ void swap(VideoSizeType &a, VideoSizeType &b) noexcept;
 std::ostream& operator<<(std::ostream& out, const VideoSizeType& obj);
 
 typedef struct _ResetVideoType__isset {
-  _ResetVideoType__isset() : videoInfo(false) {}
+  _ResetVideoType__isset() : videoInfo(false), mse(true) {}
   bool videoInfo :1;
+  bool mse :1;
 } _ResetVideoType__isset;
 
 class ResetVideoType : public virtual ::apache::thrift::TBase {
@@ -390,10 +395,13 @@ class ResetVideoType : public virtual ::apache::thrift::TBase {
 
   virtual ~ResetVideoType() noexcept;
   std::string videoInfo;
+  bool mse;
 
   _ResetVideoType__isset __isset;
 
   void __set_videoInfo(const std::string& val);
+
+  void __set_mse(const bool val);
 
   bool operator == (const ResetVideoType & rhs) const;
   bool operator != (const ResetVideoType &rhs) const {

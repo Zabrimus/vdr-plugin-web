@@ -938,11 +938,16 @@ StartVideoType::~StartVideoType() noexcept {
 }
 
 StartVideoType::StartVideoType() noexcept
-   : videoInfo() {
+   : videoInfo(),
+     mse(false) {
 }
 
 void StartVideoType::__set_videoInfo(const std::string& val) {
   this->videoInfo = val;
+}
+
+void StartVideoType::__set_mse(const bool val) {
+  this->mse = val;
 }
 std::ostream& operator<<(std::ostream& out, const StartVideoType& obj)
 {
@@ -980,6 +985,14 @@ uint32_t StartVideoType::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->mse);
+          this->__isset.mse = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -1001,6 +1014,10 @@ uint32_t StartVideoType::write(::apache::thrift::protocol::TProtocol* oprot) con
   xfer += oprot->writeString(this->videoInfo);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("mse", ::apache::thrift::protocol::T_BOOL, 2);
+  xfer += oprot->writeBool(this->mse);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -1009,6 +1026,7 @@ uint32_t StartVideoType::write(::apache::thrift::protocol::TProtocol* oprot) con
 void swap(StartVideoType &a, StartVideoType &b) noexcept {
   using ::std::swap;
   swap(a.videoInfo, b.videoInfo);
+  swap(a.mse, b.mse);
   swap(a.__isset, b.__isset);
 }
 
@@ -1016,15 +1034,19 @@ bool StartVideoType::operator==(const StartVideoType & rhs) const
 {
   if (!(videoInfo == rhs.videoInfo))
     return false;
+  if (!(mse == rhs.mse))
+    return false;
   return true;
 }
 
 StartVideoType::StartVideoType(const StartVideoType& other16) {
   videoInfo = other16.videoInfo;
+  mse = other16.mse;
   __isset = other16.__isset;
 }
 StartVideoType& StartVideoType::operator=(const StartVideoType& other17) {
   videoInfo = other17.videoInfo;
+  mse = other17.mse;
   __isset = other17.__isset;
   return *this;
 }
@@ -1032,6 +1054,7 @@ void StartVideoType::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "StartVideoType(";
   out << "videoInfo=" << to_string(videoInfo);
+  out << ", " << "mse=" << to_string(mse);
   out << ")";
 }
 
@@ -1211,11 +1234,16 @@ ResetVideoType::~ResetVideoType() noexcept {
 }
 
 ResetVideoType::ResetVideoType() noexcept
-   : videoInfo() {
+   : videoInfo(),
+     mse(false) {
 }
 
 void ResetVideoType::__set_videoInfo(const std::string& val) {
   this->videoInfo = val;
+}
+
+void ResetVideoType::__set_mse(const bool val) {
+  this->mse = val;
 }
 std::ostream& operator<<(std::ostream& out, const ResetVideoType& obj)
 {
@@ -1253,6 +1281,14 @@ uint32_t ResetVideoType::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->mse);
+          this->__isset.mse = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -1274,6 +1310,10 @@ uint32_t ResetVideoType::write(::apache::thrift::protocol::TProtocol* oprot) con
   xfer += oprot->writeString(this->videoInfo);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("mse", ::apache::thrift::protocol::T_BOOL, 2);
+  xfer += oprot->writeBool(this->mse);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -1282,6 +1322,7 @@ uint32_t ResetVideoType::write(::apache::thrift::protocol::TProtocol* oprot) con
 void swap(ResetVideoType &a, ResetVideoType &b) noexcept {
   using ::std::swap;
   swap(a.videoInfo, b.videoInfo);
+  swap(a.mse, b.mse);
   swap(a.__isset, b.__isset);
 }
 
@@ -1289,15 +1330,19 @@ bool ResetVideoType::operator==(const ResetVideoType & rhs) const
 {
   if (!(videoInfo == rhs.videoInfo))
     return false;
+  if (!(mse == rhs.mse))
+    return false;
   return true;
 }
 
 ResetVideoType::ResetVideoType(const ResetVideoType& other20) {
   videoInfo = other20.videoInfo;
+  mse = other20.mse;
   __isset = other20.__isset;
 }
 ResetVideoType& ResetVideoType::operator=(const ResetVideoType& other21) {
   videoInfo = other21.videoInfo;
+  mse = other21.mse;
   __isset = other21.__isset;
   return *this;
 }
@@ -1305,6 +1350,7 @@ void ResetVideoType::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "ResetVideoType(";
   out << "videoInfo=" << to_string(videoInfo);
+  out << ", " << "mse=" << to_string(mse);
   out << ")";
 }
 

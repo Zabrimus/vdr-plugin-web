@@ -28,11 +28,11 @@ public:
     bool ProcessTSPacket(std::string& packets);
     bool ProcessOsdFrame(int render_width, int render_height, bool qoi, const std::vector<OsdRectType>& rects);
 
-    bool StartVideo(std::string& videoInfo);
+    bool StartVideo(std::string& videoInfo, bool mse = false);
     bool StopVideo();
     bool Pause();
     bool Resume();
-    bool ResetVideo(std::string& videoInfo);
+    bool ResetVideo(std::string& videoInfo, bool mse = false);
     bool Seeked();
 
     bool VideoSize(int x, int y, int w, int h);

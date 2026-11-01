@@ -217,3 +217,56 @@ bool TranscoderClient::GetVideo(std::string &result, const VideoType &input) {
         return true;
     });
 }
+
+bool TranscoderClient::MseStart(std::string &result, const std::string &responseIp, const std::string &responsePort,
+                                const std::string &vdrIp, const std::string &vdrPort, const std::string &postfix,
+                                const std::string &duration, const std::vector<std::string> &tracks) {
+    DEBUGLOG("TranscoderClient::MseStart");
+
+    return processInternal([&]() -> bool {
+        MseStartType input;
+        input.responseIp = responseIp;
+        input.responsePort = responsePort;
+        input.vdrIp = vdrIp;
+        input.vdrPort = vdrPort;
+        input.postfix = postfix;
+        input.duration = duration;
+        input.tracks = tracks;
+
+        client->MseStart(result, input);
+        return true;
+    });
+}
+
+bool TranscoderClient::MseAppend(const std::string &streamId, int track, const std::string &data) {
+    return processInternal([&]() -> bool {
+        MseAppendType input;
+        input.streamId = streamId;
+        input.track = track;
+        input.data = data;
+
+        return client->MseAppend(input);
+    });
+}
+
+bool TranscoderClient::MseReset(const std::string &streamId) {
+    DEBUGLOG("TranscoderClient::MseReset");
+
+    return processInternal([&]() -> bool {
+        MseResetType input;
+        input.streamId = streamId;
+
+        return client->MseReset(input);
+    });
+}
+
+bool TranscoderClient::MseEndOfStream(const std::string &streamId) {
+    DEBUGLOG("TranscoderClient::MseEndOfStream");
+
+    return processInternal([&]() -> bool {
+        MseEndOfStreamType input;
+        input.streamId = streamId;
+
+        return client->MseEndOfStream(input);
+    });
+}
