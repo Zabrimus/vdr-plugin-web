@@ -190,6 +190,7 @@ void cHbbtvDeviceStatus::ChannelSwitch(const cDevice * vdrDevice, int channelNum
       if (device) {
          isyslog("[vdrweb] Detaching HbbTV ait filter from device %d", device->CardIndex()+1);
          device->Detach(aitFilter);
+         delete aitFilter;
          device = nullptr;
          aitFilter = nullptr;
          sid = -1;
