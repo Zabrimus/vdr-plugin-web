@@ -418,8 +418,18 @@ bool VdrPluginWebServer::StreamEventFilter(const StreamEventFilterType &input) {
 }
 
 bool VdrPluginWebServer::ProcessOsdFrame(const ProcessOsdFrameType &input) {
-    // not supported yet
-    throw createException(400, "ProcessOsdFrame not supported");
+    WebOSDPage* page = WebOSDPage::Get();
+    if (page == nullptr) {
+        // illegal request -> abort
+        esyslog("[vdrweb] ProcessOsdFrame: osd update request while webOsdPage is null.");
+        throw createException(400, "webOsdPage is null");
+    }
+
+    if (!page->drawFrame(input)) {
+        throw createException(400, "ProcessOsdFrame failed");
+    }
+
+    return true;
 }
 
 VdrPluginWebIf *VdrPluginWebCloneFactory::getHandler(const TConnectionInfo &connInfo) {

@@ -242,6 +242,40 @@ bool WebOSDPage::drawImage(uint8_t* image, int render_width, int render_height, 
     return scaleAndPaint(image, render_width, render_height, x, y, width, height);
 }
 
+bool WebOSDPage::drawFrame(const pluginweb::ProcessOsdFrameType &frame) {
+    bool ok = true;
+
+    for (const auto &r : frame.rects) {
+        if (frame.qoi) {
+            qoi_desc desc;
+            void *image = qoi_decode(r.data.c_str(), (int) r.data.size(), &desc, 4);
+            if (image == nullptr) {
+                esyslog("[vdrweb] failed to decode qoi OSD image");
+                ok = false;
+                continue;
+            }
+
+            ok &= scaleAndPaint(static_cast<uint8_t *>(image), frame.render_width, frame.render_height, r.x, r.y, (int) desc.width, (int) desc.height, false);
+            free(image);
+        } else {
+            if ((int64_t) r.width * r.height * 4 != (int64_t) r.data.size()) {
+                ok = false;
+                continue;
+            }
+
+            ok &= scaleAndPaint((uint8_t *) r.data.c_str(), frame.render_width, frame.render_height, r.x, r.y, r.width, r.height, false);
+        }
+    }
+
+    // one flush for the whole frame
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+    if (osd != nullptr) {
+        osd->Flush();
+    }
+
+    return ok;
+}
+
 bool WebOSDPage::drawImageQOI(const std::string qoibuffer, const int render_width, const int render_height, const int x, const int y) {
     // decode image data
     qoi_desc desc;
@@ -259,7 +293,7 @@ bool WebOSDPage::drawImageQOI(const std::string qoibuffer, const int render_widt
     return retValue;
 }
 
-bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height) {
+bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height, bool flush) {
     // sanity check
     if (width > 3840 || height > 2160 || width <= 0 || height <= 0) {
         return false;
@@ -283,7 +317,7 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
             esyslog("[vdrweb] Pixmap is null. OSD not available");
         }
 
-        if (osd != nullptr) {
+        if (flush && osd != nullptr) {
             osd->Flush();
         }
 
@@ -354,7 +388,7 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
     }
 #endif
 
-    if (osd != nullptr) {
+    if (flush && osd != nullptr) {
         osd->Flush();
     }
 
