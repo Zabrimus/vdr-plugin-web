@@ -50,8 +50,13 @@ std::map<int, std::string> keyMap({
         {kStop, "VK_STOP"},
         {kFastFwd, "VK_FAST_FWD"},
         {kFastRew, "VK_REWIND"},
-        {kNext, "VK_PAGE_DOWN"},
-        {kPrev, "VK_PAGE_UP"},
+        {kPlayPause, "VK_PLAY_PAUSE"},
+        {kRecord, "VK_RECORD"},
+        // HbbTV: next/previous are the skip keys of the VCR keyset
+        {kNext, "VK_TRACK_NEXT"},
+        {kPrev, "VK_TRACK_PREV"},
+        {kInfo, "VK_INFO"},
+        {kSubtitles, "VK_SUBTITLE"},
 });
 
 WebOSDPage *WebOSDPage::Create(bool useOutputDeviceScale, OSD_MODE osdMode) {

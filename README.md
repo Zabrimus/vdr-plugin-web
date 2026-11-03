@@ -93,6 +93,23 @@ VDR uses the red key itself. To start HbbTV with a key, map it to the plugin in
 
 Both take effect with the next application.
 
+## Keys
+The keys of VDR are sent to the application as HbbTV keys, if they are in the keyset of the application.
+Otherwise VDR handles them (e.g. the numeric and channel keys switch the channel).
+
+| VDR key                      | HbbTV key                          |
+|------------------------------|------------------------------------|
+| Up, Down, Left, Right, Ok    | VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, VK_ENTER |
+| Back                         | VK_BACK                            |
+| Red, Green, Yellow, Blue     | VK_RED, VK_GREEN, VK_YELLOW, VK_BLUE |
+| 0 - 9                        | VK_0 - VK_9                        |
+| Play, Pause, Play/Pause, Stop| VK_PLAY, VK_PAUSE, VK_PLAY_PAUSE, VK_STOP |
+| FastFwd, FastRew             | VK_FAST_FWD, VK_REWIND             |
+| Next, Prev                   | VK_TRACK_NEXT, VK_TRACK_PREV       |
+| Record                       | VK_RECORD                          |
+| Info                         | VK_INFO                            |
+| Subtitles                    | VK_SUBTITLE                        |
+
 ## Logging
 Uses the VDR logging mechanism. Log entries can be found in ```/var/log/syslog``` with ```[vdrweb]``` prefix.
 
