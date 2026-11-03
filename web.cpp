@@ -251,6 +251,9 @@ bool VdrPluginWebServer::StartVideo(const StartVideoType &input) {
 
     std::lock_guard<std::recursive_mutex> lock(playerMutex);
 
+    // a following ResetVideo with the same format only clears the device
+    videoInfo = input.videoInfo;
+
     WebOSDPage* page;
     nextOsdCommand = CLOSE;
     cRemote::CallPlugin("web");
