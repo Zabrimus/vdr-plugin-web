@@ -13,6 +13,7 @@
 #include <vdr/videodir.h>
 #include <Magick++.h>
 #include <mutex>
+#include <atomic>
 
 #include <memory>
 #include "web.h"
@@ -161,6 +162,16 @@ void stopVideo() {
     }
 }
 
+// The browser sends some frames after the page has been closed: log it only once
+// until a page is open again.
+static std::atomic<bool> missingPageLogged(false);
+
+static void logMissingPage(const char *request) {
+    if (!missingPageLogged.exchange(true)) {
+        dsyslog("[vdrweb] %s: OSD update while no page is open", request);
+    }
+}
+
 inline OperationFailed createException(int code, std::string reason) {
     OperationFailed io;
     io.code = code;
@@ -184,9 +195,10 @@ bool VdrPluginWebServer::ProcessOsdUpdate(const ProcessOsdUpdateType &input) {
     WebOSDPage* page = WebOSDPage::Get();
     if (page == nullptr) {
         // illegal request -> abort
-        esyslog("[vdrweb] ProcessOsdUpdate: osd update request while webOsdPage is null.");
+        logMissingPage("ProcessOsdUpdate");
         throw createException(400, "webOsdPage is null");
     }
+    missingPageLogged = false;
 
     if (!page->drawImage((uint8_t*)input.data.c_str(), input.disp_width, input.disp_height, input.x, input.y, input.width, input.height)) {
         throw createException(400, "ProcessOsdUpdate failed");
@@ -204,9 +216,10 @@ bool VdrPluginWebServer::ProcessOsdUpdateQOI(const ProcessOsdUpdateQOIType &inpu
     WebOSDPage* page = WebOSDPage::Get();
     if (page == nullptr) {
         // illegal request -> abort
-        esyslog("[vdrweb] ProcessOsdUpdate: osd update request while webOsdPage is null.");
+        logMissingPage("ProcessOsdUpdate");
         throw createException(400, "webOsdPage is null");
     }
+    missingPageLogged = false;
 
     if (!page->drawImageQOI(input.image_data, input.render_width, input.render_height, input.x, input.y)) {
         throw createException(400, "ProcessOsdUpdate failed");
@@ -438,9 +451,10 @@ bool VdrPluginWebServer::ProcessOsdFrame(const ProcessOsdFrameType &input) {
     WebOSDPage* page = WebOSDPage::Get();
     if (page == nullptr) {
         // illegal request -> abort
-        esyslog("[vdrweb] ProcessOsdFrame: osd update request while webOsdPage is null.");
+        logMissingPage("ProcessOsdFrame");
         throw createException(400, "webOsdPage is null");
     }
+    missingPageLogged = false;
 
     if (!page->drawFrame(input)) {
         throw createException(400, "ProcessOsdFrame failed");
