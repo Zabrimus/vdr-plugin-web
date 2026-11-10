@@ -14,6 +14,9 @@
 #include "ait.h"
 #include "status.h"
 #include "web.h"
+#include "jsonescape.h"
+#include "hbbtvhint.h"
+#include "streamevent.h"
 
 #define PMT_SCAN_IDLE     5 // 60 //300    // seconds
 
@@ -40,7 +43,8 @@ const char *hbbtvJson = R"(
 
 inline const char* toHbbtvJson(const char* channelId, const char* channelName, int applicationId, int controlCode, const char* name, const char* urlBase, const char* urlLoc, const char* urlExt) {
     char *buffer;
-    asprintf(&buffer, hbbtvJson, channelId, channelName, applicationId, controlCode, name, urlBase, urlLoc, urlExt);
+    asprintf(&buffer, hbbtvJson, jsonEscape(channelId).c_str(), jsonEscape(channelName).c_str(), applicationId, controlCode,
+             jsonEscape(name).c_str(), jsonEscape(urlBase).c_str(), jsonEscape(urlLoc).c_str(), jsonEscape(urlExt).c_str());
     return buffer;
 }
 
@@ -140,19 +144,34 @@ cAIT::cAIT(const u_char *Data, u_short Pid) : SI::AIT(Data, true) {
             delete d;
         }
 
+        std::string json;
+        {
 #if APIVERSNUM >= 20301
-        LOCK_CHANNELS_READ
-        const cChannel* currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
+            LOCK_CHANNELS_READ
+            const cChannel* currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
 #else
-        const cChannel* currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
+            const cChannel* currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
 #endif
 
-        const char* buffer = toHbbtvJson(currentChannel->GetChannelID().ToString(), currentChannel->Name(), aitApp.getApplicationId(), aitApp.getControlCode(), nameBuffer, URLBaseBuffer, URLLocBuffer, URLExtBuffer);
-        if (browserClient != nullptr) {
-            browserClient->InsertHbbtv(buffer);
+            if (currentChannel == nullptr) {
+                continue;
+            }
+
+            const char* buffer = toHbbtvJson(currentChannel->GetChannelID().ToString(), currentChannel->Name(), aitApp.getApplicationId(), aitApp.getControlCode(), nameBuffer, URLBaseBuffer, URLLocBuffer, URLExtBuffer);
+            json = buffer;
+            free((void *) buffer);
         }
 
-        free((void *) buffer);
+        // an HbbTV application which starts automatically: show the HbbTV hint.
+        // The highest bit of the application type is the test application flag.
+        if ((getApplicationType() & 0x7FFF) == 0x0010 && aitApp.getControlCode() == acc_Autostart) {
+            cHbbtvHint::AutostartApplicationFound();
+        }
+
+        // not with the lock of the channels: the browser may answer slowly
+        if (browserClient != nullptr) {
+            browserClient->InsertHbbtv(json);
+        }
     }
 }
 
@@ -235,6 +254,13 @@ void cAitFilter::Process(u_short Pid, u_char Tid, const u_char *Data, int Length
             // Scan the stream-specific loop:
             SI::PMT::Stream stream;
             for (SI::Loop::Iterator it; pmt.streamLoop.getNext(stream, it);) {
+                // component tags for the stream events
+                SI::Descriptor *sd;
+                for (SI::Loop::Iterator its; (sd = stream.streamDescriptors.getNext(its, SI::StreamIdentifierDescriptorTag));) {
+                    StreamEventsComponent(((SI::StreamIdentifierDescriptor *) sd)->getComponentTag(), stream.getPid());
+                    delete sd;
+                }
+
                 if (stream.getStreamType() == 0x05) {
                     SI::Descriptor *d;
                     for (SI::Loop::Iterator it2; (d = stream.streamDescriptors.getNext(it2,

@@ -26,18 +26,22 @@ public:
     bool ProcessOsdUpdate(int disp_width, int disp_height, int x, int y, int width, int height, std::string& data);
     bool ProcessOsdUpdateQoi(int disp_width, int disp_height, int x, int y, const std::string& imageQoi);
     bool ProcessTSPacket(std::string& packets);
+    bool ProcessOsdFrame(int render_width, int render_height, bool qoi, const std::vector<OsdRectType>& rects);
 
-    bool StartVideo(std::string& videoInfo);
+    bool StartVideo(std::string& videoInfo, bool mse = false);
     bool StopVideo();
     bool Pause();
     bool Resume();
-    bool ResetVideo(std::string& videoInfo);
+    bool ResetVideo(std::string& videoInfo, bool mse = false);
     bool Seeked();
 
     bool VideoSize(int x, int y, int w, int h);
     bool VideoFullscreen();
 
     bool SelectAudioTrack(std::string& nr);
+    bool SelectSubtitleTrack(const std::string& nr);
+    bool EndOfStream();
+    bool StreamEventFilter(int componentTag, bool enable);
 
     bool IsWebActive();
 

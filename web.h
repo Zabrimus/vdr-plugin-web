@@ -19,7 +19,7 @@
 #include <thrift/transport/TSocket.h>
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/transport/TBufferTransports.h>
-#include <thrift/server/TThreadPoolServer.h>
+#include <thrift/server/TThreadedServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 
@@ -105,6 +105,10 @@ public:
     bool ResetVideo(const ResetVideoType& input) override;
     bool SelectAudioTrack(const SelectAudioTrackType& input) override;
     bool IsWebActive() override;
+    bool SelectSubtitleTrack(const SelectSubtitleTrackType& input) override;
+    bool EndOfStream() override;
+    bool StreamEventFilter(const StreamEventFilterType& input) override;
+    bool ProcessOsdFrame(const ProcessOsdFrameType& input) override;
 };
 
 class VdrPluginWebCloneFactory : virtual public VdrPluginWebIfFactory {

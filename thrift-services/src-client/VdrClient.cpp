@@ -3,6 +3,7 @@
 
 #include "debuglog.h"
 #include "VdrClient.h"
+#include "TransportBuffer.h"
 
 using namespace apache::thrift;
 using namespace apache::thrift::protocol;
@@ -18,8 +19,11 @@ void vdrClientOutputFunction(const char* msg) {
 VdrClient::VdrClient(std::string vdrIp, int vdrPort) {
     DEBUGLOG("Construct VdrClient");
 
-    std::shared_ptr<TTransport> socket(new TSocket(vdrIp, vdrPort));
-    transport = static_cast<const std::shared_ptr<TTransport>>(new TBufferedTransport(socket));
+    std::shared_ptr<TSocket> socket(new TSocket(vdrIp, vdrPort));
+    socket->setConnTimeout(3000);
+    socket->setSendTimeout(10000);
+    socket->setRecvTimeout(10000);   // ProcessTSPacket may wait up to 5s for the device
+    transport = static_cast<const std::shared_ptr<TTransport>>(new TBufferedTransport(socket, THRIFT_TRANSPORT_BUFFER_SIZE, THRIFT_TRANSPORT_BUFFER_SIZE));
     std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
 
     client = new VdrPluginWebClient(protocol);
@@ -72,18 +76,30 @@ bool VdrClient::ping() {
 template <typename F> bool VdrClient::processInternal(F&& request) {
     std::lock_guard<std::recursive_mutex> lock(vdr_send_mutex);
 
-    if (!ping()) {
-        return false;
+    // no ping before every request, that doubles the round trips.
+    // If the connection is broken, reconnect once and repeat the request.
+    for (int attempt = 0; attempt < 2; ++attempt) {
+        if (!connect()) {
+            return false;
+        }
+
+        try {
+            return request();
+        } catch (OperationFailed &err) {
+            return false;
+        } catch (TTransportException &err) {
+            transport->close();
+            if (err.getType() == TTransportException::TIMED_OUT) {
+                // the request may have been processed, don't repeat it
+                return false;
+            }
+        } catch (TException &err) {
+            transport->close();
+            return false;
+        }
     }
 
-    try {
-        return request();
-    } catch (OperationFailed &err) {
-        return false;
-    } catch (TException &err) {
-        transport->close();
-        return false;
-    }
+    return false;
 }
 
 bool VdrClient::ProcessOsdUpdate(int disp_width, int disp_height, int x, int y, int width, int height, std::string& data) {
@@ -129,12 +145,13 @@ bool VdrClient::ProcessTSPacket(std::string& packets) {
     });
 }
 
-bool VdrClient::StartVideo(std::string& videoInfo) {
+bool VdrClient::StartVideo(std::string& videoInfo, bool mse) {
     DEBUGLOG("VdrClient::StartVideo");
 
     return processInternal([&]() -> bool {
         StartVideoType input;
         input.videoInfo = videoInfo;
+        input.mse = mse;
 
         return client->StartVideo(input);
     });
@@ -164,12 +181,13 @@ bool VdrClient::Resume() {
     });
 }
 
-bool VdrClient::ResetVideo(std::string& videoInfo) {
+bool VdrClient::ResetVideo(std::string& videoInfo, bool mse) {
     DEBUGLOG("VdrClient::ResetVideo");
 
     return processInternal([&]() -> bool {
         ResetVideoType input;
         input.videoInfo = videoInfo;
+        input.mse = mse;
 
         return client->ResetVideo(input);
     });
@@ -213,6 +231,49 @@ bool VdrClient::SelectAudioTrack(std::string& nr) {
         input.audioTrack = nr;
 
         return client->SelectAudioTrack(input);
+    });
+}
+
+bool VdrClient::ProcessOsdFrame(int render_width, int render_height, bool qoi, const std::vector<OsdRectType>& rects) {
+    return processInternal([&]() -> bool {
+        ProcessOsdFrameType input;
+        input.render_width = render_width;
+        input.render_height = render_height;
+        input.qoi = qoi;
+        input.rects = rects;
+
+        return client->ProcessOsdFrame(input);
+    });
+}
+
+bool VdrClient::SelectSubtitleTrack(const std::string& nr) {
+    DEBUGLOG("VdrClient::SelectSubtitleTrack");
+
+    return processInternal([&]() -> bool {
+        SelectSubtitleTrackType input;
+        input.subtitleTrack = nr;
+
+        return client->SelectSubtitleTrack(input);
+    });
+}
+
+bool VdrClient::EndOfStream() {
+    DEBUGLOG("VdrClient::EndOfStream");
+
+    return processInternal([&]() -> bool {
+        return client->EndOfStream();
+    });
+}
+
+bool VdrClient::StreamEventFilter(int componentTag, bool enable) {
+    DEBUGLOG("VdrClient::StreamEventFilter");
+
+    return processInternal([&]() -> bool {
+        StreamEventFilterType input;
+        input.componentTag = componentTag;
+        input.enable = enable;
+
+        return client->StreamEventFilter(input);
     });
 }
 

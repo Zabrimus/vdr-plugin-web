@@ -7,11 +7,17 @@
  */
 
 #include <vdr/channels.h>
+#include <string>
+#include <vector>
+#include <algorithm>
 #include "web.h"
 #include "status.h"
 #include "ait.h"
 #include "BrowserClient.h"
 #include "webosdpage.h"
+#include "jsonescape.h"
+#include "hbbtvhint.h"
+#include "streamevent.h"
 
 const char *channelJson = R"(
     {
@@ -38,6 +44,95 @@ const char *channelJson = R"(
     }
 )";
 
+// The audio and subtitle tracks of the channel, ordered by PID like the
+// track list VDR uses for the track selection (VideoPlayer::SelectTrack).
+static std::string channelComponentsJson(const cChannel* channel) {
+    struct track {
+        int pid;
+        std::string json;
+    };
+
+    std::vector<track> audio;
+    for (int i = 0; channel->Apid(i); ++i) {
+        int type = channel->Atype(i);
+        const char *encoding = (type == 0x0F || type == 0x11) ? "audio/mp4" : "audio/mpeg";
+        audio.push_back({ channel->Apid(i), *cString::sprintf("{\"pid\":%d,\"language\":\"%s\",\"encoding\":\"%s\"}",
+                                                           channel->Apid(i), jsonEscape(channel->Alang(i)).c_str(), encoding) });
+    }
+    for (int i = 0; channel->Dpid(i); ++i) {
+        audio.push_back({ channel->Dpid(i), *cString::sprintf("{\"pid\":%d,\"language\":\"%s\",\"encoding\":\"audio/ac3\"}",
+                                                           channel->Dpid(i), jsonEscape(channel->Dlang(i)).c_str()) });
+    }
+
+    std::vector<track> subtitles;
+    for (int i = 0; channel->Spid(i); ++i) {
+        // subtitling types 0x20-0x25: for the hard of hearing
+        bool hearingImpaired = channel->SubtitlingType(i) >= 0x20 && channel->SubtitlingType(i) <= 0x25;
+        subtitles.push_back({ channel->Spid(i), *cString::sprintf("{\"pid\":%d,\"language\":\"%s\",\"hearingImpaired\":%s}",
+                                                               channel->Spid(i), jsonEscape(channel->Slang(i)).c_str(), hearingImpaired ? "true" : "false") });
+    }
+
+    auto byPid = [](const track& a, const track& b) { return a.pid < b.pid; };
+    std::sort(audio.begin(), audio.end(), byPid);
+    std::sort(subtitles.begin(), subtitles.end(), byPid);
+
+    std::string result = "{\"audio\":[";
+    for (size_t i = 0; i < audio.size(); ++i) {
+        result += (i ? "," : "") + audio[i].json;
+    }
+    result += "],\"subtitle\":[";
+    for (size_t i = 0; i < subtitles.size(); ++i) {
+        result += (i ? "," : "") + subtitles[i].json;
+    }
+    result += "]}";
+
+    return result;
+}
+
+static std::string programmeJson(const cEvent *event) {
+    if (event == nullptr) {
+        return "";
+    }
+
+    std::string ratings = "[]";
+    if (event->ParentalRating() > 0) {
+        // dvb-si scheme: the name is the minimum age, the value the rating of the descriptor
+        ratings = *cString::sprintf("[{\"name\":\"%d\",\"scheme\":\"dvb-si\",\"value\":%d,\"region\":\"de\"}]",
+                                    event->ParentalRating(), event->ParentalRating() - 3);
+    }
+
+    return *cString::sprintf("{\"programmeID\":\"%u\",\"name\":\"%s\",\"description\":\"%s\",\"longDescription\":\"%s\","
+                             "\"startTime\":%ld,\"duration\":%d,\"parentalRatings\":%s}",
+                             event->EventID(), jsonEscape(event->Title()).c_str(), jsonEscape(event->ShortText()).c_str(),
+                             jsonEscape(event->Description()).c_str(), (long) event->StartTime(), event->Duration(), ratings.c_str());
+}
+
+// present and following programme of the channel (video/broadcast programmes)
+static std::string channelProgrammesJson(const cChannel* channel, tEventID *presentId = nullptr) {
+    std::string result = "[";
+
+    LOCK_SCHEDULES_READ
+    const cSchedule *schedule = Schedules->GetSchedule(channel);
+    if (schedule != nullptr) {
+        const cEvent *present = schedule->GetPresentEvent();
+        const cEvent *following = schedule->GetFollowingEvent();
+
+        if (presentId != nullptr) {
+            *presentId = present ? present->EventID() : 0;
+        }
+
+        std::string p = programmeJson(present);
+        std::string f = programmeJson(following);
+        result += p;
+        if (!p.empty() && !f.empty()) {
+            result += ",";
+        }
+        result += f;
+    }
+
+    return result + "]";
+}
+
 inline const char* toChannelJson(const cChannel* channel) {
     // longName, Name => currentChannel
     // nid            => ??? (use 1 as default)
@@ -57,8 +152,18 @@ inline const char* toChannelJson(const cChannel* channel) {
     }
 
     char *cmd;
-    asprintf(&cmd, channelJson, *channel->GetChannelID().ToString(), channelType, 1, channel->Nid(), channel->Tid(), channel->Sid(), channel->Name(), channel->Name(), 15);
-    return cmd;
+    std::string name = jsonEscape(channel->Name());
+    asprintf(&cmd, channelJson, *channel->GetChannelID().ToString(), channelType, 1, channel->Nid(), channel->Tid(), channel->Sid(), name.c_str(), name.c_str(), 15);
+
+    // add the tracks of the channel
+    std::string json = cmd;
+    free(cmd);
+
+    auto end = json.find_last_of('}');
+    json = json.substr(0, end) + ",\n        \"components\": " + channelComponentsJson(channel) +
+                                 ",\n        \"programmes\": " + channelProgrammesJson(channel) + "\n    }\n";
+
+    return strdup(json.c_str());
 }
 
 cHbbtvDeviceStatus::cHbbtvDeviceStatus() {
@@ -76,9 +181,16 @@ void cHbbtvDeviceStatus::ChannelSwitch(const cDevice * vdrDevice, int channelNum
    // otherwise ChannelNumber is the number of the channel that has been switched to.
    // LiveView tells whether this channel switch is for live viewing.
    if (LiveView) {
+      // a new channel needs its own HbbTV hint
+      cHbbtvHint::ChannelSwitch();
+
+      // stream events belong to the channel
+      StreamEventsChannelSwitch(nullptr);
+
       if (device) {
          isyslog("[vdrweb] Detaching HbbTV ait filter from device %d", device->CardIndex()+1);
          device->Detach(aitFilter);
+         delete aitFilter;
          device = nullptr;
          aitFilter = nullptr;
          sid = -1;
@@ -87,22 +199,68 @@ void cHbbtvDeviceStatus::ChannelSwitch(const cDevice * vdrDevice, int channelNum
       if (channelNumber) {
          device = cDevice::ActualDevice();
 
+         std::string json;
+         {
 #if APIVERSNUM >= 20301
-         LOCK_CHANNELS_READ
-         auto channel = Channels->GetByNumber(channelNumber);
+            LOCK_CHANNELS_READ
+            auto channel = Channels->GetByNumber(channelNumber);
 #else
-         auto channel = Channels->GetByNumber(channelNumber);
+            auto channel = Channels->GetByNumber(channelNumber);
 #endif
-         sid = channel->Sid();
+            if (channel == nullptr) {
+               device = nullptr;
+               return;
+            }
 
-         const char* buffer = toChannelJson(channel);
-         browserClient->InsertChannel(buffer);
-         free((void *) buffer);
+            sid = channel->Sid();
+            lastPresentEventId = 0;
+
+            const char* buffer = toChannelJson(channel);
+            json = buffer;
+            free((void *) buffer);
+         }
+
+         // not with the lock of the channels: the browser may answer slowly
+         if (browserClient != nullptr) {
+            browserClient->InsertChannel(json);
+         }
 
          device->AttachFilter(aitFilter = new cAitFilter(sid));
+         StreamEventsChannelSwitch(device);
          isyslog("[vdrweb] Attached HbbTV ait filter to device %d, vdrDev=%d actDev=%d, Sid=0x%04x", device->CardIndex()+1, vdrDevice->CardIndex()+1,cDevice::ActualDevice()->CardIndex()+1, sid);
       }
    }
+}
+
+// The present programme changes, or the EPG arrives after the channel switch.
+// Send the channel again, the browser updates the running application.
+void cHbbtvDeviceStatus::CheckProgramme() {
+    if (sid < 0 || browserClient == nullptr) {
+        return;
+    }
+
+    std::string buffer;
+    {
+        LOCK_CHANNELS_READ
+        const cChannel *channel = Channels->GetByNumber(cDevice::CurrentChannel());
+        if (channel == nullptr) {
+            return;
+        }
+
+        tEventID presentId = 0;
+        channelProgrammesJson(channel, &presentId);
+
+        if (presentId == lastPresentEventId) {
+            return;
+        }
+        lastPresentEventId = presentId;
+
+        const char *json = toChannelJson(channel);
+        buffer = json;
+        free((void *) json);
+    }
+
+    browserClient->InsertChannel(buffer);
 }
 
 void cHbbtvDeviceStatus::SetVolume(int Volume, bool Absolute) {

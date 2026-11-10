@@ -65,6 +65,26 @@ class CefBrowserHandler : virtual public CefBrowserIf {
     printf("StopVideo\n");
   }
 
+  bool PlayerStatus(const PlayerStatusType& input) {
+    // Your implementation goes here
+    printf("PlayerStatus\n");
+  }
+
+  bool StreamEvent(const StreamEventType& input) {
+    // Your implementation goes here
+    printf("StreamEvent\n");
+  }
+
+  bool SetRenderParameters(const RenderParametersType& input) {
+    // Your implementation goes here
+    printf("SetRenderParameters\n");
+  }
+
+  bool SetBrowserOptions(const BrowserOptionsType& input) {
+    // Your implementation goes here
+    printf("SetBrowserOptions\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

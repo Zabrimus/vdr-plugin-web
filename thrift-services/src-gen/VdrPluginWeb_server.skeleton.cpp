@@ -85,6 +85,26 @@ class VdrPluginWebHandler : virtual public VdrPluginWebIf {
     printf("IsWebActive\n");
   }
 
+  bool SelectSubtitleTrack(const SelectSubtitleTrackType& input) {
+    // Your implementation goes here
+    printf("SelectSubtitleTrack\n");
+  }
+
+  bool EndOfStream() {
+    // Your implementation goes here
+    printf("EndOfStream\n");
+  }
+
+  bool StreamEventFilter(const StreamEventFilterType& input) {
+    // Your implementation goes here
+    printf("StreamEventFilter\n");
+  }
+
+  bool ProcessOsdFrame(const ProcessOsdFrameType& input) {
+    // Your implementation goes here
+    printf("ProcessOsdFrame\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

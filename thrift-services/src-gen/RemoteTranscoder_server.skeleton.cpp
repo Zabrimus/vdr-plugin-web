@@ -60,6 +60,26 @@ class RemoteTranscoderHandler : virtual public RemoteTranscoderIf {
     printf("GetVideo\n");
   }
 
+  void MseStart(std::string& _return, const MseStartType& input) {
+    // Your implementation goes here
+    printf("MseStart\n");
+  }
+
+  bool MseAppend(const MseAppendType& input) {
+    // Your implementation goes here
+    printf("MseAppend\n");
+  }
+
+  bool MseReset(const MseResetType& input) {
+    // Your implementation goes here
+    printf("MseReset\n");
+  }
+
+  bool MseEndOfStream(const MseEndOfStreamType& input) {
+    // Your implementation goes here
+    printf("MseEndOfStream\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

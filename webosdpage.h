@@ -1,16 +1,22 @@
 #pragma once
 
+#include <mutex>
+
 #include <string>
 #include <map>
 #include <thread>
 #include <vdr/osdbase.h>
 #include <vdr/player.h>
+#include "pluginweb_types.h"
 
 enum OSD_MODE {
     OSD,
     PLAYER,
     CLOSED
 };
+
+// protects the pages and their OSD, the thrift threads draw while VDR may close a page
+extern std::recursive_mutex pixmap_mutex;
 
 class WebOSDPage : public cControl {
 
@@ -37,7 +43,7 @@ private:
 private:
     explicit WebOSDPage(bool useOutputDeviceScale, OSD_MODE osdMode);
 
-    bool scaleAndPaint(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height);
+    bool scaleAndPaint(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height, bool flush = true);
 
     void DeleteVolume();
 
@@ -63,6 +69,9 @@ public:
     // Using both methods in parallel leads to undefined behaviour.
     bool drawImage(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height);
     bool drawImageQOI(const std::string qoiBuffer, const int render_width, const int render_height, const int x, const int y);
+
+    // all regions of a frame, the OSD is flushed once
+    bool drawFrame(const pluginweb::ProcessOsdFrameType &frame);
 
     void DrawVolume(int volume = 0);
 

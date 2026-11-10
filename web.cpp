@@ -13,20 +13,25 @@
 #include <vdr/videodir.h>
 #include <Magick++.h>
 #include <mutex>
+#include <atomic>
 
 #include <memory>
 #include "web.h"
 #include "BrowserClient.h"
+#include "TransportBuffer.h"
 #include "ini.h"
 #include "webosdpage.h"
 #include "status.h"
 #include "videocontrol.h"
 #include "dummyosd.h"
 #include "debuglog.h"
+#include "hbbtvhint.h"
+#include "setup.h"
+#include "streamevent.h"
 
 #define TSDIR  "%s/web/%s/%4d-%02d-%02d.%02d.%02d.%d-%d.rec"
 
-TThreadPoolServer *thriftServer;
+TThreadedServer *thriftServer;
 
 bool saveTS;
 char* currentTSFilename;
@@ -66,6 +71,7 @@ enum OSD_COMMAND {
 OSD_COMMAND nextOsdCommand = OPEN;
 bool useOutputDeviceScale = false;
 bool useDummyOsd = false;
+bool measureOsd = false;
 
 int nr = 0;
 
@@ -97,14 +103,72 @@ void createTSFileName() {
     currentTSFilename = strdup(cString::sprintf("%s/00001.ts", currentTSDir));
 }
 
-void stopVideo() {
+extern WebOSDPage *playerWebOsdPage;
+
+// videoPlayer is used by the thrift worker threads and cRegularWorker
+std::recursive_mutex playerMutex;
+
+// Returns true if c is the currently launched cControl
+static bool isCurrentControl(cControl *c) {
+#if VDRVERSNUM >= 20803
+    // cControl::Control() gives up after 100ms outside the main thread
+    for (int i = 0; i < 20; ++i) {
+        cMutexLock controlLock;
+        bool lockedOtherwise = false;
+        cControl *current = cControl::Control(controlLock, true, &lockedOtherwise);
+        if (!lockedOtherwise) {
+            return current == c;
+        }
+    }
+    return false;
+#else
+    cMutexLock controlLock;
+    return cControl::Control(controlLock, true) == c;
+#endif
+}
+
+// Removes the player page and the video player together. The page must not
+// keep a dangling cControl::player, and an existing page must not be passed to
+// cControl::Launch() again, because Launch() deletes the current control first.
+static void releasePlayer() {
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
+    WebOSDPage *page = playerWebOsdPage;
+    if (page != nullptr) {
+        page->SetPlayer(nullptr);
+
+        if (isCurrentControl(page)) {
+            cControl::Shutdown();
+        } else {
+            delete page;
+        }
+    }
+
     if (videoPlayer != nullptr) {
         VideoPlayer *copy = videoPlayer;
         videoPlayer = nullptr;
         delete copy;
+    }
+}
+
+void stopVideo() {
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
+    if (videoPlayer != nullptr) {
+        releasePlayer();
 
         nextOsdCommand = REOPEN;
         cRemote::CallPlugin("web");
+    }
+}
+
+// The browser sends some frames after the page has been closed: log it only once
+// until a page is open again.
+static std::atomic<bool> missingPageLogged(false);
+
+static void logMissingPage(const char *request) {
+    if (!missingPageLogged.exchange(true)) {
+        dsyslog("[vdrweb] %s: OSD update while no page is open", request);
     }
 }
 
@@ -125,12 +189,16 @@ void VdrPluginWebServer::ping() {
 bool VdrPluginWebServer::ProcessOsdUpdate(const ProcessOsdUpdateType &input) {
     DEBUGLOG("[vdrweb] VdrPluginWebServer::ProcessOsdUpdate");
 
+    // the page must not be deleted while drawing
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+
     WebOSDPage* page = WebOSDPage::Get();
     if (page == nullptr) {
         // illegal request -> abort
-        esyslog("[vdrweb] ProcessOsdUpdate: osd update request while webOsdPage is null.");
+        logMissingPage("ProcessOsdUpdate");
         throw createException(400, "webOsdPage is null");
     }
+    missingPageLogged = false;
 
     if (!page->drawImage((uint8_t*)input.data.c_str(), input.disp_width, input.disp_height, input.x, input.y, input.width, input.height)) {
         throw createException(400, "ProcessOsdUpdate failed");
@@ -142,12 +210,16 @@ bool VdrPluginWebServer::ProcessOsdUpdate(const ProcessOsdUpdateType &input) {
 bool VdrPluginWebServer::ProcessOsdUpdateQOI(const ProcessOsdUpdateQOIType &input) {
     DEBUGLOG("[vdrweb] VdrPluginWebServer::ProcessOsdUpdateQOI");
 
+    // the page must not be deleted while drawing
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+
     WebOSDPage* page = WebOSDPage::Get();
     if (page == nullptr) {
         // illegal request -> abort
-        esyslog("[vdrweb] ProcessOsdUpdate: osd update request while webOsdPage is null.");
+        logMissingPage("ProcessOsdUpdate");
         throw createException(400, "webOsdPage is null");
     }
+    missingPageLogged = false;
 
     if (!page->drawImageQOI(input.image_data, input.render_width, input.render_height, input.x, input.y)) {
         throw createException(400, "ProcessOsdUpdate failed");
@@ -166,6 +238,8 @@ bool VdrPluginWebServer::ProcessTSPacket(const ProcessTSPacketType &input) {
             fclose(f);
         }
     }
+
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
 
     if (videoPlayer != nullptr) {
         videoPlayer->PlayPacket((uint8_t *) input.ts.c_str(), (int) input.ts.length());
@@ -188,14 +262,23 @@ bool VdrPluginWebServer::ProcessTSPacket(const ProcessTSPacketType &input) {
 bool VdrPluginWebServer::StartVideo(const StartVideoType &input) {
     dsyslog("[vdrweb] StartVideo received");
 
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
+    // a following ResetVideo with the same format only clears the device
+    videoInfo = input.videoInfo;
+
     WebOSDPage* page;
     nextOsdCommand = CLOSE;
     cRemote::CallPlugin("web");
+
+    // remove a player page left over from the previous video
+    releasePlayer();
 
     page = WebOSDPage::Create(useOutputDeviceScale, PLAYER);
     page->Display();
 
     videoPlayer = new VideoPlayer();
+    videoPlayer->SetMse(input.mse);
     page->SetPlayer(videoPlayer);
 
     cControl::Launch(page);
@@ -222,6 +305,8 @@ bool VdrPluginWebServer::StopVideo() {
 bool VdrPluginWebServer::PauseVideo() {
     dsyslog("[vdrweb] PauseVideo received");
 
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
     if (videoPlayer != nullptr) {
         videoPlayer->Pause();
     }
@@ -232,6 +317,8 @@ bool VdrPluginWebServer::PauseVideo() {
 bool VdrPluginWebServer::ResumeVideo() {
     dsyslog("[vdrweb] ResumeVideo received");
 
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
     if (videoPlayer != nullptr) {
         videoPlayer->Resume();
     }
@@ -241,6 +328,8 @@ bool VdrPluginWebServer::ResumeVideo() {
 
 bool VdrPluginWebServer::Seeked() {
     dsyslog("[vdrweb] Seeked received");
+
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
 
     if (videoPlayer != nullptr) {
         videoPlayer->ResetVideo();
@@ -282,6 +371,8 @@ bool VdrPluginWebServer::ResetVideo(const ResetVideoType &input) {
         }
     }
 
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
     if (videoPlayer != nullptr) {
         // TODO: Compare saved videoInfo with new value to determine
         //   if DeviceClear is sufficient or a complete reset is necessary
@@ -291,18 +382,20 @@ bool VdrPluginWebServer::ResetVideo(const ResetVideoType &input) {
         if (videoInfo != input.videoInfo) {
             dsyslog("[vdrweb] Device res requested, because of a video format change");
             // videoPlayer->ResetVideo();
-            cControl::Shutdown();
+            releasePlayer();
 
             WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, PLAYER);
             page->Display();
             videoPlayer = new VideoPlayer();
-            cControl::Launch(page);
             page->SetPlayer(videoPlayer);
+            cControl::Launch(page);
+            cControl::Attach();
         } else {
             dsyslog("[vdrweb] Device reset is sufficent, because video format does not change");
             videoPlayer->ResetVideo();
         }
 
+        videoPlayer->SetMse(input.mse);
         VideoPlayer::SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
     } else {
         // TODO: Is it necessary to create a new Player?
@@ -317,16 +410,57 @@ bool VdrPluginWebServer::ResetVideo(const ResetVideoType &input) {
 bool VdrPluginWebServer::SelectAudioTrack(const SelectAudioTrackType &input) {
     dsyslog("[vdrweb] SelectAudioTrack received");
 
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
+    // also for live TV (video/broadcast), the tracks belong to the device
+    return VideoPlayer::SelectTrack(false, atoi(input.audioTrack.c_str()));
+}
+
+bool VdrPluginWebServer::IsWebActive() {
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+    return (WebOSDPage::Get() != nullptr) || (videoPlayer != nullptr);
+}
+
+bool VdrPluginWebServer::SelectSubtitleTrack(const SelectSubtitleTrackType &input) {
+    dsyslog("[vdrweb] SelectSubtitleTrack received");
+
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
+    return VideoPlayer::SelectTrack(true, atoi(input.subtitleTrack.c_str()));
+}
+
+bool VdrPluginWebServer::EndOfStream() {
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+
     if (videoPlayer != nullptr) {
-        auto track = input.audioTrack;
-        videoPlayer->SelectAudioTrack(track);
+        videoPlayer->SetEndOfStream();
     }
 
     return true;
 }
 
-bool VdrPluginWebServer::IsWebActive() {
-    return (WebOSDPage::Get() != nullptr) || (videoPlayer != nullptr);
+bool VdrPluginWebServer::StreamEventFilter(const StreamEventFilterType &input) {
+    dsyslog("[vdrweb] StreamEventFilter: component tag %d, %s", input.componentTag, input.enable ? "on" : "off");
+    return StreamEventsRequest(input.componentTag, input.enable);
+}
+
+bool VdrPluginWebServer::ProcessOsdFrame(const ProcessOsdFrameType &input) {
+    // the page must not be deleted while drawing
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+
+    WebOSDPage* page = WebOSDPage::Get();
+    if (page == nullptr) {
+        // illegal request -> abort
+        logMissingPage("ProcessOsdFrame");
+        throw createException(400, "webOsdPage is null");
+    }
+    missingPageLogged = false;
+
+    if (!page->drawFrame(input)) {
+        throw createException(400, "ProcessOsdFrame failed");
+    }
+
+    return true;
 }
 
 VdrPluginWebIf *VdrPluginWebCloneFactory::getHandler(const TConnectionInfo &connInfo) {
@@ -348,19 +482,15 @@ void VdrPluginWebCloneFactory::releaseHandler(CommonServiceIf* handler) {
 }
 
 void startServer() {
-    const int workerCount = 4;
-    std::shared_ptr<ThreadManager> threadManager = ThreadManager::newSimpleThreadManager(workerCount);
-    threadManager->threadFactory(std::make_shared<ThreadFactory>());
-    threadManager->start();
-
     std::string listenIp = bindAll ? "0.0.0.0" : vdrIp;
 
-    thriftServer = new TThreadPoolServer(
+    // one thread per connection: the clients keep their connections open, a fixed
+    // pool of 4 workers blocks any further client (e.g. a new transcoder stream)
+    thriftServer = new TThreadedServer(
             std::make_shared<VdrPluginWebProcessorFactory>(std::make_shared<VdrPluginWebCloneFactory>()),
             std::make_shared<TServerSocket>(listenIp, vdrPort),
-            std::make_shared<TBufferedTransportFactory>(),
-            std::make_shared<TBinaryProtocolFactory>(),
-            threadManager);
+            std::make_shared<TLargeBufferedTransportFactory>(),
+            std::make_shared<TBinaryProtocolFactory>());
 
     thriftServer->serve();
 }
@@ -383,10 +513,30 @@ void cRegularWorker::Action() {
     while (Running()) {
         m_waitCondition.TimedWait(m_mutex, loopSleep);
 
-        if (WebOSDPage::Get() == nullptr && videoPlayer != nullptr) {
-            VideoPlayer *cp = videoPlayer;
-            videoPlayer = nullptr;
-            delete cp;
+        bool sendStatus = false;
+        int64_t position = -1;
+        int state = 0;
+
+        {
+            std::lock_guard<std::recursive_mutex> lock(playerMutex);
+            if (WebOSDPage::Get() == nullptr && videoPlayer != nullptr) {
+                releasePlayer();
+            }
+
+            if (videoPlayer != nullptr) {
+                videoPlayer->GetStatus(position, state);
+                sendStatus = true;
+            }
+        }
+
+        if (hbbtvDeviceStatus != nullptr) {
+            hbbtvDeviceStatus->CheckProgramme();
+        }
+
+        // tell the browser what is really displayed, the transparent video in the
+        // browser runs independently (position, end of video, buffering)
+        if (sendStatus && browserClient != nullptr) {
+            browserClient->PlayerStatus(position, state);
         }
     }
 }
@@ -409,7 +559,8 @@ const char *cPluginWeb::CommandLineHelp() {
            "  -o,          --dummyosd    opens a dummy osd while playing videos\n"
            "  -s,          --savets      Saves all incoming ts streams\n"
            "  -b,          --bindall     bind the web server to all interfaces\n"
-           "  -n,          --name        Menu entry name\n";
+           "  -n,          --name        Menu entry name\n"
+           "  -m,          --measure     Logs the time from a key to the OSD frame and OSD statistics\n";
 }
 
 bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
@@ -420,13 +571,14 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
             { "savets",      optional_argument, nullptr, 's' },
             { "bindall",     optional_argument, nullptr, 'b' },
             { "name",        optional_argument, nullptr, 'n' },
+            { "measure",     no_argument,       nullptr, 'm' },
             { nullptr }
     };
 
     int c, option_index = 0;
     std::string configFilename;
 
-    while ((c = getopt_long(argc, argv, "c:fosbn:", long_options, &option_index)) != -1)
+    while ((c = getopt_long(argc, argv, "c:fosbn:m", long_options, &option_index)) != -1)
     {
         switch (c)
         {
@@ -448,6 +600,10 @@ bool cPluginWeb::ProcessArgs(int argc, char *argv[]) {
 
             case 'b':
                 bindAll = true;
+                break;
+
+            case 'm':
+                measureOsd = true;
                 break;
 
             case 'n':
@@ -480,6 +636,11 @@ bool cPluginWeb::Initialize() {
 }
 
 bool cPluginWeb::Start() {
+    // without a setup entry the command line option -f decides
+    if (webSetup.deviceScale < 0) {
+        webSetup.deviceScale = useOutputDeviceScale ? 1 : 0;
+    }
+
     isyslog("[vdrweb] Start hbbtv url collector");
     hbbtvDeviceStatus = new cHbbtvDeviceStatus();
 
@@ -503,6 +664,8 @@ void cPluginWeb::Stop() {
 
     regularWorker->Stop();
 
+    StreamEventsShutdown();
+
     if (hbbtvDeviceStatus != nullptr) {
         delete hbbtvDeviceStatus;
     }
@@ -523,6 +686,7 @@ void cPluginWeb::Housekeeping() {
 void cPluginWeb::MainThreadHook() {
     // Perform actions in the context of the main program thread.
     // WARNING: Use with great care - see PLUGINS.html!
+    cHbbtvHint::Process();
 }
 
 cString cPluginWeb::Active() {
@@ -537,6 +701,9 @@ time_t cPluginWeb::WakeupTime() {
 
 cOsdObject *cPluginWeb::MainMenuAction() {
     dsyslog("[vdrweb] MainMenuAction: command = %d\n", (int)nextOsdCommand);
+
+    // the application is started, the hint is not needed anymore
+    cHbbtvHint::Hide();
 
     if (nextOsdCommand == CLOSE) {
         nextOsdCommand = OPEN;
@@ -553,7 +720,18 @@ cOsdObject *cPluginWeb::MainMenuAction() {
     LOCK_CHANNELS_READ
     const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
 
+    if (currentChannel == nullptr) {
+        esyslog("[vdrweb] MainMenuAction: no current channel");
+        nextOsdCommand = OPEN;
+        return nullptr;
+    }
+
     WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, OSD);
+
+    // resolution and frame rate from the setup, the browser may have been restarted
+    if (nextOsdCommand != REOPEN) {
+        SendRenderParameters();
+    }
 
     if (nextOsdCommand == OPEN) {
         if (!browserClient->RedButton(*currentChannel->GetChannelID().ToString())) {
@@ -575,13 +753,33 @@ cOsdObject *cPluginWeb::MainMenuAction() {
 }
 
 cMenuSetupPage *cPluginWeb::SetupMenu() {
-    // Return a setup menu in case the plugin supports one.
-    return nullptr;
+    return new cMenuSetupWeb();
 }
 
 bool cPluginWeb::SetupParse(const char *Name, const char *Value) {
-    // Parse your own setup parameters and store their values.
-    return false;
+    if (!strcasecmp(Name, "HbbtvHint")) {
+        hbbtvHintSetup.enabled = atoi(Value);
+    } else if (!strcasecmp(Name, "HbbtvHintDuration")) {
+        hbbtvHintSetup.duration = constrain(atoi(Value), 1, 60);
+    } else if (!strcasecmp(Name, "HbbtvHintPosition")) {
+        hbbtvHintSetup.position = constrain(atoi(Value), 0, 3);
+    } else if (!strcasecmp(Name, "Resolution")) {
+        webSetup.resolution = constrain(atoi(Value), 0, 4);
+    } else if (!strcasecmp(Name, "DeviceScale")) {
+        // overrides the command line option -f
+        webSetup.deviceScale = atoi(Value) ? 1 : 0;
+        useOutputDeviceScale = webSetup.deviceScale;
+    } else if (!strcasecmp(Name, "FrameRate")) {
+        webSetup.frameRate = constrain(atoi(Value), 0, 4);
+    } else if (!strcasecmp(Name, "Mse")) {
+        webSetup.mse = atoi(Value) ? 1 : 0;
+    } else if (!strcasecmp(Name, "ZdfQuirks")) {
+        webSetup.zdfQuirks = atoi(Value) ? 1 : 0;
+    } else {
+        return false;
+    }
+
+    return true;
 }
 
 bool cPluginWeb::Service(const char *Id, void *Data = nullptr) {

@@ -1266,4 +1266,615 @@ void VideoType::printTo(std::ostream& out) const {
   out << ")";
 }
 
+
+MseStartType::~MseStartType() noexcept {
+}
+
+MseStartType::MseStartType() noexcept
+   : responseIp(),
+     responsePort(),
+     vdrIp(),
+     vdrPort(),
+     postfix(),
+     duration() {
+}
+
+void MseStartType::__set_responseIp(const std::string& val) {
+  this->responseIp = val;
+}
+
+void MseStartType::__set_responsePort(const std::string& val) {
+  this->responsePort = val;
+}
+
+void MseStartType::__set_vdrIp(const std::string& val) {
+  this->vdrIp = val;
+}
+
+void MseStartType::__set_vdrPort(const std::string& val) {
+  this->vdrPort = val;
+}
+
+void MseStartType::__set_postfix(const std::string& val) {
+  this->postfix = val;
+}
+
+void MseStartType::__set_duration(const std::string& val) {
+  this->duration = val;
+}
+
+void MseStartType::__set_tracks(const std::vector<std::string> & val) {
+  this->tracks = val;
+}
+std::ostream& operator<<(std::ostream& out, const MseStartType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t MseStartType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->responseIp);
+          this->__isset.responseIp = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->responsePort);
+          this->__isset.responsePort = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->vdrIp);
+          this->__isset.vdrIp = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->vdrPort);
+          this->__isset.vdrPort = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->postfix);
+          this->__isset.postfix = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->duration);
+          this->__isset.duration = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->tracks.clear();
+            uint32_t _size16;
+            ::apache::thrift::protocol::TType _etype19;
+            xfer += iprot->readListBegin(_etype19, _size16);
+            this->tracks.resize(_size16);
+            uint32_t _i20;
+            for (_i20 = 0; _i20 < _size16; ++_i20)
+            {
+              xfer += iprot->readString(this->tracks[_i20]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.tracks = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t MseStartType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("MseStartType");
+
+  xfer += oprot->writeFieldBegin("responseIp", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->responseIp);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("responsePort", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->responsePort);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("vdrIp", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->vdrIp);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("vdrPort", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->vdrPort);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("postfix", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString(this->postfix);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("duration", ::apache::thrift::protocol::T_STRING, 6);
+  xfer += oprot->writeString(this->duration);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tracks", ::apache::thrift::protocol::T_LIST, 7);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->tracks.size()));
+    std::vector<std::string> ::const_iterator _iter21;
+    for (_iter21 = this->tracks.begin(); _iter21 != this->tracks.end(); ++_iter21)
+    {
+      xfer += oprot->writeString((*_iter21));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(MseStartType &a, MseStartType &b) noexcept {
+  using ::std::swap;
+  swap(a.responseIp, b.responseIp);
+  swap(a.responsePort, b.responsePort);
+  swap(a.vdrIp, b.vdrIp);
+  swap(a.vdrPort, b.vdrPort);
+  swap(a.postfix, b.postfix);
+  swap(a.duration, b.duration);
+  swap(a.tracks, b.tracks);
+  swap(a.__isset, b.__isset);
+}
+
+bool MseStartType::operator==(const MseStartType & rhs) const
+{
+  if (!(responseIp == rhs.responseIp))
+    return false;
+  if (!(responsePort == rhs.responsePort))
+    return false;
+  if (!(vdrIp == rhs.vdrIp))
+    return false;
+  if (!(vdrPort == rhs.vdrPort))
+    return false;
+  if (!(postfix == rhs.postfix))
+    return false;
+  if (!(duration == rhs.duration))
+    return false;
+  if (!(tracks == rhs.tracks))
+    return false;
+  return true;
+}
+
+MseStartType::MseStartType(const MseStartType& other22) {
+  responseIp = other22.responseIp;
+  responsePort = other22.responsePort;
+  vdrIp = other22.vdrIp;
+  vdrPort = other22.vdrPort;
+  postfix = other22.postfix;
+  duration = other22.duration;
+  tracks = other22.tracks;
+  __isset = other22.__isset;
+}
+MseStartType& MseStartType::operator=(const MseStartType& other23) {
+  responseIp = other23.responseIp;
+  responsePort = other23.responsePort;
+  vdrIp = other23.vdrIp;
+  vdrPort = other23.vdrPort;
+  postfix = other23.postfix;
+  duration = other23.duration;
+  tracks = other23.tracks;
+  __isset = other23.__isset;
+  return *this;
+}
+void MseStartType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "MseStartType(";
+  out << "responseIp=" << to_string(responseIp);
+  out << ", " << "responsePort=" << to_string(responsePort);
+  out << ", " << "vdrIp=" << to_string(vdrIp);
+  out << ", " << "vdrPort=" << to_string(vdrPort);
+  out << ", " << "postfix=" << to_string(postfix);
+  out << ", " << "duration=" << to_string(duration);
+  out << ", " << "tracks=" << to_string(tracks);
+  out << ")";
+}
+
+
+MseAppendType::~MseAppendType() noexcept {
+}
+
+MseAppendType::MseAppendType() noexcept
+   : streamId(),
+     track(0),
+     data() {
+}
+
+void MseAppendType::__set_streamId(const std::string& val) {
+  this->streamId = val;
+}
+
+void MseAppendType::__set_track(const int32_t val) {
+  this->track = val;
+}
+
+void MseAppendType::__set_data(const std::string& val) {
+  this->data = val;
+}
+std::ostream& operator<<(std::ostream& out, const MseAppendType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t MseAppendType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->streamId);
+          this->__isset.streamId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->track);
+          this->__isset.track = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readBinary(this->data);
+          this->__isset.data = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t MseAppendType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("MseAppendType");
+
+  xfer += oprot->writeFieldBegin("streamId", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->streamId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("track", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->track);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("data", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeBinary(this->data);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(MseAppendType &a, MseAppendType &b) noexcept {
+  using ::std::swap;
+  swap(a.streamId, b.streamId);
+  swap(a.track, b.track);
+  swap(a.data, b.data);
+  swap(a.__isset, b.__isset);
+}
+
+bool MseAppendType::operator==(const MseAppendType & rhs) const
+{
+  if (!(streamId == rhs.streamId))
+    return false;
+  if (!(track == rhs.track))
+    return false;
+  if (!(data == rhs.data))
+    return false;
+  return true;
+}
+
+MseAppendType::MseAppendType(const MseAppendType& other24) {
+  streamId = other24.streamId;
+  track = other24.track;
+  data = other24.data;
+  __isset = other24.__isset;
+}
+MseAppendType& MseAppendType::operator=(const MseAppendType& other25) {
+  streamId = other25.streamId;
+  track = other25.track;
+  data = other25.data;
+  __isset = other25.__isset;
+  return *this;
+}
+void MseAppendType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "MseAppendType(";
+  out << "streamId=" << to_string(streamId);
+  out << ", " << "track=" << to_string(track);
+  out << ", " << "data=" << to_string(data);
+  out << ")";
+}
+
+
+MseResetType::~MseResetType() noexcept {
+}
+
+MseResetType::MseResetType() noexcept
+   : streamId() {
+}
+
+void MseResetType::__set_streamId(const std::string& val) {
+  this->streamId = val;
+}
+std::ostream& operator<<(std::ostream& out, const MseResetType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t MseResetType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->streamId);
+          this->__isset.streamId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t MseResetType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("MseResetType");
+
+  xfer += oprot->writeFieldBegin("streamId", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->streamId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(MseResetType &a, MseResetType &b) noexcept {
+  using ::std::swap;
+  swap(a.streamId, b.streamId);
+  swap(a.__isset, b.__isset);
+}
+
+bool MseResetType::operator==(const MseResetType & rhs) const
+{
+  if (!(streamId == rhs.streamId))
+    return false;
+  return true;
+}
+
+MseResetType::MseResetType(const MseResetType& other26) {
+  streamId = other26.streamId;
+  __isset = other26.__isset;
+}
+MseResetType& MseResetType::operator=(const MseResetType& other27) {
+  streamId = other27.streamId;
+  __isset = other27.__isset;
+  return *this;
+}
+void MseResetType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "MseResetType(";
+  out << "streamId=" << to_string(streamId);
+  out << ")";
+}
+
+
+MseEndOfStreamType::~MseEndOfStreamType() noexcept {
+}
+
+MseEndOfStreamType::MseEndOfStreamType() noexcept
+   : streamId() {
+}
+
+void MseEndOfStreamType::__set_streamId(const std::string& val) {
+  this->streamId = val;
+}
+std::ostream& operator<<(std::ostream& out, const MseEndOfStreamType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t MseEndOfStreamType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->streamId);
+          this->__isset.streamId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t MseEndOfStreamType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("MseEndOfStreamType");
+
+  xfer += oprot->writeFieldBegin("streamId", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->streamId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(MseEndOfStreamType &a, MseEndOfStreamType &b) noexcept {
+  using ::std::swap;
+  swap(a.streamId, b.streamId);
+  swap(a.__isset, b.__isset);
+}
+
+bool MseEndOfStreamType::operator==(const MseEndOfStreamType & rhs) const
+{
+  if (!(streamId == rhs.streamId))
+    return false;
+  return true;
+}
+
+MseEndOfStreamType::MseEndOfStreamType(const MseEndOfStreamType& other28) {
+  streamId = other28.streamId;
+  __isset = other28.__isset;
+}
+MseEndOfStreamType& MseEndOfStreamType::operator=(const MseEndOfStreamType& other29) {
+  streamId = other29.streamId;
+  __isset = other29.__isset;
+  return *this;
+}
+void MseEndOfStreamType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "MseEndOfStreamType(";
+  out << "streamId=" << to_string(streamId);
+  out << ")";
+}
+
 } // namespace

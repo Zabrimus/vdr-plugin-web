@@ -22,12 +22,28 @@ struct ProcessOsdUpdateQOIType {
     5: binary image_data
 }
 
+struct OsdRectType {
+    1: i32 x,
+    2: i32 y,
+    3: i32 width,
+    4: i32 height,
+    5: binary data        // BGRA, QOI encoded if qoi is set
+}
+
+struct ProcessOsdFrameType {
+    1: i32 render_width,  // width of page
+    2: i32 render_height, // height of page
+    3: bool qoi,
+    4: list<OsdRectType> rects
+}
+
 struct ProcessTSPacketType {
     1: binary ts;
 }
 
 struct StartVideoType {
     1: string videoInfo;
+    2: bool mse = false;       // MSE stream: the stream continues after a pause
 }
 
 struct VideoSizeType {
@@ -39,10 +55,20 @@ struct VideoSizeType {
 
 struct ResetVideoType {
     1: string videoInfo;
+    2: bool mse = false;
 }
 
 struct SelectAudioTrackType {
     1: string audioTrack;
+}
+
+struct SelectSubtitleTrackType {
+    1: string subtitleTrack;   // index of the subtitle track, -1 switches subtitles off
+}
+
+struct StreamEventFilterType {
+    1: i32 componentTag,       // component tag of the elementary stream with the stream events
+    2: bool enable
 }
 
 service VdrPluginWeb extends common.CommonService {
@@ -58,5 +84,9 @@ service VdrPluginWeb extends common.CommonService {
     bool VideoFullscreen() throws (1:common.OperationFailed err),
     bool ResetVideo(1: ResetVideoType input) throws (1:common.OperationFailed err),
     bool SelectAudioTrack(1: SelectAudioTrackType input) throws (1:common.OperationFailed err),
-    bool IsWebActive() throws (1:common.OperationFailed err)
+    bool IsWebActive() throws (1:common.OperationFailed err),
+    bool SelectSubtitleTrack(1: SelectSubtitleTrackType input) throws (1:common.OperationFailed err),
+    bool EndOfStream() throws (1:common.OperationFailed err),
+    bool StreamEventFilter(1: StreamEventFilterType input) throws (1:common.OperationFailed err),
+    bool ProcessOsdFrame(1: ProcessOsdFrameType input) throws (1:common.OperationFailed err)
 }

@@ -38,6 +38,14 @@ class AudioInfoType;
 
 class VideoType;
 
+class MseStartType;
+
+class MseAppendType;
+
+class MseResetType;
+
+class MseEndOfStreamType;
+
 typedef struct _ProbeType__isset {
   _ProbeType__isset() : url(false), cookies(false), referer(false), userAgent(false), responseIp(false), responsePort(false), vdrIp(false), vdrPort(false), postfix(false) {}
   bool url :1;
@@ -401,6 +409,182 @@ class VideoType : public virtual ::apache::thrift::TBase {
 void swap(VideoType &a, VideoType &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const VideoType& obj);
+
+typedef struct _MseStartType__isset {
+  _MseStartType__isset() : responseIp(false), responsePort(false), vdrIp(false), vdrPort(false), postfix(false), duration(false), tracks(false) {}
+  bool responseIp :1;
+  bool responsePort :1;
+  bool vdrIp :1;
+  bool vdrPort :1;
+  bool postfix :1;
+  bool duration :1;
+  bool tracks :1;
+} _MseStartType__isset;
+
+class MseStartType : public virtual ::apache::thrift::TBase {
+ public:
+
+  MseStartType(const MseStartType&);
+  MseStartType& operator=(const MseStartType&);
+  MseStartType() noexcept;
+
+  virtual ~MseStartType() noexcept;
+  std::string responseIp;
+  std::string responsePort;
+  std::string vdrIp;
+  std::string vdrPort;
+  std::string postfix;
+  std::string duration;
+  std::vector<std::string>  tracks;
+
+  _MseStartType__isset __isset;
+
+  void __set_responseIp(const std::string& val);
+
+  void __set_responsePort(const std::string& val);
+
+  void __set_vdrIp(const std::string& val);
+
+  void __set_vdrPort(const std::string& val);
+
+  void __set_postfix(const std::string& val);
+
+  void __set_duration(const std::string& val);
+
+  void __set_tracks(const std::vector<std::string> & val);
+
+  bool operator == (const MseStartType & rhs) const;
+  bool operator != (const MseStartType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const MseStartType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(MseStartType &a, MseStartType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const MseStartType& obj);
+
+typedef struct _MseAppendType__isset {
+  _MseAppendType__isset() : streamId(false), track(false), data(false) {}
+  bool streamId :1;
+  bool track :1;
+  bool data :1;
+} _MseAppendType__isset;
+
+class MseAppendType : public virtual ::apache::thrift::TBase {
+ public:
+
+  MseAppendType(const MseAppendType&);
+  MseAppendType& operator=(const MseAppendType&);
+  MseAppendType() noexcept;
+
+  virtual ~MseAppendType() noexcept;
+  std::string streamId;
+  int32_t track;
+  std::string data;
+
+  _MseAppendType__isset __isset;
+
+  void __set_streamId(const std::string& val);
+
+  void __set_track(const int32_t val);
+
+  void __set_data(const std::string& val);
+
+  bool operator == (const MseAppendType & rhs) const;
+  bool operator != (const MseAppendType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const MseAppendType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(MseAppendType &a, MseAppendType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const MseAppendType& obj);
+
+typedef struct _MseResetType__isset {
+  _MseResetType__isset() : streamId(false) {}
+  bool streamId :1;
+} _MseResetType__isset;
+
+class MseResetType : public virtual ::apache::thrift::TBase {
+ public:
+
+  MseResetType(const MseResetType&);
+  MseResetType& operator=(const MseResetType&);
+  MseResetType() noexcept;
+
+  virtual ~MseResetType() noexcept;
+  std::string streamId;
+
+  _MseResetType__isset __isset;
+
+  void __set_streamId(const std::string& val);
+
+  bool operator == (const MseResetType & rhs) const;
+  bool operator != (const MseResetType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const MseResetType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(MseResetType &a, MseResetType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const MseResetType& obj);
+
+typedef struct _MseEndOfStreamType__isset {
+  _MseEndOfStreamType__isset() : streamId(false) {}
+  bool streamId :1;
+} _MseEndOfStreamType__isset;
+
+class MseEndOfStreamType : public virtual ::apache::thrift::TBase {
+ public:
+
+  MseEndOfStreamType(const MseEndOfStreamType&);
+  MseEndOfStreamType& operator=(const MseEndOfStreamType&);
+  MseEndOfStreamType() noexcept;
+
+  virtual ~MseEndOfStreamType() noexcept;
+  std::string streamId;
+
+  _MseEndOfStreamType__isset __isset;
+
+  void __set_streamId(const std::string& val);
+
+  bool operator == (const MseEndOfStreamType & rhs) const;
+  bool operator != (const MseEndOfStreamType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const MseEndOfStreamType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(MseEndOfStreamType &a, MseEndOfStreamType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const MseEndOfStreamType& obj);
 
 } // namespace
 

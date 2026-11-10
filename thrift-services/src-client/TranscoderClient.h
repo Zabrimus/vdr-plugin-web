@@ -60,6 +60,22 @@ public:
 
     bool GetVideo(std::string& result, const VideoType& input);
 
+    bool MseStart(std::string& result,
+                  const std::string& responseIp,
+                  const std::string& responsePort,
+                  const std::string& vdrIp,
+                  const std::string& vdrPort,
+                  const std::string& postfix,
+                  const std::string& duration,
+                  const std::vector<std::string>& tracks);
+
+    // returns false if the buffer of the transcoder is full or the request failed
+    bool MseAppend(const std::string& streamId, int track, const std::string& data);
+
+    bool MseReset(const std::string& streamId);
+
+    bool MseEndOfStream(const std::string& streamId);
+
 private:
     bool connect();
     template <typename F> bool processInternal(F &&request);
