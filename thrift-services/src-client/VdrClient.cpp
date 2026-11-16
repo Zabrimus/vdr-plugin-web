@@ -19,7 +19,7 @@ void vdrClientOutputFunction(const char* msg) {
 VdrClient::VdrClient(std::string vdrIp, int vdrPort) {
     DEBUGLOG("Construct VdrClient");
 
-    std::shared_ptr<TSocket> socket(new TSocket(vdrIp, vdrPort));
+    socket = std::make_shared<TSocket>(vdrIp, vdrPort);
     socket->setConnTimeout(3000);
     socket->setSendTimeout(10000);
     socket->setRecvTimeout(10000);   // ProcessTSPacket may wait up to 5s for the device
@@ -34,9 +34,8 @@ VdrClient::VdrClient(std::string vdrIp, int vdrPort) {
 VdrClient::~VdrClient() {
     DEBUGLOG("Destruct VdrClient");
 
-    if (transport->isOpen()) {
-        transport->close();
-    }
+    // no transport->close(), see reset()
+    socket->close();
 
     delete client;
 }
@@ -57,7 +56,20 @@ bool VdrClient::connect() {
     return true;
 }
 
+// TBufferedTransport::close() writes the buffer. After a failed write it may still
+// hold the rest of the request: that fails again on the broken socket, and the
+// exception in the catch block terminates the program. After a reconnect it would be
+// sent before the next request. Close the socket and start with a new transport.
+void VdrClient::reset() {
+    socket->close();
+    transport = std::make_shared<TBufferedTransport>(socket, THRIFT_TRANSPORT_BUFFER_SIZE, THRIFT_TRANSPORT_BUFFER_SIZE);
+    delete client;
+    client = new VdrPluginWebClient(std::make_shared<TBinaryProtocol>(transport));
+}
+
 bool VdrClient::ping() {
+    std::lock_guard<std::recursive_mutex> lock(vdr_send_mutex);
+
     if (!connect()) {
         return false;
     }
@@ -68,7 +80,7 @@ bool VdrClient::ping() {
     } catch (OperationFailed &err) {
         return false;
     } catch (TException &err) {
-        transport->close();
+        reset();
         return false;
     }
 }
@@ -88,13 +100,13 @@ template <typename F> bool VdrClient::processInternal(F&& request) {
         } catch (OperationFailed &err) {
             return false;
         } catch (TTransportException &err) {
-            transport->close();
+            reset();
             if (err.getType() == TTransportException::TIMED_OUT) {
                 // the request may have been processed, don't repeat it
                 return false;
             }
         } catch (TException &err) {
-            transport->close();
+            reset();
             return false;
         }
     }

@@ -47,10 +47,12 @@ public:
 
 private:
     bool connect();
+    void reset();
     template <typename F> bool processInternal(F &&request);
 
 private:
     VdrPluginWebClient *client;
+    std::shared_ptr<TSocket> socket;
     std::shared_ptr<TTransport> transport;
     std::recursive_mutex vdr_send_mutex;
 };

@@ -37,6 +37,7 @@ public:
 
 private:
     bool connect();
+    void reset();
     template <typename F> bool processInternal(F &&request);
 
 private:
