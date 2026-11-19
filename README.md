@@ -106,9 +106,20 @@ Otherwise VDR handles them (e.g. the numeric and channel keys switch the channel
 | Play, Pause, Play/Pause, Stop| VK_PLAY, VK_PAUSE, VK_PLAY_PAUSE, VK_STOP |
 | FastFwd, FastRew             | VK_FAST_FWD, VK_REWIND             |
 | Next, Prev                   | VK_TRACK_NEXT, VK_TRACK_PREV       |
-| Record                       | VK_RECORD                          |
 | Info                         | VK_INFO                            |
 | Subtitles                    | VK_SUBTITLE                        |
+
+Record isn't sent to the application, it downloads the current video (see Downloads).
+
+## Downloads
+The current video can be downloaded as MP4, if remotetranscode has a download directory
+(parameter ```-d```). The download runs in the background, also after the end of the video.
+
+- Record while a video plays: remotetranscode looks up the video in MediathekViewWeb by channel and
+  duration. If more than one entry matches, a menu shows them to choose from, together with the stream
+  itself. The file gets the name of channel, topic, title and date.
+- Record without a video: the list of the running downloads and the downloaded files.
+  Red cancels a download or deletes a file.
 
 ## Logging
 Uses the VDR logging mechanism. Log entries can be found in ```/var/log/syslog``` with ```[vdrweb]``` prefix.

@@ -51,7 +51,6 @@ std::map<int, std::string> keyMap({
         {kFastFwd, "VK_FAST_FWD"},
         {kFastRew, "VK_REWIND"},
         {kPlayPause, "VK_PLAY_PAUSE"},
-        {kRecord, "VK_RECORD"},
         // HbbTV: next/previous are the skip keys of the VCR keyset
         {kNext, "VK_TRACK_NEXT"},
         {kPrev, "VK_TRACK_PREV"},
@@ -121,15 +120,7 @@ WebOSDPage::~WebOSDPage() {
     dsyslog("[vdrweb] Destruct WebOSDPage, osdMode %d", (int)currentMode);
 
     std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
-    if (osd != nullptr) {
-        if (pixmap != nullptr) {
-            osd->DestroyPixmap(pixmap);
-        }
-        delete osd;
-        osd = nullptr;
-    }
-
-    pixmap = nullptr;
+    DestroyOsd();
 
     switch (currentMode) {
         case OSD:
@@ -153,26 +144,48 @@ void WebOSDPage::Show() {
     Display();
 }
 
-void WebOSDPage::Display() {
-    dsyslog("[vdrweb] WebOSDPage Display\n");
-    if (osd != nullptr) {
-        std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+void WebOSDPage::DestroyOsd() {
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
 
+    if (osd != nullptr) {
         if (pixmap != nullptr) {
             osd->DestroyPixmap(pixmap);
             pixmap = nullptr;
         }
 
+        if (pixmapVol != nullptr) {
+            osd->DestroyPixmap(pixmapVol);
+            pixmapVol = nullptr;
+        }
+
         delete osd;
         osd = nullptr;
     }
+}
 
-    osd = cOsdProvider::NewOsd(0, 0, 5);
+void WebOSDPage::HideOsd() {
+    dsyslog("[vdrweb] WebOSDPage HideOsd");
 
-    double ph;
-    cDevice::PrimaryDevice()->GetOsdSize(disp_width, disp_height, ph);
-    tArea area {0, 0, disp_width - 1, disp_height - 1, 32};
-    auto areaResult = osd->SetAreas(&area, 1);
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+    hidden = true;
+    DestroyOsd();
+}
+
+void WebOSDPage::Display() {
+    dsyslog("[vdrweb] WebOSDPage Display\n");
+    DestroyOsd();
+
+    eOsdError areaResult;
+    {
+        std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+        hidden = false;
+        osd = cOsdProvider::NewOsd(0, 0, 5);
+
+        double ph;
+        cDevice::PrimaryDevice()->GetOsdSize(disp_width, disp_height, ph);
+        tArea area {0, 0, disp_width - 1, disp_height - 1, 32};
+        areaResult = osd->SetAreas(&area, 1);
+    }
 
     if (areaResult == oeOk) {
         isyslog("[vdrweb] Area size set to %d:%d - %d:%d", 0, 0, disp_width - 1, disp_height - 1);
@@ -187,6 +200,10 @@ void WebOSDPage::SetOsdSize() {
     dsyslog("[vdrweb] webospage SetOsdSize()");
 
     std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+    if (osd == nullptr) {
+        return;
+    }
+
     if (pixmap != nullptr) {
         dsyslog("[vdrweb] webosdpage SetOsdSize, Destroy old pixmap");
 
@@ -381,7 +398,9 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
             LOCK_PIXMAPS;
             pixmap->DrawImage(cPoint(x,y), recImage);
         } else {
-            esyslog("[vdrweb] Pixmap is null. OSD not available");
+            if (!hidden) {
+                esyslog("[vdrweb] Pixmap is null. OSD not available");
+            }
         }
 
         if (flush && osd != nullptr) {
@@ -414,7 +433,9 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
             LOCK_PIXMAPS;
             pixmap->DrawScaledImage(cPoint(x * scalex, y * scaley), recImage, scalex, scaley, true);
         } else {
-            esyslog("[vdrweb] Pixmap is null. OSD not available");
+            if (!hidden) {
+                esyslog("[vdrweb] Pixmap is null. OSD not available");
+            }
         }
     } else {
 #endif // ENABLE_FAST_SCALE
@@ -449,7 +470,9 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
             LOCK_PIXMAPS;
             pixmap->DrawImage(cPoint(x * scalex, y * scaley), recImage);
         } else {
-            esyslog("[vdrweb] Pixmap is null. OSD not available");
+            if (!hidden) {
+                esyslog("[vdrweb] Pixmap is null. OSD not available");
+            }
         }
 #ifdef ENABLE_FAST_SCALE
     }
@@ -482,6 +505,14 @@ eOSState WebOSDPage::ProcessKey(eKeys Key) {
         measureKeyTime.Set();
     }
 
+    // Rec: a download of the current video, without a video the list of downloads
+    if (key == kRecord) {
+        if (!(Key & k_Repeat)) {
+            OpenDownloads();
+        }
+        return osContinue;
+    }
+
     auto search = ::keyMap.find(key);
     if (search != ::keyMap.end() && browserClient->ProcessKey(search->second)) {
         return osContinue;
@@ -506,6 +537,11 @@ void WebOSDPage::Hide() {
 
 void WebOSDPage::DrawVolume(int volume) {
     dsyslog("[vdrweb] WebOSDPage::DrawVolume...");
+   std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+   if (osd == nullptr) {
+      return;
+   }
+
    if (volume != lastVolume) {
       int x = 0;           // volumebar x
       int y = 20;          // volumebar y
@@ -532,7 +568,8 @@ void WebOSDPage::DrawVolume(int volume) {
 
 void WebOSDPage::DeleteVolume(void) {
     dsyslog("[vdrweb] WebOSDPage::DeleteVolume...: %s", pixmapVol != nullptr ? "pixmapVol != null" : "pixmapVol == null");
-    if (pixmapVol) {
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+    if (pixmapVol && osd != nullptr) {
         osd->DestroyPixmap(pixmapVol);
         osd->Flush();
         pixmapVol = nullptr;

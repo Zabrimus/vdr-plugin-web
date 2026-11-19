@@ -28,6 +28,7 @@
 #include "hbbtvhint.h"
 #include "setup.h"
 #include "streamevent.h"
+#include "downloadmenu.h"
 
 #define TSDIR  "%s/web/%s/%4d-%02d-%02d.%02d.%02d.%d-%d.rec"
 
@@ -65,7 +66,12 @@ enum OSD_COMMAND {
     // start specific applications
     MAIN,
     M3U,
-    URL
+    URL,
+
+    // the download menu, during a video the selection and the page afterwards
+    DOWNLOADS,
+    DOWNLOAD_SELECT,
+    SHOW_PLAYER_PAGE
 };
 
 OSD_COMMAND nextOsdCommand = OPEN;
@@ -649,6 +655,7 @@ bool cPluginWeb::Start() {
     t1.detach();
 
     browserClient = new BrowserClient(browserIp, browserPort);
+    transcoderClient = std::make_shared<TranscoderClient>(transcoderIp, transcoderPort);
 
     regularWorker = std::make_unique<cRegularWorker>();
     regularWorker->Start();
@@ -661,6 +668,8 @@ void cPluginWeb::Stop() {
 
     delete browserClient;
     browserClient = nullptr;
+
+    transcoderClient.reset();
 
     regularWorker->Stop();
 
@@ -699,11 +708,66 @@ time_t cPluginWeb::WakeupTime() {
     return 0;
 }
 
+void OpenDownloads() {
+    WebOSDPage *page = WebOSDPage::Get();
+    bool player = page != nullptr && page->getCurrentOsdMode() == PLAYER;
+
+    // the page lies above the menu, during a video it gives its OSD free
+    if (player) {
+        page->HideOsd();
+    }
+
+    nextOsdCommand = player ? DOWNLOAD_SELECT : DOWNLOADS;
+    if (!cRemote::CallPlugin("web")) {
+        nextOsdCommand = OPEN;
+        if (player) {
+            page->Display();
+        }
+    }
+}
+
+void ReturnFromDownloads() {
+    WebOSDPage *page = WebOSDPage::Get();
+    nextOsdCommand = page != nullptr && page->getCurrentOsdMode() == PLAYER ? SHOW_PLAYER_PAGE : REOPEN;
+    cRemote::CallPlugin("web");
+}
+
+cOsdObject *cPluginWeb::DownloadMenu(int command) {
+    if (command == SHOW_PLAYER_PAGE) {
+        WebOSDPage *page = WebOSDPage::Get();
+        if (page != nullptr && page->getCurrentOsdMode() == PLAYER) {
+            page->Display();
+        }
+        return nullptr;
+    }
+
+    if (command == DOWNLOADS) {
+        return new cMenuWebDownloads();
+    }
+
+    std::string channel;
+    {
+        LOCK_CHANNELS_READ
+        const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
+        if (currentChannel != nullptr) {
+            channel = currentChannel->Name();
+        }
+    }
+
+    return new cMenuWebDownloadSelect(channel);
+}
+
 cOsdObject *cPluginWeb::MainMenuAction() {
     dsyslog("[vdrweb] MainMenuAction: command = %d\n", (int)nextOsdCommand);
 
     // the application is started, the hint is not needed anymore
     cHbbtvHint::Hide();
+
+    if (nextOsdCommand == DOWNLOADS || nextOsdCommand == DOWNLOAD_SELECT || nextOsdCommand == SHOW_PLAYER_PAGE) {
+        OSD_COMMAND command = nextOsdCommand;
+        nextOsdCommand = OPEN;
+        return DownloadMenu(command);
+    }
 
     if (nextOsdCommand == CLOSE) {
         nextOsdCommand = OPEN;

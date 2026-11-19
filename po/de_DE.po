@@ -64,3 +64,57 @@ msgstr "ZDF-Sonderbehandlung"
 
 msgid "browser default"
 msgstr "Vorgabe des Browsers"
+
+msgid "Download"
+msgstr "Download"
+
+msgid "Downloads"
+msgstr "Downloads"
+
+msgid "Searching in MediathekView..."
+msgstr "Suche in MediathekView..."
+
+msgid "Stream without MediathekView entry"
+msgstr "Stream ohne MediathekView-Eintrag"
+
+msgid "Download started: %s"
+msgstr "Download gestartet: %s"
+
+msgid "Transcoder not available"
+msgstr "Transcoder nicht erreichbar"
+
+msgid "No downloads"
+msgstr "Keine Downloads"
+
+msgid "failed"
+msgstr "Fehler"
+
+msgid "Button$Cancel"
+msgstr "Abbrechen"
+
+msgid "Button$Remove"
+msgstr "Entfernen"
+
+msgid "Button$Delete"
+msgstr "Löschen"
+
+msgid "Cancel download?"
+msgstr "Download abbrechen?"
+
+msgid "Delete file?"
+msgstr "Datei löschen?"
+
+msgid "Can't remove the download"
+msgstr "Download kann nicht entfernt werden"
+
+msgid "No download directory"
+msgstr "Kein Download-Verzeichnis eingestellt"
+
+msgid "No video or a live stream"
+msgstr "Kein Video oder ein Livestream"
+
+msgid "MediathekView is not reachable"
+msgstr "MediathekView ist nicht erreichbar"
+
+msgid "This video can't be downloaded"
+msgstr "Dieses Video kann nicht heruntergeladen werden"

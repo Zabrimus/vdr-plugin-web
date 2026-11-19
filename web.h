@@ -38,6 +38,12 @@ static char* MAINMENUENTRYALT = nullptr;
 
 extern BrowserClient* browserClient;
 
+// Rec in the page: the download menu, during a video the selection of the entry
+void OpenDownloads();
+
+// after the download menu: show the page again
+void ReturnFromDownloads();
+
 class cRegularWorker: public cThread {
     private:
         cMutex m_mutex;
@@ -76,6 +82,7 @@ public:
 
     const char *MainMenuEntry() override { return MAINMENUENTRYALT != nullptr ? MAINMENUENTRYALT : MAINMENUENTRY; }
     cOsdObject *MainMenuAction() override;
+    cOsdObject *DownloadMenu(int command);
     cMenuSetupPage *SetupMenu() override;
 
     bool SetupParse(const char *Name, const char *Value) override;

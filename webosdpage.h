@@ -40,6 +40,11 @@ private:
 
     OSD_MODE currentMode;
 
+    // the OSD is given free for a menu of VDR, Display() shows it again
+    bool hidden = false;
+
+    void DestroyOsd();
+
 private:
     explicit WebOSDPage(bool useOutputDeviceScale, OSD_MODE osdMode);
 
@@ -57,6 +62,7 @@ public:
     void Show() override;
     cOsdObject* GetInfo() override;
     void Display();
+    void HideOsd();
     void SetOsdSize();
 
     void Hide() override;
