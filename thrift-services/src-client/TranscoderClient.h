@@ -58,6 +58,14 @@ public:
 
     bool AudioInfo(std::string& result, const std::string& streamId);
 
+    bool DownloadLookup(DownloadLookupResult& result, const std::string& channel);
+
+    bool DownloadStart(std::string& error, const std::string& url, const std::string& name, int duration);
+
+    bool DownloadList(std::vector<DownloadInfo>& result);
+
+    bool DownloadRemove(const std::string& id);
+
     bool GetVideo(std::string& result, const VideoType& input);
 
     bool MseStart(std::string& result,

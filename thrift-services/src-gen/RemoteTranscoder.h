@@ -35,6 +35,10 @@ class RemoteTranscoderIf : virtual public  ::common::CommonServiceIf {
   virtual bool MseAppend(const MseAppendType& input) = 0;
   virtual bool MseReset(const MseResetType& input) = 0;
   virtual bool MseEndOfStream(const MseEndOfStreamType& input) = 0;
+  virtual void DownloadLookup(DownloadLookupResult& _return, const DownloadLookupType& input) = 0;
+  virtual void DownloadStart(std::string& _return, const DownloadStartType& input) = 0;
+  virtual void DownloadList(std::vector<DownloadInfo> & _return) = 0;
+  virtual bool DownloadRemove(const DownloadRemoveType& input) = 0;
 };
 
 class RemoteTranscoderIfFactory : virtual public  ::common::CommonServiceIfFactory {
@@ -105,6 +109,19 @@ class RemoteTranscoderNull : virtual public RemoteTranscoderIf , virtual public 
     return _return;
   }
   bool MseEndOfStream(const MseEndOfStreamType& /* input */) override {
+    bool _return = false;
+    return _return;
+  }
+  void DownloadLookup(DownloadLookupResult& /* _return */, const DownloadLookupType& /* input */) override {
+    return;
+  }
+  void DownloadStart(std::string& /* _return */, const DownloadStartType& /* input */) override {
+    return;
+  }
+  void DownloadList(std::vector<DownloadInfo> & /* _return */) override {
+    return;
+  }
+  bool DownloadRemove(const DownloadRemoveType& /* input */) override {
     bool _return = false;
     return _return;
   }
@@ -1286,6 +1303,388 @@ class RemoteTranscoder_MseEndOfStream_presult {
 
 };
 
+typedef struct _RemoteTranscoder_DownloadLookup_args__isset {
+  _RemoteTranscoder_DownloadLookup_args__isset() : input(false) {}
+  bool input :1;
+} _RemoteTranscoder_DownloadLookup_args__isset;
+
+class RemoteTranscoder_DownloadLookup_args {
+ public:
+
+  RemoteTranscoder_DownloadLookup_args(const RemoteTranscoder_DownloadLookup_args&);
+  RemoteTranscoder_DownloadLookup_args& operator=(const RemoteTranscoder_DownloadLookup_args&);
+  RemoteTranscoder_DownloadLookup_args() noexcept;
+
+  virtual ~RemoteTranscoder_DownloadLookup_args() noexcept;
+  DownloadLookupType input;
+
+  _RemoteTranscoder_DownloadLookup_args__isset __isset;
+
+  void __set_input(const DownloadLookupType& val);
+
+  bool operator == (const RemoteTranscoder_DownloadLookup_args & rhs) const;
+  bool operator != (const RemoteTranscoder_DownloadLookup_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_DownloadLookup_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class RemoteTranscoder_DownloadLookup_pargs {
+ public:
+
+
+  virtual ~RemoteTranscoder_DownloadLookup_pargs() noexcept;
+  const DownloadLookupType* input;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_DownloadLookup_result__isset {
+  _RemoteTranscoder_DownloadLookup_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_DownloadLookup_result__isset;
+
+class RemoteTranscoder_DownloadLookup_result {
+ public:
+
+  RemoteTranscoder_DownloadLookup_result(const RemoteTranscoder_DownloadLookup_result&);
+  RemoteTranscoder_DownloadLookup_result& operator=(const RemoteTranscoder_DownloadLookup_result&);
+  RemoteTranscoder_DownloadLookup_result() noexcept;
+
+  virtual ~RemoteTranscoder_DownloadLookup_result() noexcept;
+  DownloadLookupResult success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_DownloadLookup_result__isset __isset;
+
+  void __set_success(const DownloadLookupResult& val);
+
+  void __set_err(const  ::common::OperationFailed& val);
+
+  bool operator == (const RemoteTranscoder_DownloadLookup_result & rhs) const;
+  bool operator != (const RemoteTranscoder_DownloadLookup_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_DownloadLookup_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_DownloadLookup_presult__isset {
+  _RemoteTranscoder_DownloadLookup_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_DownloadLookup_presult__isset;
+
+class RemoteTranscoder_DownloadLookup_presult {
+ public:
+
+
+  virtual ~RemoteTranscoder_DownloadLookup_presult() noexcept;
+  DownloadLookupResult* success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_DownloadLookup_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _RemoteTranscoder_DownloadStart_args__isset {
+  _RemoteTranscoder_DownloadStart_args__isset() : input(false) {}
+  bool input :1;
+} _RemoteTranscoder_DownloadStart_args__isset;
+
+class RemoteTranscoder_DownloadStart_args {
+ public:
+
+  RemoteTranscoder_DownloadStart_args(const RemoteTranscoder_DownloadStart_args&);
+  RemoteTranscoder_DownloadStart_args& operator=(const RemoteTranscoder_DownloadStart_args&);
+  RemoteTranscoder_DownloadStart_args() noexcept;
+
+  virtual ~RemoteTranscoder_DownloadStart_args() noexcept;
+  DownloadStartType input;
+
+  _RemoteTranscoder_DownloadStart_args__isset __isset;
+
+  void __set_input(const DownloadStartType& val);
+
+  bool operator == (const RemoteTranscoder_DownloadStart_args & rhs) const;
+  bool operator != (const RemoteTranscoder_DownloadStart_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_DownloadStart_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class RemoteTranscoder_DownloadStart_pargs {
+ public:
+
+
+  virtual ~RemoteTranscoder_DownloadStart_pargs() noexcept;
+  const DownloadStartType* input;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_DownloadStart_result__isset {
+  _RemoteTranscoder_DownloadStart_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_DownloadStart_result__isset;
+
+class RemoteTranscoder_DownloadStart_result {
+ public:
+
+  RemoteTranscoder_DownloadStart_result(const RemoteTranscoder_DownloadStart_result&);
+  RemoteTranscoder_DownloadStart_result& operator=(const RemoteTranscoder_DownloadStart_result&);
+  RemoteTranscoder_DownloadStart_result() noexcept;
+
+  virtual ~RemoteTranscoder_DownloadStart_result() noexcept;
+  std::string success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_DownloadStart_result__isset __isset;
+
+  void __set_success(const std::string& val);
+
+  void __set_err(const  ::common::OperationFailed& val);
+
+  bool operator == (const RemoteTranscoder_DownloadStart_result & rhs) const;
+  bool operator != (const RemoteTranscoder_DownloadStart_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_DownloadStart_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_DownloadStart_presult__isset {
+  _RemoteTranscoder_DownloadStart_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_DownloadStart_presult__isset;
+
+class RemoteTranscoder_DownloadStart_presult {
+ public:
+
+
+  virtual ~RemoteTranscoder_DownloadStart_presult() noexcept;
+  std::string* success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_DownloadStart_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+
+class RemoteTranscoder_DownloadList_args {
+ public:
+
+  RemoteTranscoder_DownloadList_args(const RemoteTranscoder_DownloadList_args&) noexcept;
+  RemoteTranscoder_DownloadList_args& operator=(const RemoteTranscoder_DownloadList_args&) noexcept;
+  RemoteTranscoder_DownloadList_args() noexcept;
+
+  virtual ~RemoteTranscoder_DownloadList_args() noexcept;
+
+  bool operator == (const RemoteTranscoder_DownloadList_args & /* rhs */) const;
+  bool operator != (const RemoteTranscoder_DownloadList_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_DownloadList_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class RemoteTranscoder_DownloadList_pargs {
+ public:
+
+
+  virtual ~RemoteTranscoder_DownloadList_pargs() noexcept;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_DownloadList_result__isset {
+  _RemoteTranscoder_DownloadList_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_DownloadList_result__isset;
+
+class RemoteTranscoder_DownloadList_result {
+ public:
+
+  RemoteTranscoder_DownloadList_result(const RemoteTranscoder_DownloadList_result&);
+  RemoteTranscoder_DownloadList_result& operator=(const RemoteTranscoder_DownloadList_result&);
+  RemoteTranscoder_DownloadList_result() noexcept;
+
+  virtual ~RemoteTranscoder_DownloadList_result() noexcept;
+  std::vector<DownloadInfo>  success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_DownloadList_result__isset __isset;
+
+  void __set_success(const std::vector<DownloadInfo> & val);
+
+  void __set_err(const  ::common::OperationFailed& val);
+
+  bool operator == (const RemoteTranscoder_DownloadList_result & rhs) const;
+  bool operator != (const RemoteTranscoder_DownloadList_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_DownloadList_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_DownloadList_presult__isset {
+  _RemoteTranscoder_DownloadList_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_DownloadList_presult__isset;
+
+class RemoteTranscoder_DownloadList_presult {
+ public:
+
+
+  virtual ~RemoteTranscoder_DownloadList_presult() noexcept;
+  std::vector<DownloadInfo> * success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_DownloadList_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _RemoteTranscoder_DownloadRemove_args__isset {
+  _RemoteTranscoder_DownloadRemove_args__isset() : input(false) {}
+  bool input :1;
+} _RemoteTranscoder_DownloadRemove_args__isset;
+
+class RemoteTranscoder_DownloadRemove_args {
+ public:
+
+  RemoteTranscoder_DownloadRemove_args(const RemoteTranscoder_DownloadRemove_args&);
+  RemoteTranscoder_DownloadRemove_args& operator=(const RemoteTranscoder_DownloadRemove_args&);
+  RemoteTranscoder_DownloadRemove_args() noexcept;
+
+  virtual ~RemoteTranscoder_DownloadRemove_args() noexcept;
+  DownloadRemoveType input;
+
+  _RemoteTranscoder_DownloadRemove_args__isset __isset;
+
+  void __set_input(const DownloadRemoveType& val);
+
+  bool operator == (const RemoteTranscoder_DownloadRemove_args & rhs) const;
+  bool operator != (const RemoteTranscoder_DownloadRemove_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_DownloadRemove_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class RemoteTranscoder_DownloadRemove_pargs {
+ public:
+
+
+  virtual ~RemoteTranscoder_DownloadRemove_pargs() noexcept;
+  const DownloadRemoveType* input;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_DownloadRemove_result__isset {
+  _RemoteTranscoder_DownloadRemove_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_DownloadRemove_result__isset;
+
+class RemoteTranscoder_DownloadRemove_result {
+ public:
+
+  RemoteTranscoder_DownloadRemove_result(const RemoteTranscoder_DownloadRemove_result&);
+  RemoteTranscoder_DownloadRemove_result& operator=(const RemoteTranscoder_DownloadRemove_result&);
+  RemoteTranscoder_DownloadRemove_result() noexcept;
+
+  virtual ~RemoteTranscoder_DownloadRemove_result() noexcept;
+  bool success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_DownloadRemove_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  void __set_err(const  ::common::OperationFailed& val);
+
+  bool operator == (const RemoteTranscoder_DownloadRemove_result & rhs) const;
+  bool operator != (const RemoteTranscoder_DownloadRemove_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_DownloadRemove_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_DownloadRemove_presult__isset {
+  _RemoteTranscoder_DownloadRemove_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_DownloadRemove_presult__isset;
+
+class RemoteTranscoder_DownloadRemove_presult {
+ public:
+
+
+  virtual ~RemoteTranscoder_DownloadRemove_presult() noexcept;
+  bool* success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_DownloadRemove_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class RemoteTranscoderClient : virtual public RemoteTranscoderIf, public  ::common::CommonServiceClient {
  public:
   RemoteTranscoderClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -1333,6 +1732,18 @@ class RemoteTranscoderClient : virtual public RemoteTranscoderIf, public  ::comm
   bool MseEndOfStream(const MseEndOfStreamType& input) override;
   void send_MseEndOfStream(const MseEndOfStreamType& input);
   bool recv_MseEndOfStream();
+  void DownloadLookup(DownloadLookupResult& _return, const DownloadLookupType& input) override;
+  void send_DownloadLookup(const DownloadLookupType& input);
+  void recv_DownloadLookup(DownloadLookupResult& _return);
+  void DownloadStart(std::string& _return, const DownloadStartType& input) override;
+  void send_DownloadStart(const DownloadStartType& input);
+  void recv_DownloadStart(std::string& _return);
+  void DownloadList(std::vector<DownloadInfo> & _return) override;
+  void send_DownloadList();
+  void recv_DownloadList(std::vector<DownloadInfo> & _return);
+  bool DownloadRemove(const DownloadRemoveType& input) override;
+  void send_DownloadRemove(const DownloadRemoveType& input);
+  bool recv_DownloadRemove();
 };
 
 class RemoteTranscoderProcessor : public  ::common::CommonServiceProcessor {
@@ -1355,6 +1766,10 @@ class RemoteTranscoderProcessor : public  ::common::CommonServiceProcessor {
   void process_MseAppend(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_MseReset(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_MseEndOfStream(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_DownloadLookup(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_DownloadStart(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_DownloadList(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_DownloadRemove(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   RemoteTranscoderProcessor(::std::shared_ptr<RemoteTranscoderIf> iface) :
      ::common::CommonServiceProcessor(iface),
@@ -1371,6 +1786,10 @@ class RemoteTranscoderProcessor : public  ::common::CommonServiceProcessor {
     processMap_["MseAppend"] = &RemoteTranscoderProcessor::process_MseAppend;
     processMap_["MseReset"] = &RemoteTranscoderProcessor::process_MseReset;
     processMap_["MseEndOfStream"] = &RemoteTranscoderProcessor::process_MseEndOfStream;
+    processMap_["DownloadLookup"] = &RemoteTranscoderProcessor::process_DownloadLookup;
+    processMap_["DownloadStart"] = &RemoteTranscoderProcessor::process_DownloadStart;
+    processMap_["DownloadList"] = &RemoteTranscoderProcessor::process_DownloadList;
+    processMap_["DownloadRemove"] = &RemoteTranscoderProcessor::process_DownloadRemove;
   }
 
   virtual ~RemoteTranscoderProcessor() {}
@@ -1516,6 +1935,45 @@ class RemoteTranscoderMultiface : virtual public RemoteTranscoderIf, public  ::c
     return ifaces_[i]->MseEndOfStream(input);
   }
 
+  void DownloadLookup(DownloadLookupResult& _return, const DownloadLookupType& input) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->DownloadLookup(_return, input);
+    }
+    ifaces_[i]->DownloadLookup(_return, input);
+    return;
+  }
+
+  void DownloadStart(std::string& _return, const DownloadStartType& input) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->DownloadStart(_return, input);
+    }
+    ifaces_[i]->DownloadStart(_return, input);
+    return;
+  }
+
+  void DownloadList(std::vector<DownloadInfo> & _return) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->DownloadList(_return);
+    }
+    ifaces_[i]->DownloadList(_return);
+    return;
+  }
+
+  bool DownloadRemove(const DownloadRemoveType& input) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->DownloadRemove(input);
+    }
+    return ifaces_[i]->DownloadRemove(input);
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -1568,6 +2026,18 @@ class RemoteTranscoderConcurrentClient : virtual public RemoteTranscoderIf, publ
   bool MseEndOfStream(const MseEndOfStreamType& input) override;
   int32_t send_MseEndOfStream(const MseEndOfStreamType& input);
   bool recv_MseEndOfStream(const int32_t seqid);
+  void DownloadLookup(DownloadLookupResult& _return, const DownloadLookupType& input) override;
+  int32_t send_DownloadLookup(const DownloadLookupType& input);
+  void recv_DownloadLookup(DownloadLookupResult& _return, const int32_t seqid);
+  void DownloadStart(std::string& _return, const DownloadStartType& input) override;
+  int32_t send_DownloadStart(const DownloadStartType& input);
+  void recv_DownloadStart(std::string& _return, const int32_t seqid);
+  void DownloadList(std::vector<DownloadInfo> & _return) override;
+  int32_t send_DownloadList();
+  void recv_DownloadList(std::vector<DownloadInfo> & _return, const int32_t seqid);
+  bool DownloadRemove(const DownloadRemoveType& input) override;
+  int32_t send_DownloadRemove(const DownloadRemoveType& input);
+  bool recv_DownloadRemove(const int32_t seqid);
 };
 
 #ifdef _MSC_VER

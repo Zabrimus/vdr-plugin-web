@@ -81,6 +81,49 @@ struct MseEndOfStreamType {
     1: string streamId
 }
 
+// Downloads: the transcoder saves videos as MP4 in its download directory,
+// independent of the playback.
+struct DownloadLookupType {
+    1: string channel            // name of the VDR channel
+}
+
+// an entry of MediathekView with the same duration as the current video
+struct DownloadCandidate {
+    1: string name,              // file name without extension
+    2: string url,
+    3: i32 duration,             // seconds
+    4: string channel,
+    5: string topic,
+    6: string title,
+    7: i64 timestamp             // broadcast, unix time
+}
+
+struct DownloadLookupResult {
+    1: bool stream,              // the current stream can be downloaded
+    2: string streamName,        // its file name without extension
+    3: list<DownloadCandidate> candidates,
+    4: string error
+}
+
+struct DownloadStartType {
+    1: string url,               // empty: the current stream
+    2: string name,
+    3: i32 duration
+}
+
+struct DownloadInfo {
+    1: string id,
+    2: string name,              // file name
+    3: string state,             // running, done, failed
+    4: i32 progress,             // percent
+    5: i64 size,                 // bytes
+    6: string error
+}
+
+struct DownloadRemoveType {
+    1: string id                 // a running download is cancelled, a file deleted
+}
+
 service RemoteTranscoder extends common.CommonService {
     string Probe(1: ProbeType input) throws (1:common.OperationFailed err),
     bool StreamUrl(1: StreamUrlType input) throws (1:common.OperationFailed err),
@@ -94,4 +137,8 @@ service RemoteTranscoder extends common.CommonService {
     bool MseAppend(1: MseAppendType input) throws (1:common.OperationFailed err),     // false: buffer full
     bool MseReset(1: MseResetType input) throws (1:common.OperationFailed err),
     bool MseEndOfStream(1: MseEndOfStreamType input) throws (1:common.OperationFailed err),
+    DownloadLookupResult DownloadLookup(1: DownloadLookupType input) throws (1:common.OperationFailed err),
+    string DownloadStart(1: DownloadStartType input) throws (1:common.OperationFailed err),   // an error, empty if started
+    list<DownloadInfo> DownloadList() throws (1:common.OperationFailed err),
+    bool DownloadRemove(1: DownloadRemoveType input) throws (1:common.OperationFailed err),
 }

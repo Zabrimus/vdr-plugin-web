@@ -46,6 +46,18 @@ class MseResetType;
 
 class MseEndOfStreamType;
 
+class DownloadLookupType;
+
+class DownloadCandidate;
+
+class DownloadLookupResult;
+
+class DownloadStartType;
+
+class DownloadInfo;
+
+class DownloadRemoveType;
+
 typedef struct _ProbeType__isset {
   _ProbeType__isset() : url(false), cookies(false), referer(false), userAgent(false), responseIp(false), responsePort(false), vdrIp(false), vdrPort(false), postfix(false) {}
   bool url :1;
@@ -585,6 +597,286 @@ class MseEndOfStreamType : public virtual ::apache::thrift::TBase {
 void swap(MseEndOfStreamType &a, MseEndOfStreamType &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const MseEndOfStreamType& obj);
+
+typedef struct _DownloadLookupType__isset {
+  _DownloadLookupType__isset() : channel(false) {}
+  bool channel :1;
+} _DownloadLookupType__isset;
+
+class DownloadLookupType : public virtual ::apache::thrift::TBase {
+ public:
+
+  DownloadLookupType(const DownloadLookupType&);
+  DownloadLookupType& operator=(const DownloadLookupType&);
+  DownloadLookupType() noexcept;
+
+  virtual ~DownloadLookupType() noexcept;
+  std::string channel;
+
+  _DownloadLookupType__isset __isset;
+
+  void __set_channel(const std::string& val);
+
+  bool operator == (const DownloadLookupType & rhs) const;
+  bool operator != (const DownloadLookupType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DownloadLookupType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DownloadLookupType &a, DownloadLookupType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const DownloadLookupType& obj);
+
+typedef struct _DownloadCandidate__isset {
+  _DownloadCandidate__isset() : name(false), url(false), duration(false), channel(false), topic(false), title(false), timestamp(false) {}
+  bool name :1;
+  bool url :1;
+  bool duration :1;
+  bool channel :1;
+  bool topic :1;
+  bool title :1;
+  bool timestamp :1;
+} _DownloadCandidate__isset;
+
+class DownloadCandidate : public virtual ::apache::thrift::TBase {
+ public:
+
+  DownloadCandidate(const DownloadCandidate&);
+  DownloadCandidate& operator=(const DownloadCandidate&);
+  DownloadCandidate() noexcept;
+
+  virtual ~DownloadCandidate() noexcept;
+  std::string name;
+  std::string url;
+  int32_t duration;
+  std::string channel;
+  std::string topic;
+  std::string title;
+  int64_t timestamp;
+
+  _DownloadCandidate__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_url(const std::string& val);
+
+  void __set_duration(const int32_t val);
+
+  void __set_channel(const std::string& val);
+
+  void __set_topic(const std::string& val);
+
+  void __set_title(const std::string& val);
+
+  void __set_timestamp(const int64_t val);
+
+  bool operator == (const DownloadCandidate & rhs) const;
+  bool operator != (const DownloadCandidate &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DownloadCandidate & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DownloadCandidate &a, DownloadCandidate &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const DownloadCandidate& obj);
+
+typedef struct _DownloadLookupResult__isset {
+  _DownloadLookupResult__isset() : stream(false), streamName(false), candidates(false), error(false) {}
+  bool stream :1;
+  bool streamName :1;
+  bool candidates :1;
+  bool error :1;
+} _DownloadLookupResult__isset;
+
+class DownloadLookupResult : public virtual ::apache::thrift::TBase {
+ public:
+
+  DownloadLookupResult(const DownloadLookupResult&);
+  DownloadLookupResult& operator=(const DownloadLookupResult&);
+  DownloadLookupResult() noexcept;
+
+  virtual ~DownloadLookupResult() noexcept;
+  bool stream;
+  std::string streamName;
+  std::vector<DownloadCandidate>  candidates;
+  std::string error;
+
+  _DownloadLookupResult__isset __isset;
+
+  void __set_stream(const bool val);
+
+  void __set_streamName(const std::string& val);
+
+  void __set_candidates(const std::vector<DownloadCandidate> & val);
+
+  void __set_error(const std::string& val);
+
+  bool operator == (const DownloadLookupResult & rhs) const;
+  bool operator != (const DownloadLookupResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DownloadLookupResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DownloadLookupResult &a, DownloadLookupResult &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const DownloadLookupResult& obj);
+
+typedef struct _DownloadStartType__isset {
+  _DownloadStartType__isset() : url(false), name(false), duration(false) {}
+  bool url :1;
+  bool name :1;
+  bool duration :1;
+} _DownloadStartType__isset;
+
+class DownloadStartType : public virtual ::apache::thrift::TBase {
+ public:
+
+  DownloadStartType(const DownloadStartType&);
+  DownloadStartType& operator=(const DownloadStartType&);
+  DownloadStartType() noexcept;
+
+  virtual ~DownloadStartType() noexcept;
+  std::string url;
+  std::string name;
+  int32_t duration;
+
+  _DownloadStartType__isset __isset;
+
+  void __set_url(const std::string& val);
+
+  void __set_name(const std::string& val);
+
+  void __set_duration(const int32_t val);
+
+  bool operator == (const DownloadStartType & rhs) const;
+  bool operator != (const DownloadStartType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DownloadStartType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DownloadStartType &a, DownloadStartType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const DownloadStartType& obj);
+
+typedef struct _DownloadInfo__isset {
+  _DownloadInfo__isset() : id(false), name(false), state(false), progress(false), size(false), error(false) {}
+  bool id :1;
+  bool name :1;
+  bool state :1;
+  bool progress :1;
+  bool size :1;
+  bool error :1;
+} _DownloadInfo__isset;
+
+class DownloadInfo : public virtual ::apache::thrift::TBase {
+ public:
+
+  DownloadInfo(const DownloadInfo&);
+  DownloadInfo& operator=(const DownloadInfo&);
+  DownloadInfo() noexcept;
+
+  virtual ~DownloadInfo() noexcept;
+  std::string id;
+  std::string name;
+  std::string state;
+  int32_t progress;
+  int64_t size;
+  std::string error;
+
+  _DownloadInfo__isset __isset;
+
+  void __set_id(const std::string& val);
+
+  void __set_name(const std::string& val);
+
+  void __set_state(const std::string& val);
+
+  void __set_progress(const int32_t val);
+
+  void __set_size(const int64_t val);
+
+  void __set_error(const std::string& val);
+
+  bool operator == (const DownloadInfo & rhs) const;
+  bool operator != (const DownloadInfo &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DownloadInfo & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DownloadInfo &a, DownloadInfo &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const DownloadInfo& obj);
+
+typedef struct _DownloadRemoveType__isset {
+  _DownloadRemoveType__isset() : id(false) {}
+  bool id :1;
+} _DownloadRemoveType__isset;
+
+class DownloadRemoveType : public virtual ::apache::thrift::TBase {
+ public:
+
+  DownloadRemoveType(const DownloadRemoveType&);
+  DownloadRemoveType& operator=(const DownloadRemoveType&);
+  DownloadRemoveType() noexcept;
+
+  virtual ~DownloadRemoveType() noexcept;
+  std::string id;
+
+  _DownloadRemoveType__isset __isset;
+
+  void __set_id(const std::string& val);
+
+  bool operator == (const DownloadRemoveType & rhs) const;
+  bool operator != (const DownloadRemoveType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DownloadRemoveType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DownloadRemoveType &a, DownloadRemoveType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const DownloadRemoveType& obj);
 
 } // namespace
 

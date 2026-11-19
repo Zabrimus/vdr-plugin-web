@@ -1877,4 +1877,1003 @@ void MseEndOfStreamType::printTo(std::ostream& out) const {
   out << ")";
 }
 
+
+DownloadLookupType::~DownloadLookupType() noexcept {
+}
+
+DownloadLookupType::DownloadLookupType() noexcept
+   : channel() {
+}
+
+void DownloadLookupType::__set_channel(const std::string& val) {
+  this->channel = val;
+}
+std::ostream& operator<<(std::ostream& out, const DownloadLookupType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t DownloadLookupType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->channel);
+          this->__isset.channel = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t DownloadLookupType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("DownloadLookupType");
+
+  xfer += oprot->writeFieldBegin("channel", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->channel);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(DownloadLookupType &a, DownloadLookupType &b) noexcept {
+  using ::std::swap;
+  swap(a.channel, b.channel);
+  swap(a.__isset, b.__isset);
+}
+
+bool DownloadLookupType::operator==(const DownloadLookupType & rhs) const
+{
+  if (!(channel == rhs.channel))
+    return false;
+  return true;
+}
+
+DownloadLookupType::DownloadLookupType(const DownloadLookupType& other30) {
+  channel = other30.channel;
+  __isset = other30.__isset;
+}
+DownloadLookupType& DownloadLookupType::operator=(const DownloadLookupType& other31) {
+  channel = other31.channel;
+  __isset = other31.__isset;
+  return *this;
+}
+void DownloadLookupType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "DownloadLookupType(";
+  out << "channel=" << to_string(channel);
+  out << ")";
+}
+
+
+DownloadCandidate::~DownloadCandidate() noexcept {
+}
+
+DownloadCandidate::DownloadCandidate() noexcept
+   : name(),
+     url(),
+     duration(0),
+     channel(),
+     topic(),
+     title(),
+     timestamp(0) {
+}
+
+void DownloadCandidate::__set_name(const std::string& val) {
+  this->name = val;
+}
+
+void DownloadCandidate::__set_url(const std::string& val) {
+  this->url = val;
+}
+
+void DownloadCandidate::__set_duration(const int32_t val) {
+  this->duration = val;
+}
+
+void DownloadCandidate::__set_channel(const std::string& val) {
+  this->channel = val;
+}
+
+void DownloadCandidate::__set_topic(const std::string& val) {
+  this->topic = val;
+}
+
+void DownloadCandidate::__set_title(const std::string& val) {
+  this->title = val;
+}
+
+void DownloadCandidate::__set_timestamp(const int64_t val) {
+  this->timestamp = val;
+}
+std::ostream& operator<<(std::ostream& out, const DownloadCandidate& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t DownloadCandidate::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->name);
+          this->__isset.name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->url);
+          this->__isset.url = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->duration);
+          this->__isset.duration = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->channel);
+          this->__isset.channel = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->topic);
+          this->__isset.topic = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->title);
+          this->__isset.title = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->timestamp);
+          this->__isset.timestamp = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t DownloadCandidate::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("DownloadCandidate");
+
+  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->name);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("url", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->url);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("duration", ::apache::thrift::protocol::T_I32, 3);
+  xfer += oprot->writeI32(this->duration);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("channel", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->channel);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("topic", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString(this->topic);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("title", ::apache::thrift::protocol::T_STRING, 6);
+  xfer += oprot->writeString(this->title);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("timestamp", ::apache::thrift::protocol::T_I64, 7);
+  xfer += oprot->writeI64(this->timestamp);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(DownloadCandidate &a, DownloadCandidate &b) noexcept {
+  using ::std::swap;
+  swap(a.name, b.name);
+  swap(a.url, b.url);
+  swap(a.duration, b.duration);
+  swap(a.channel, b.channel);
+  swap(a.topic, b.topic);
+  swap(a.title, b.title);
+  swap(a.timestamp, b.timestamp);
+  swap(a.__isset, b.__isset);
+}
+
+bool DownloadCandidate::operator==(const DownloadCandidate & rhs) const
+{
+  if (!(name == rhs.name))
+    return false;
+  if (!(url == rhs.url))
+    return false;
+  if (!(duration == rhs.duration))
+    return false;
+  if (!(channel == rhs.channel))
+    return false;
+  if (!(topic == rhs.topic))
+    return false;
+  if (!(title == rhs.title))
+    return false;
+  if (!(timestamp == rhs.timestamp))
+    return false;
+  return true;
+}
+
+DownloadCandidate::DownloadCandidate(const DownloadCandidate& other32) {
+  name = other32.name;
+  url = other32.url;
+  duration = other32.duration;
+  channel = other32.channel;
+  topic = other32.topic;
+  title = other32.title;
+  timestamp = other32.timestamp;
+  __isset = other32.__isset;
+}
+DownloadCandidate& DownloadCandidate::operator=(const DownloadCandidate& other33) {
+  name = other33.name;
+  url = other33.url;
+  duration = other33.duration;
+  channel = other33.channel;
+  topic = other33.topic;
+  title = other33.title;
+  timestamp = other33.timestamp;
+  __isset = other33.__isset;
+  return *this;
+}
+void DownloadCandidate::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "DownloadCandidate(";
+  out << "name=" << to_string(name);
+  out << ", " << "url=" << to_string(url);
+  out << ", " << "duration=" << to_string(duration);
+  out << ", " << "channel=" << to_string(channel);
+  out << ", " << "topic=" << to_string(topic);
+  out << ", " << "title=" << to_string(title);
+  out << ", " << "timestamp=" << to_string(timestamp);
+  out << ")";
+}
+
+
+DownloadLookupResult::~DownloadLookupResult() noexcept {
+}
+
+DownloadLookupResult::DownloadLookupResult() noexcept
+   : stream(0),
+     streamName(),
+     error() {
+}
+
+void DownloadLookupResult::__set_stream(const bool val) {
+  this->stream = val;
+}
+
+void DownloadLookupResult::__set_streamName(const std::string& val) {
+  this->streamName = val;
+}
+
+void DownloadLookupResult::__set_candidates(const std::vector<DownloadCandidate> & val) {
+  this->candidates = val;
+}
+
+void DownloadLookupResult::__set_error(const std::string& val) {
+  this->error = val;
+}
+std::ostream& operator<<(std::ostream& out, const DownloadLookupResult& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t DownloadLookupResult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->stream);
+          this->__isset.stream = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->streamName);
+          this->__isset.streamName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->candidates.clear();
+            uint32_t _size34;
+            ::apache::thrift::protocol::TType _etype37;
+            xfer += iprot->readListBegin(_etype37, _size34);
+            this->candidates.resize(_size34);
+            uint32_t _i38;
+            for (_i38 = 0; _i38 < _size34; ++_i38)
+            {
+              xfer += this->candidates[_i38].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.candidates = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->error);
+          this->__isset.error = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t DownloadLookupResult::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("DownloadLookupResult");
+
+  xfer += oprot->writeFieldBegin("stream", ::apache::thrift::protocol::T_BOOL, 1);
+  xfer += oprot->writeBool(this->stream);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("streamName", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->streamName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("candidates", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->candidates.size()));
+    std::vector<DownloadCandidate> ::const_iterator _iter39;
+    for (_iter39 = this->candidates.begin(); _iter39 != this->candidates.end(); ++_iter39)
+    {
+      xfer += (*_iter39).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("error", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->error);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(DownloadLookupResult &a, DownloadLookupResult &b) noexcept {
+  using ::std::swap;
+  swap(a.stream, b.stream);
+  swap(a.streamName, b.streamName);
+  swap(a.candidates, b.candidates);
+  swap(a.error, b.error);
+  swap(a.__isset, b.__isset);
+}
+
+bool DownloadLookupResult::operator==(const DownloadLookupResult & rhs) const
+{
+  if (!(stream == rhs.stream))
+    return false;
+  if (!(streamName == rhs.streamName))
+    return false;
+  if (!(candidates == rhs.candidates))
+    return false;
+  if (!(error == rhs.error))
+    return false;
+  return true;
+}
+
+DownloadLookupResult::DownloadLookupResult(const DownloadLookupResult& other40) {
+  stream = other40.stream;
+  streamName = other40.streamName;
+  candidates = other40.candidates;
+  error = other40.error;
+  __isset = other40.__isset;
+}
+DownloadLookupResult& DownloadLookupResult::operator=(const DownloadLookupResult& other41) {
+  stream = other41.stream;
+  streamName = other41.streamName;
+  candidates = other41.candidates;
+  error = other41.error;
+  __isset = other41.__isset;
+  return *this;
+}
+void DownloadLookupResult::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "DownloadLookupResult(";
+  out << "stream=" << to_string(stream);
+  out << ", " << "streamName=" << to_string(streamName);
+  out << ", " << "candidates=" << to_string(candidates);
+  out << ", " << "error=" << to_string(error);
+  out << ")";
+}
+
+
+DownloadStartType::~DownloadStartType() noexcept {
+}
+
+DownloadStartType::DownloadStartType() noexcept
+   : url(),
+     name(),
+     duration(0) {
+}
+
+void DownloadStartType::__set_url(const std::string& val) {
+  this->url = val;
+}
+
+void DownloadStartType::__set_name(const std::string& val) {
+  this->name = val;
+}
+
+void DownloadStartType::__set_duration(const int32_t val) {
+  this->duration = val;
+}
+std::ostream& operator<<(std::ostream& out, const DownloadStartType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t DownloadStartType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->url);
+          this->__isset.url = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->name);
+          this->__isset.name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->duration);
+          this->__isset.duration = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t DownloadStartType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("DownloadStartType");
+
+  xfer += oprot->writeFieldBegin("url", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->url);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->name);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("duration", ::apache::thrift::protocol::T_I32, 3);
+  xfer += oprot->writeI32(this->duration);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(DownloadStartType &a, DownloadStartType &b) noexcept {
+  using ::std::swap;
+  swap(a.url, b.url);
+  swap(a.name, b.name);
+  swap(a.duration, b.duration);
+  swap(a.__isset, b.__isset);
+}
+
+bool DownloadStartType::operator==(const DownloadStartType & rhs) const
+{
+  if (!(url == rhs.url))
+    return false;
+  if (!(name == rhs.name))
+    return false;
+  if (!(duration == rhs.duration))
+    return false;
+  return true;
+}
+
+DownloadStartType::DownloadStartType(const DownloadStartType& other42) {
+  url = other42.url;
+  name = other42.name;
+  duration = other42.duration;
+  __isset = other42.__isset;
+}
+DownloadStartType& DownloadStartType::operator=(const DownloadStartType& other43) {
+  url = other43.url;
+  name = other43.name;
+  duration = other43.duration;
+  __isset = other43.__isset;
+  return *this;
+}
+void DownloadStartType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "DownloadStartType(";
+  out << "url=" << to_string(url);
+  out << ", " << "name=" << to_string(name);
+  out << ", " << "duration=" << to_string(duration);
+  out << ")";
+}
+
+
+DownloadInfo::~DownloadInfo() noexcept {
+}
+
+DownloadInfo::DownloadInfo() noexcept
+   : id(),
+     name(),
+     state(),
+     progress(0),
+     size(0),
+     error() {
+}
+
+void DownloadInfo::__set_id(const std::string& val) {
+  this->id = val;
+}
+
+void DownloadInfo::__set_name(const std::string& val) {
+  this->name = val;
+}
+
+void DownloadInfo::__set_state(const std::string& val) {
+  this->state = val;
+}
+
+void DownloadInfo::__set_progress(const int32_t val) {
+  this->progress = val;
+}
+
+void DownloadInfo::__set_size(const int64_t val) {
+  this->size = val;
+}
+
+void DownloadInfo::__set_error(const std::string& val) {
+  this->error = val;
+}
+std::ostream& operator<<(std::ostream& out, const DownloadInfo& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t DownloadInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->name);
+          this->__isset.name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->state);
+          this->__isset.state = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->progress);
+          this->__isset.progress = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->size);
+          this->__isset.size = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->error);
+          this->__isset.error = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t DownloadInfo::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("DownloadInfo");
+
+  xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->id);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->name);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("state", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->state);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("progress", ::apache::thrift::protocol::T_I32, 4);
+  xfer += oprot->writeI32(this->progress);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("size", ::apache::thrift::protocol::T_I64, 5);
+  xfer += oprot->writeI64(this->size);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("error", ::apache::thrift::protocol::T_STRING, 6);
+  xfer += oprot->writeString(this->error);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(DownloadInfo &a, DownloadInfo &b) noexcept {
+  using ::std::swap;
+  swap(a.id, b.id);
+  swap(a.name, b.name);
+  swap(a.state, b.state);
+  swap(a.progress, b.progress);
+  swap(a.size, b.size);
+  swap(a.error, b.error);
+  swap(a.__isset, b.__isset);
+}
+
+bool DownloadInfo::operator==(const DownloadInfo & rhs) const
+{
+  if (!(id == rhs.id))
+    return false;
+  if (!(name == rhs.name))
+    return false;
+  if (!(state == rhs.state))
+    return false;
+  if (!(progress == rhs.progress))
+    return false;
+  if (!(size == rhs.size))
+    return false;
+  if (!(error == rhs.error))
+    return false;
+  return true;
+}
+
+DownloadInfo::DownloadInfo(const DownloadInfo& other44) {
+  id = other44.id;
+  name = other44.name;
+  state = other44.state;
+  progress = other44.progress;
+  size = other44.size;
+  error = other44.error;
+  __isset = other44.__isset;
+}
+DownloadInfo& DownloadInfo::operator=(const DownloadInfo& other45) {
+  id = other45.id;
+  name = other45.name;
+  state = other45.state;
+  progress = other45.progress;
+  size = other45.size;
+  error = other45.error;
+  __isset = other45.__isset;
+  return *this;
+}
+void DownloadInfo::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "DownloadInfo(";
+  out << "id=" << to_string(id);
+  out << ", " << "name=" << to_string(name);
+  out << ", " << "state=" << to_string(state);
+  out << ", " << "progress=" << to_string(progress);
+  out << ", " << "size=" << to_string(size);
+  out << ", " << "error=" << to_string(error);
+  out << ")";
+}
+
+
+DownloadRemoveType::~DownloadRemoveType() noexcept {
+}
+
+DownloadRemoveType::DownloadRemoveType() noexcept
+   : id() {
+}
+
+void DownloadRemoveType::__set_id(const std::string& val) {
+  this->id = val;
+}
+std::ostream& operator<<(std::ostream& out, const DownloadRemoveType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t DownloadRemoveType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t DownloadRemoveType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("DownloadRemoveType");
+
+  xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->id);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(DownloadRemoveType &a, DownloadRemoveType &b) noexcept {
+  using ::std::swap;
+  swap(a.id, b.id);
+  swap(a.__isset, b.__isset);
+}
+
+bool DownloadRemoveType::operator==(const DownloadRemoveType & rhs) const
+{
+  if (!(id == rhs.id))
+    return false;
+  return true;
+}
+
+DownloadRemoveType::DownloadRemoveType(const DownloadRemoveType& other46) {
+  id = other46.id;
+  __isset = other46.__isset;
+}
+DownloadRemoveType& DownloadRemoveType::operator=(const DownloadRemoveType& other47) {
+  id = other47.id;
+  __isset = other47.__isset;
+  return *this;
+}
+void DownloadRemoveType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "DownloadRemoveType(";
+  out << "id=" << to_string(id);
+  out << ")";
+}
+
 } // namespace

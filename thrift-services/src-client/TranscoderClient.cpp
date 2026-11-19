@@ -282,3 +282,49 @@ bool TranscoderClient::MseEndOfStream(const std::string &streamId) {
         return client->MseEndOfStream(input);
     });
 }
+
+bool TranscoderClient::DownloadLookup(DownloadLookupResult& result, const std::string& channel) {
+    DEBUGLOG("TranscoderClient::DownloadLookup: %s", channel.c_str());
+
+    return processInternal([&]() -> bool {
+        DownloadLookupType input;
+        input.channel = channel;
+
+        client->DownloadLookup(result, input);
+        return true;
+    });
+}
+
+bool TranscoderClient::DownloadStart(std::string& error, const std::string& url, const std::string& name, int duration) {
+    DEBUGLOG("TranscoderClient::DownloadStart: %s", name.c_str());
+
+    return processInternal([&]() -> bool {
+        DownloadStartType input;
+        input.url = url;
+        input.name = name;
+        input.duration = duration;
+
+        client->DownloadStart(error, input);
+        return true;
+    });
+}
+
+bool TranscoderClient::DownloadList(std::vector<DownloadInfo>& result) {
+    DEBUGLOG("TranscoderClient::DownloadList");
+
+    return processInternal([&]() -> bool {
+        client->DownloadList(result);
+        return true;
+    });
+}
+
+bool TranscoderClient::DownloadRemove(const std::string& id) {
+    DEBUGLOG("TranscoderClient::DownloadRemove: %s", id.c_str());
+
+    return processInternal([&]() -> bool {
+        DownloadRemoveType input;
+        input.id = id;
+
+        return client->DownloadRemove(input);
+    });
+}
