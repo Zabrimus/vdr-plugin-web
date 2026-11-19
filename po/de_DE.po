@@ -118,3 +118,6 @@ msgstr "MediathekView ist nicht erreichbar"
 
 msgid "This video can't be downloaded"
 msgstr "Dieses Video kann nicht heruntergeladen werden"
+
+msgid "The download directory is not writable"
+msgstr "Das Download-Verzeichnis ist nicht beschreibbar"

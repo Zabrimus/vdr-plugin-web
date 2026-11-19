@@ -14,6 +14,7 @@ static const char *transcoderErrors[] = {
     trNOOP("No video or a live stream"),
     trNOOP("MediathekView is not reachable"),
     trNOOP("This video can't be downloaded"),
+    trNOOP("The download directory is not writable"),
 };
 
 static const char *translate(const std::string& error) {
