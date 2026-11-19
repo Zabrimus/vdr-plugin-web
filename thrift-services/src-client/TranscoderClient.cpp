@@ -295,7 +295,7 @@ bool TranscoderClient::DownloadLookup(DownloadLookupResult& result, const std::s
     });
 }
 
-bool TranscoderClient::DownloadStart(std::string& error, const std::string& url, const std::string& name, int duration) {
+bool TranscoderClient::DownloadStart(std::string& error, const std::string& url, const std::string& name, int duration, int maxRate) {
     DEBUGLOG("TranscoderClient::DownloadStart: %s", name.c_str());
 
     return processInternal([&]() -> bool {
@@ -303,6 +303,7 @@ bool TranscoderClient::DownloadStart(std::string& error, const std::string& url,
         input.url = url;
         input.name = name;
         input.duration = duration;
+        input.maxRate = maxRate;
 
         client->DownloadStart(error, input);
         return true;

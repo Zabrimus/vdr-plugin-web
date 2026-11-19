@@ -842,6 +842,8 @@ bool cPluginWeb::SetupParse(const char *Name, const char *Value) {
         webSetup.mse = atoi(Value) ? 1 : 0;
     } else if (!strcasecmp(Name, "ZdfQuirks")) {
         webSetup.zdfQuirks = atoi(Value) ? 1 : 0;
+    } else if (!strcasecmp(Name, "DownloadRate")) {
+        webSetup.downloadRate = constrain(atoi(Value), 0, 1000);
     } else {
         return false;
     }

@@ -5,6 +5,7 @@
 #include <vdr/interface.h>
 #include <vdr/skins.h>
 #include "web.h"
+#include "setup.h"
 
 std::shared_ptr<TranscoderClient> transcoderClient;
 
@@ -55,7 +56,7 @@ cMenuWebDownloadSelect::cMenuWebDownloadSelect(const std::string& channel)
 
 eOSState cMenuWebDownloadSelect::Start(const std::string& url, const std::string& name, int duration) {
     std::string error;
-    if (transcoderClient == nullptr || !transcoderClient->DownloadStart(error, url, name, duration)) {
+    if (transcoderClient == nullptr || !transcoderClient->DownloadStart(error, url, name, duration, webSetup.downloadRate * 1000)) {
         Skins.Message(mtError, tr("Transcoder not available"));
     } else if (!error.empty()) {
         Skins.Message(mtError, translate(error));

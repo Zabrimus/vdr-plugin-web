@@ -2416,7 +2416,8 @@ DownloadStartType::~DownloadStartType() noexcept {
 DownloadStartType::DownloadStartType() noexcept
    : url(),
      name(),
-     duration(0) {
+     duration(0),
+     maxRate(0) {
 }
 
 void DownloadStartType::__set_url(const std::string& val) {
@@ -2429,6 +2430,10 @@ void DownloadStartType::__set_name(const std::string& val) {
 
 void DownloadStartType::__set_duration(const int32_t val) {
   this->duration = val;
+}
+
+void DownloadStartType::__set_maxRate(const int32_t val) {
+  this->maxRate = val;
 }
 std::ostream& operator<<(std::ostream& out, const DownloadStartType& obj)
 {
@@ -2482,6 +2487,14 @@ uint32_t DownloadStartType::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->maxRate);
+          this->__isset.maxRate = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -2511,6 +2524,10 @@ uint32_t DownloadStartType::write(::apache::thrift::protocol::TProtocol* oprot) 
   xfer += oprot->writeI32(this->duration);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("maxRate", ::apache::thrift::protocol::T_I32, 4);
+  xfer += oprot->writeI32(this->maxRate);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -2521,6 +2538,7 @@ void swap(DownloadStartType &a, DownloadStartType &b) noexcept {
   swap(a.url, b.url);
   swap(a.name, b.name);
   swap(a.duration, b.duration);
+  swap(a.maxRate, b.maxRate);
   swap(a.__isset, b.__isset);
 }
 
@@ -2532,6 +2550,8 @@ bool DownloadStartType::operator==(const DownloadStartType & rhs) const
     return false;
   if (!(duration == rhs.duration))
     return false;
+  if (!(maxRate == rhs.maxRate))
+    return false;
   return true;
 }
 
@@ -2539,12 +2559,14 @@ DownloadStartType::DownloadStartType(const DownloadStartType& other42) {
   url = other42.url;
   name = other42.name;
   duration = other42.duration;
+  maxRate = other42.maxRate;
   __isset = other42.__isset;
 }
 DownloadStartType& DownloadStartType::operator=(const DownloadStartType& other43) {
   url = other43.url;
   name = other43.name;
   duration = other43.duration;
+  maxRate = other43.maxRate;
   __isset = other43.__isset;
   return *this;
 }
@@ -2554,6 +2576,7 @@ void DownloadStartType::printTo(std::ostream& out) const {
   out << "url=" << to_string(url);
   out << ", " << "name=" << to_string(name);
   out << ", " << "duration=" << to_string(duration);
+  out << ", " << "maxRate=" << to_string(maxRate);
   out << ")";
 }
 

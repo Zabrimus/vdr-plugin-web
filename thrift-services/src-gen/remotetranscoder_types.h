@@ -743,10 +743,11 @@ void swap(DownloadLookupResult &a, DownloadLookupResult &b) noexcept;
 std::ostream& operator<<(std::ostream& out, const DownloadLookupResult& obj);
 
 typedef struct _DownloadStartType__isset {
-  _DownloadStartType__isset() : url(false), name(false), duration(false) {}
+  _DownloadStartType__isset() : url(false), name(false), duration(false), maxRate(false) {}
   bool url :1;
   bool name :1;
   bool duration :1;
+  bool maxRate :1;
 } _DownloadStartType__isset;
 
 class DownloadStartType : public virtual ::apache::thrift::TBase {
@@ -760,6 +761,7 @@ class DownloadStartType : public virtual ::apache::thrift::TBase {
   std::string url;
   std::string name;
   int32_t duration;
+  int32_t maxRate;
 
   _DownloadStartType__isset __isset;
 
@@ -768,6 +770,8 @@ class DownloadStartType : public virtual ::apache::thrift::TBase {
   void __set_name(const std::string& val);
 
   void __set_duration(const int32_t val);
+
+  void __set_maxRate(const int32_t val);
 
   bool operator == (const DownloadStartType & rhs) const;
   bool operator != (const DownloadStartType &rhs) const {

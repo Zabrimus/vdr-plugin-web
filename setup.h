@@ -15,6 +15,7 @@ struct cWebSetup {
     int frameRate = 0;     // 0 = browser default, 1 = 25, 2 = 30, 3 = 50, 4 = 60
     int mse = 1;           // Media Source Extensions (dash.js, hls.js, ...)
     int zdfQuirks = 1;     // special handling of the ZDF applications
+    int downloadRate = 0;  // Mbit/s, 0 = unlimited
 
     int Width() const;
     int FrameRate() const;

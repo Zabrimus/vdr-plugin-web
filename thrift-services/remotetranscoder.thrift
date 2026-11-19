@@ -108,7 +108,8 @@ struct DownloadLookupResult {
 struct DownloadStartType {
     1: string url,               // empty: the current stream
     2: string name,
-    3: i32 duration
+    3: i32 duration,
+    4: i32 maxRate               // kbit/s, 0: unlimited
 }
 
 struct DownloadInfo {

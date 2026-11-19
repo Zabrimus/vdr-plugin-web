@@ -121,3 +121,9 @@ msgstr "Dieses Video kann nicht heruntergeladen werden"
 
 msgid "The download directory is not writable"
 msgstr "Das Download-Verzeichnis ist nicht beschreibbar"
+
+msgid "Max. download speed (Mbit/s)"
+msgstr "Max. Download-Geschwindigkeit (Mbit/s)"
+
+msgid "unlimited"
+msgstr "unbegrenzt"

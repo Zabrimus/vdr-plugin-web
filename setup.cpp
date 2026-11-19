@@ -67,6 +67,7 @@ cMenuSetupWeb::cMenuSetupWeb() {
     Add(new cMenuEditStraItem(tr("Browser frame rate"), &web.frameRate, 5, frameRates));
     Add(new cMenuEditBoolItem(tr("Media Source Extensions"), &web.mse));
     Add(new cMenuEditBoolItem(tr("ZDF special handling"), &web.zdfQuirks));
+    Add(new cMenuEditIntItem(tr("Max. download speed (Mbit/s)"), &web.downloadRate, 0, 1000, tr("unlimited")));
 }
 
 void cMenuSetupWeb::Store() {
@@ -83,6 +84,7 @@ void cMenuSetupWeb::Store() {
     SetupStore("FrameRate", webSetup.frameRate);
     SetupStore("Mse", webSetup.mse);
     SetupStore("ZdfQuirks", webSetup.zdfQuirks);
+    SetupStore("DownloadRate", webSetup.downloadRate);
 
     SendRenderParameters();
 }
