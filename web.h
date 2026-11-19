@@ -59,6 +59,7 @@ class cRegularWorker: public cThread {
 
 class cPluginWeb : public cPlugin {
 private:
+    cString mainMenuEntry;     // with the status of the downloads
     std::unique_ptr<cRegularWorker> regularWorker;
 
 public:
@@ -80,7 +81,7 @@ public:
     cString Active() override;
     time_t WakeupTime() override;
 
-    const char *MainMenuEntry() override { return MAINMENUENTRYALT != nullptr ? MAINMENUENTRYALT : MAINMENUENTRY; }
+    const char *MainMenuEntry() override;
     cOsdObject *MainMenuAction() override;
     cOsdObject *DownloadMenu(int command);
     cMenuSetupPage *SetupMenu() override;

@@ -122,6 +122,8 @@ The current video can be downloaded as MP4, if remotetranscode has a download di
   the key, it doesn't reach the plugin.
 - The SVDRP command ```PLUG web DOWNLOADS``` opens the list of the running downloads and the downloaded
   files. Red cancels a download or deletes a file.
+- While downloads run, the main menu entry shows the progress, e.g. ```Web (Download 45%)```. A message
+  tells when a download has finished or failed.
 
 ## Logging
 Uses the VDR logging mechanism. Log entries can be found in ```/var/log/syslog``` with ```[vdrweb]``` prefix.

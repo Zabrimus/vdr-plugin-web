@@ -656,6 +656,7 @@ bool cPluginWeb::Start() {
 
     browserClient = new BrowserClient(browserIp, browserPort);
     transcoderClient = std::make_shared<TranscoderClient>(transcoderIp, transcoderPort);
+    StartDownloadWatcher();
 
     regularWorker = std::make_unique<cRegularWorker>();
     regularWorker->Start();
@@ -669,6 +670,7 @@ void cPluginWeb::Stop() {
     delete browserClient;
     browserClient = nullptr;
 
+    StopDownloadWatcher();
     transcoderClient.reset();
 
     regularWorker->Stop();
@@ -726,6 +728,18 @@ void ReturnFromDownloads() {
     if (page != nullptr && page->getCurrentOsdMode() == PLAYER) {
         OpenDownloadMenu(SHOW_PLAYER_PAGE);
     }
+}
+
+const char *cPluginWeb::MainMenuEntry() {
+    const char *entry = MAINMENUENTRYALT != nullptr ? MAINMENUENTRYALT : MAINMENUENTRY;
+
+    std::string status = DownloadStatus();
+    if (status.empty()) {
+        return entry;
+    }
+
+    mainMenuEntry = cString::sprintf("%s (%s)", entry, status.c_str());
+    return mainMenuEntry;
 }
 
 cOsdObject *cPluginWeb::DownloadMenu(int command) {

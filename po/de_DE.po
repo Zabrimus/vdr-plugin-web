@@ -127,3 +127,15 @@ msgstr "Max. Download-Geschwindigkeit (Mbit/s)"
 
 msgid "unlimited"
 msgstr "unbegrenzt"
+
+msgid "Download finished: %s"
+msgstr "Download fertig: %s"
+
+msgid "Download failed: %s"
+msgstr "Download fehlgeschlagen: %s"
+
+msgid "Download %d%%"
+msgstr "Download %d%%"
+
+msgid "%d downloads"
+msgstr "%d Downloads"

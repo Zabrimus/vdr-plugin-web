@@ -9,6 +9,17 @@
 // shared: a lookup thread may still use it when the plugin stops
 extern std::shared_ptr<TranscoderClient> transcoderClient;
 
+// While downloads run, a thread asks the transcoder for their progress
+// and shows a message when one has finished or failed.
+void StartDownloadWatcher();
+void StopDownloadWatcher();
+
+// a download was started or removed: ask the transcoder again
+void WatchDownloads();
+
+// "Download 45%", "2 downloads" or empty
+std::string DownloadStatus();
+
 // Rec while a video plays: the entries of MediathekView with the same duration.
 // One entry or only the stream: the download starts without a question.
 class cMenuWebDownloadSelect : public cOsdMenu {

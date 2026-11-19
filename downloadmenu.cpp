@@ -1,5 +1,8 @@
 #include "downloadmenu.h"
 
+#include <chrono>
+#include <condition_variable>
+#include <map>
 #include <thread>
 #include <vdr/i18n.h>
 #include <vdr/interface.h>
@@ -29,6 +32,118 @@ static const char *translate(const std::string& error) {
 
 static std::string formatDuration(int seconds) {
     return *cString::sprintf("%d:%02d", seconds / 60, seconds % 60);
+}
+
+// --- the watcher -----------------------------------------------------------------------------
+
+namespace {
+std::mutex watchMutex;
+std::condition_variable watchCondition;
+std::thread watchThread;
+bool watchStop = false;
+bool watchActive = false;
+bool watchWake = false;            // ask now, not after the interval
+std::string watchStatus;
+std::map<std::string, std::string> watchRunning;   // id -> file name
+}
+
+static void Watch(std::shared_ptr<TranscoderClient> client) {
+    std::unique_lock<std::mutex> lock(watchMutex);
+
+    while (!watchStop) {
+        if (!watchActive) {
+            watchCondition.wait(lock, [] { return watchStop || watchActive; });
+            continue;
+        }
+        watchWake = false;
+
+        lock.unlock();
+        std::vector<DownloadInfo> downloads;
+        bool ok = client->DownloadList(downloads);
+        lock.lock();
+
+        std::map<std::string, std::string> running;
+        int progress = 0;
+        for (const auto& d : downloads) {
+            if (d.state == "running") {
+                running[d.id] = d.name;
+                progress = d.progress;
+            }
+        }
+
+        // a download that doesn't run anymore: finished, failed or cancelled
+        std::vector<std::pair<eMessageType, std::string>> messages;
+        for (const auto& r : watchRunning) {
+            if (!ok || running.count(r.first) > 0) {
+                continue;
+            }
+
+            for (const auto& d : downloads) {
+                if (d.name == r.second && d.state == "done") {
+                    messages.emplace_back(mtInfo, *cString::sprintf(tr("Download finished: %s"), d.name.c_str()));
+                } else if (d.id == r.first && d.state == "failed") {
+                    messages.emplace_back(mtError, *cString::sprintf(tr("Download failed: %s"), d.name.c_str()));
+                }
+            }
+        }
+
+        watchRunning = running;
+        if (running.empty()) {
+            watchStatus.clear();
+            watchActive = false;
+        } else if (running.size() == 1) {
+            watchStatus = *cString::sprintf(tr("Download %d%%"), progress);
+        } else {
+            watchStatus = *cString::sprintf(tr("%d downloads"), (int) running.size());
+        }
+
+        // queued: shown when no menu is open, without waiting
+        lock.unlock();
+        for (const auto& m : messages) {
+            Skins.QueueMessage(m.first, m.second.c_str());
+        }
+        lock.lock();
+
+        watchCondition.wait_for(lock, std::chrono::seconds(3), [] { return watchStop || watchWake; });
+    }
+}
+
+void StartDownloadWatcher() {
+    std::lock_guard<std::mutex> lock(watchMutex);
+    if (transcoderClient == nullptr || watchThread.joinable()) {
+        return;
+    }
+
+    // downloads may still run from before a restart of VDR
+    watchStop = false;
+    watchActive = true;
+    watchThread = std::thread(Watch, transcoderClient);
+}
+
+void StopDownloadWatcher() {
+    {
+        std::lock_guard<std::mutex> lock(watchMutex);
+        watchStop = true;
+    }
+    watchCondition.notify_all();
+
+    if (watchThread.joinable()) {
+        watchThread.join();
+    }
+}
+
+void WatchDownloads() {
+    {
+        std::lock_guard<std::mutex> lock(watchMutex);
+        watchActive = true;
+        watchWake = true;
+    }
+    watchCondition.notify_all();
+}
+
+std::string DownloadStatus() {
+    std::lock_guard<std::mutex> lock(watchMutex);
+    return watchStatus;
 }
 
 // --- cMenuWebDownloadSelect ------------------------------------------------------------------
@@ -61,6 +176,7 @@ eOSState cMenuWebDownloadSelect::Start(const std::string& url, const std::string
     } else if (!error.empty()) {
         Skins.Message(mtError, translate(error));
     } else {
+        WatchDownloads();
         Skins.Message(mtInfo, *cString::sprintf(tr("Download started: %s"), name.c_str()));
     }
 
@@ -234,6 +350,7 @@ eOSState cMenuWebDownloads::Remove() {
     if (transcoderClient == nullptr || !transcoderClient->DownloadRemove(d->id)) {
         Skins.Message(mtError, tr("Can't remove the download"));
     }
+    WatchDownloads();
 
     Load();
     return osContinue;
