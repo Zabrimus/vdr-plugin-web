@@ -505,9 +505,9 @@ eOSState WebOSDPage::ProcessKey(eKeys Key) {
         measureKeyTime.Set();
     }
 
-    // Rec: a download of the current video, without a video the list of downloads
+    // Rec: a download of the current video. Without a video VDR handles Rec itself.
     if (key == kRecord) {
-        if (!(Key & k_Repeat)) {
+        if (!(Key & k_Repeat) && currentMode == PLAYER) {
             OpenDownloads();
         }
         return osContinue;

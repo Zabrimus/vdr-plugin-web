@@ -38,10 +38,10 @@ static char* MAINMENUENTRYALT = nullptr;
 
 extern BrowserClient* browserClient;
 
-// Rec in the page: the download menu, during a video the selection of the entry
+// Rec during a video: the selection of the MediathekView entry
 void OpenDownloads();
 
-// after the download menu: show the page again
+// after a download menu: show the page of a video again
 void ReturnFromDownloads();
 
 class cRegularWorker: public cThread {

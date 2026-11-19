@@ -33,7 +33,7 @@ public:
     eOSState ProcessKey(eKeys Key) override;
 };
 
-// Rec without a video: the running downloads and the downloaded files
+// SVDRP DOWNLOADS: the running downloads and the downloaded files
 class cMenuWebDownloads : public cOsdMenu {
 private:
     std::vector<DownloadInfo> downloads;

@@ -708,37 +708,40 @@ time_t cPluginWeb::WakeupTime() {
     return 0;
 }
 
-void OpenDownloads() {
-    WebOSDPage *page = WebOSDPage::Get();
-    bool player = page != nullptr && page->getCurrentOsdMode() == PLAYER;
-
-    // the page lies above the menu, during a video it gives its OSD free
-    if (player) {
-        page->HideOsd();
-    }
-
-    nextOsdCommand = player ? DOWNLOAD_SELECT : DOWNLOADS;
+static bool OpenDownloadMenu(OSD_COMMAND command) {
+    nextOsdCommand = command;
     if (!cRemote::CallPlugin("web")) {
         nextOsdCommand = OPEN;
-        if (player) {
-            page->Display();
-        }
+        return false;
     }
+    return true;
+}
+
+void OpenDownloads() {
+    OpenDownloadMenu(DOWNLOAD_SELECT);
 }
 
 void ReturnFromDownloads() {
     WebOSDPage *page = WebOSDPage::Get();
-    nextOsdCommand = page != nullptr && page->getCurrentOsdMode() == PLAYER ? SHOW_PLAYER_PAGE : REOPEN;
-    cRemote::CallPlugin("web");
+    if (page != nullptr && page->getCurrentOsdMode() == PLAYER) {
+        OpenDownloadMenu(SHOW_PLAYER_PAGE);
+    }
 }
 
 cOsdObject *cPluginWeb::DownloadMenu(int command) {
+    WebOSDPage *page = WebOSDPage::Get();
+    bool player = page != nullptr && page->getCurrentOsdMode() == PLAYER;
+
     if (command == SHOW_PLAYER_PAGE) {
-        WebOSDPage *page = WebOSDPage::Get();
-        if (page != nullptr && page->getCurrentOsdMode() == PLAYER) {
+        if (player) {
             page->Display();
         }
         return nullptr;
+    }
+
+    // the page of a video lies above the menu, it gives its OSD free
+    if (player) {
+        page->HideOsd();
     }
 
     if (command == DOWNLOADS) {
@@ -900,12 +903,23 @@ bool cPluginWeb::Service(const char *Id, void *Data = nullptr) {
 }
 
 const char **cPluginWeb::SVDRPHelpPages() {
-    // Return help text for SVDRP commands this plugin implements
-    return nullptr;
+    static const char *HelpPages[] = {
+        "DOWNLOADS\n"
+        "    Open the list of the downloads.",
+        nullptr
+    };
+    return HelpPages;
 }
 
 cString cPluginWeb::SVDRPCommand(const char *Command, const char *Option, int &ReplyCode) {
-    // Process SVDRP commands this plugin implements
+    if (strcasecmp(Command, "DOWNLOADS") == 0) {
+        if (OpenDownloadMenu(DOWNLOADS)) {
+            return "Downloads opened";
+        }
+        ReplyCode = 550;
+        return "Another plugin call is pending";
+    }
+
     return nullptr;
 }
 

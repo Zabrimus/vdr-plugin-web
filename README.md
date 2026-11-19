@@ -109,7 +109,7 @@ Otherwise VDR handles them (e.g. the numeric and channel keys switch the channel
 | Info                         | VK_INFO                            |
 | Subtitles                    | VK_SUBTITLE                        |
 
-Record isn't sent to the application, it downloads the current video (see Downloads).
+Record isn't sent to the application, during a video it downloads the video (see Downloads).
 
 ## Downloads
 The current video can be downloaded as MP4, if remotetranscode has a download directory
@@ -117,9 +117,10 @@ The current video can be downloaded as MP4, if remotetranscode has a download di
 
 - Record while a video plays: remotetranscode looks up the video in MediathekViewWeb by channel and
   duration. If more than one entry matches, a menu shows them to choose from, together with the stream
-  itself. The file gets the name of channel, topic, title and date.
-- Record without a video: the list of the running downloads and the downloaded files.
-  Red cancels a download or deletes a file.
+  itself. The file gets the name of channel, topic, title and date. With ```--dummyosd``` VDR takes
+  the key, it doesn't reach the plugin.
+- The SVDRP command ```PLUG web DOWNLOADS``` opens the list of the running downloads and the downloaded
+  files. Red cancels a download or deletes a file.
 
 ## Logging
 Uses the VDR logging mechanism. Log entries can be found in ```/var/log/syslog``` with ```[vdrweb]``` prefix.
