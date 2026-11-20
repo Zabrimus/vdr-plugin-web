@@ -36,6 +36,7 @@ class CefBrowserIf : virtual public  ::common::CommonServiceIf {
   virtual bool StreamEvent(const StreamEventType& input) = 0;
   virtual bool SetRenderParameters(const RenderParametersType& input) = 0;
   virtual bool SetBrowserOptions(const BrowserOptionsType& input) = 0;
+  virtual void PageTitle(std::string& _return) = 0;
 };
 
 class CefBrowserIfFactory : virtual public  ::common::CommonServiceIfFactory {
@@ -116,6 +117,9 @@ class CefBrowserNull : virtual public CefBrowserIf , virtual public  ::common::C
   bool SetBrowserOptions(const BrowserOptionsType& /* input */) override {
     bool _return = false;
     return _return;
+  }
+  void PageTitle(std::string& /* _return */) override {
+    return;
   }
 };
 
@@ -1383,6 +1387,94 @@ class CefBrowser_SetBrowserOptions_presult {
 
 };
 
+
+class CefBrowser_PageTitle_args {
+ public:
+
+  CefBrowser_PageTitle_args(const CefBrowser_PageTitle_args&) noexcept;
+  CefBrowser_PageTitle_args& operator=(const CefBrowser_PageTitle_args&) noexcept;
+  CefBrowser_PageTitle_args() noexcept;
+
+  virtual ~CefBrowser_PageTitle_args() noexcept;
+
+  bool operator == (const CefBrowser_PageTitle_args & /* rhs */) const;
+  bool operator != (const CefBrowser_PageTitle_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CefBrowser_PageTitle_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class CefBrowser_PageTitle_pargs {
+ public:
+
+
+  virtual ~CefBrowser_PageTitle_pargs() noexcept;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _CefBrowser_PageTitle_result__isset {
+  _CefBrowser_PageTitle_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _CefBrowser_PageTitle_result__isset;
+
+class CefBrowser_PageTitle_result {
+ public:
+
+  CefBrowser_PageTitle_result(const CefBrowser_PageTitle_result&);
+  CefBrowser_PageTitle_result& operator=(const CefBrowser_PageTitle_result&);
+  CefBrowser_PageTitle_result() noexcept;
+
+  virtual ~CefBrowser_PageTitle_result() noexcept;
+  std::string success;
+   ::common::OperationFailed err;
+
+  _CefBrowser_PageTitle_result__isset __isset;
+
+  void __set_success(const std::string& val);
+
+  void __set_err(const  ::common::OperationFailed& val);
+
+  bool operator == (const CefBrowser_PageTitle_result & rhs) const;
+  bool operator != (const CefBrowser_PageTitle_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CefBrowser_PageTitle_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _CefBrowser_PageTitle_presult__isset {
+  _CefBrowser_PageTitle_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _CefBrowser_PageTitle_presult__isset;
+
+class CefBrowser_PageTitle_presult {
+ public:
+
+
+  virtual ~CefBrowser_PageTitle_presult() noexcept;
+  std::string* success;
+   ::common::OperationFailed err;
+
+  _CefBrowser_PageTitle_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class CefBrowserClient : virtual public CefBrowserIf, public  ::common::CommonServiceClient {
  public:
   CefBrowserClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -1433,6 +1525,9 @@ class CefBrowserClient : virtual public CefBrowserIf, public  ::common::CommonSe
   bool SetBrowserOptions(const BrowserOptionsType& input) override;
   void send_SetBrowserOptions(const BrowserOptionsType& input);
   bool recv_SetBrowserOptions();
+  void PageTitle(std::string& _return) override;
+  void send_PageTitle();
+  void recv_PageTitle(std::string& _return);
 };
 
 class CefBrowserProcessor : public  ::common::CommonServiceProcessor {
@@ -1456,6 +1551,7 @@ class CefBrowserProcessor : public  ::common::CommonServiceProcessor {
   void process_StreamEvent(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_SetRenderParameters(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_SetBrowserOptions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_PageTitle(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   CefBrowserProcessor(::std::shared_ptr<CefBrowserIf> iface) :
      ::common::CommonServiceProcessor(iface),
@@ -1473,6 +1569,7 @@ class CefBrowserProcessor : public  ::common::CommonServiceProcessor {
     processMap_["StreamEvent"] = &CefBrowserProcessor::process_StreamEvent;
     processMap_["SetRenderParameters"] = &CefBrowserProcessor::process_SetRenderParameters;
     processMap_["SetBrowserOptions"] = &CefBrowserProcessor::process_SetBrowserOptions;
+    processMap_["PageTitle"] = &CefBrowserProcessor::process_PageTitle;
   }
 
   virtual ~CefBrowserProcessor() {}
@@ -1623,6 +1720,16 @@ class CefBrowserMultiface : virtual public CefBrowserIf, public  ::common::Commo
     return ifaces_[i]->SetBrowserOptions(input);
   }
 
+  void PageTitle(std::string& _return) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->PageTitle(_return);
+    }
+    ifaces_[i]->PageTitle(_return);
+    return;
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -1678,6 +1785,9 @@ class CefBrowserConcurrentClient : virtual public CefBrowserIf, public  ::common
   bool SetBrowserOptions(const BrowserOptionsType& input) override;
   int32_t send_SetBrowserOptions(const BrowserOptionsType& input);
   bool recv_SetBrowserOptions(const int32_t seqid);
+  void PageTitle(std::string& _return) override;
+  int32_t send_PageTitle();
+  void recv_PageTitle(std::string& _return, const int32_t seqid);
 };
 
 #ifdef _MSC_VER

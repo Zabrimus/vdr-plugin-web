@@ -288,3 +288,12 @@ bool BrowserClient::SetBrowserOptions(bool mse, bool zdfQuirks) {
         return client->SetBrowserOptions(input);
     });
 }
+
+bool BrowserClient::PageTitle(std::string& title) {
+    DEBUGLOG("BrowserClient::PageTitle");
+
+    return processInternal([&]() -> bool {
+        client->PageTitle(title);
+        return true;
+    });
+}

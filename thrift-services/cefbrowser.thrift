@@ -76,5 +76,6 @@ service CefBrowser extends common.CommonService {
     bool PlayerStatus(1: PlayerStatusType input) throws (1:common.OperationFailed err),
     bool StreamEvent(1: StreamEventType input) throws (1:common.OperationFailed err),
     bool SetRenderParameters(1: RenderParametersType input) throws (1:common.OperationFailed err),
-    bool SetBrowserOptions(1: BrowserOptionsType input) throws (1:common.OperationFailed err)
+    bool SetBrowserOptions(1: BrowserOptionsType input) throws (1:common.OperationFailed err),
+    string PageTitle() throws (1:common.OperationFailed err)         // the title of the current page
 }

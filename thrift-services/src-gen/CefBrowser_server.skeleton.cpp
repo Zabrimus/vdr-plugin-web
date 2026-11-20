@@ -85,6 +85,11 @@ class CefBrowserHandler : virtual public CefBrowserIf {
     printf("SetBrowserOptions\n");
   }
 
+  void PageTitle(std::string& _return) {
+    // Your implementation goes here
+    printf("PageTitle\n");
+  }
+
 };
 
 int main(int argc, char **argv) {
