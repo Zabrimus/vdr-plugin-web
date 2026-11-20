@@ -159,8 +159,11 @@ cMenuWebDownloadSelect::cMenuWebDownloadSelect(const std::string& channel)
     auto l = lookup;
     auto client = transcoderClient != nullptr ? NewTranscoderClient() : nullptr;
     std::thread([l, client, channel]() {
+        DownloadLookupType input;
+        input.channel = channel;
+
         DownloadLookupResult r;
-        bool ok = client != nullptr && client->DownloadLookup(r, channel);
+        bool ok = client != nullptr && client->DownloadLookup(r, input);
 
         std::lock_guard<std::mutex> lock(l->mutex);
         l->result = r;
@@ -170,8 +173,14 @@ cMenuWebDownloadSelect::cMenuWebDownloadSelect(const std::string& channel)
 }
 
 eOSState cMenuWebDownloadSelect::Start(const std::string& url, const std::string& name, int duration) {
+    DownloadStartType input;
+    input.url = url;
+    input.name = name;
+    input.duration = duration;
+    input.maxRate = webSetup.downloadRate * 1000;
+
     std::string error;
-    if (transcoderClient == nullptr || !transcoderClient->DownloadStart(error, url, name, duration, webSetup.downloadRate * 1000)) {
+    if (transcoderClient == nullptr || !transcoderClient->DownloadStart(error, input)) {
         Skins.Message(mtError, tr("Transcoder not available"));
     } else if (!error.empty()) {
         Skins.Message(mtError, translate(error));

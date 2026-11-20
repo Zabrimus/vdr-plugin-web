@@ -58,13 +58,17 @@ public:
 
     bool AudioInfo(std::string& result, const std::string& streamId);
 
-    bool DownloadLookup(DownloadLookupResult& result, const std::string& channel);
+    bool DownloadLookup(DownloadLookupResult& result, const DownloadLookupType& input);
 
-    bool DownloadStart(std::string& error, const std::string& url, const std::string& name, int duration, int maxRate);
+    bool DownloadStart(std::string& error, const DownloadStartType& input);
 
     bool DownloadList(std::vector<DownloadInfo>& result);
 
     bool DownloadRemove(const std::string& id);
+
+    bool DownloadRetry(std::string& error, const std::string& id);
+
+    bool DownloadConvert(std::string& error, const std::string& id, int reserve);
 
     bool GetVideo(std::string& result, const VideoType& input);
 

@@ -39,6 +39,8 @@ class RemoteTranscoderIf : virtual public  ::common::CommonServiceIf {
   virtual void DownloadStart(std::string& _return, const DownloadStartType& input) = 0;
   virtual void DownloadList(std::vector<DownloadInfo> & _return) = 0;
   virtual bool DownloadRemove(const DownloadRemoveType& input) = 0;
+  virtual void DownloadRetry(std::string& _return, const DownloadRetryType& input) = 0;
+  virtual void DownloadConvert(std::string& _return, const DownloadConvertType& input) = 0;
 };
 
 class RemoteTranscoderIfFactory : virtual public  ::common::CommonServiceIfFactory {
@@ -124,6 +126,12 @@ class RemoteTranscoderNull : virtual public RemoteTranscoderIf , virtual public 
   bool DownloadRemove(const DownloadRemoveType& /* input */) override {
     bool _return = false;
     return _return;
+  }
+  void DownloadRetry(std::string& /* _return */, const DownloadRetryType& /* input */) override {
+    return;
+  }
+  void DownloadConvert(std::string& /* _return */, const DownloadConvertType& /* input */) override {
+    return;
   }
 };
 
@@ -1685,6 +1693,202 @@ class RemoteTranscoder_DownloadRemove_presult {
 
 };
 
+typedef struct _RemoteTranscoder_DownloadRetry_args__isset {
+  _RemoteTranscoder_DownloadRetry_args__isset() : input(false) {}
+  bool input :1;
+} _RemoteTranscoder_DownloadRetry_args__isset;
+
+class RemoteTranscoder_DownloadRetry_args {
+ public:
+
+  RemoteTranscoder_DownloadRetry_args(const RemoteTranscoder_DownloadRetry_args&);
+  RemoteTranscoder_DownloadRetry_args& operator=(const RemoteTranscoder_DownloadRetry_args&);
+  RemoteTranscoder_DownloadRetry_args() noexcept;
+
+  virtual ~RemoteTranscoder_DownloadRetry_args() noexcept;
+  DownloadRetryType input;
+
+  _RemoteTranscoder_DownloadRetry_args__isset __isset;
+
+  void __set_input(const DownloadRetryType& val);
+
+  bool operator == (const RemoteTranscoder_DownloadRetry_args & rhs) const;
+  bool operator != (const RemoteTranscoder_DownloadRetry_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_DownloadRetry_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class RemoteTranscoder_DownloadRetry_pargs {
+ public:
+
+
+  virtual ~RemoteTranscoder_DownloadRetry_pargs() noexcept;
+  const DownloadRetryType* input;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_DownloadRetry_result__isset {
+  _RemoteTranscoder_DownloadRetry_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_DownloadRetry_result__isset;
+
+class RemoteTranscoder_DownloadRetry_result {
+ public:
+
+  RemoteTranscoder_DownloadRetry_result(const RemoteTranscoder_DownloadRetry_result&);
+  RemoteTranscoder_DownloadRetry_result& operator=(const RemoteTranscoder_DownloadRetry_result&);
+  RemoteTranscoder_DownloadRetry_result() noexcept;
+
+  virtual ~RemoteTranscoder_DownloadRetry_result() noexcept;
+  std::string success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_DownloadRetry_result__isset __isset;
+
+  void __set_success(const std::string& val);
+
+  void __set_err(const  ::common::OperationFailed& val);
+
+  bool operator == (const RemoteTranscoder_DownloadRetry_result & rhs) const;
+  bool operator != (const RemoteTranscoder_DownloadRetry_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_DownloadRetry_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_DownloadRetry_presult__isset {
+  _RemoteTranscoder_DownloadRetry_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_DownloadRetry_presult__isset;
+
+class RemoteTranscoder_DownloadRetry_presult {
+ public:
+
+
+  virtual ~RemoteTranscoder_DownloadRetry_presult() noexcept;
+  std::string* success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_DownloadRetry_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _RemoteTranscoder_DownloadConvert_args__isset {
+  _RemoteTranscoder_DownloadConvert_args__isset() : input(false) {}
+  bool input :1;
+} _RemoteTranscoder_DownloadConvert_args__isset;
+
+class RemoteTranscoder_DownloadConvert_args {
+ public:
+
+  RemoteTranscoder_DownloadConvert_args(const RemoteTranscoder_DownloadConvert_args&);
+  RemoteTranscoder_DownloadConvert_args& operator=(const RemoteTranscoder_DownloadConvert_args&);
+  RemoteTranscoder_DownloadConvert_args() noexcept;
+
+  virtual ~RemoteTranscoder_DownloadConvert_args() noexcept;
+  DownloadConvertType input;
+
+  _RemoteTranscoder_DownloadConvert_args__isset __isset;
+
+  void __set_input(const DownloadConvertType& val);
+
+  bool operator == (const RemoteTranscoder_DownloadConvert_args & rhs) const;
+  bool operator != (const RemoteTranscoder_DownloadConvert_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_DownloadConvert_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class RemoteTranscoder_DownloadConvert_pargs {
+ public:
+
+
+  virtual ~RemoteTranscoder_DownloadConvert_pargs() noexcept;
+  const DownloadConvertType* input;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_DownloadConvert_result__isset {
+  _RemoteTranscoder_DownloadConvert_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_DownloadConvert_result__isset;
+
+class RemoteTranscoder_DownloadConvert_result {
+ public:
+
+  RemoteTranscoder_DownloadConvert_result(const RemoteTranscoder_DownloadConvert_result&);
+  RemoteTranscoder_DownloadConvert_result& operator=(const RemoteTranscoder_DownloadConvert_result&);
+  RemoteTranscoder_DownloadConvert_result() noexcept;
+
+  virtual ~RemoteTranscoder_DownloadConvert_result() noexcept;
+  std::string success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_DownloadConvert_result__isset __isset;
+
+  void __set_success(const std::string& val);
+
+  void __set_err(const  ::common::OperationFailed& val);
+
+  bool operator == (const RemoteTranscoder_DownloadConvert_result & rhs) const;
+  bool operator != (const RemoteTranscoder_DownloadConvert_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteTranscoder_DownloadConvert_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteTranscoder_DownloadConvert_presult__isset {
+  _RemoteTranscoder_DownloadConvert_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _RemoteTranscoder_DownloadConvert_presult__isset;
+
+class RemoteTranscoder_DownloadConvert_presult {
+ public:
+
+
+  virtual ~RemoteTranscoder_DownloadConvert_presult() noexcept;
+  std::string* success;
+   ::common::OperationFailed err;
+
+  _RemoteTranscoder_DownloadConvert_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class RemoteTranscoderClient : virtual public RemoteTranscoderIf, public  ::common::CommonServiceClient {
  public:
   RemoteTranscoderClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -1744,6 +1948,12 @@ class RemoteTranscoderClient : virtual public RemoteTranscoderIf, public  ::comm
   bool DownloadRemove(const DownloadRemoveType& input) override;
   void send_DownloadRemove(const DownloadRemoveType& input);
   bool recv_DownloadRemove();
+  void DownloadRetry(std::string& _return, const DownloadRetryType& input) override;
+  void send_DownloadRetry(const DownloadRetryType& input);
+  void recv_DownloadRetry(std::string& _return);
+  void DownloadConvert(std::string& _return, const DownloadConvertType& input) override;
+  void send_DownloadConvert(const DownloadConvertType& input);
+  void recv_DownloadConvert(std::string& _return);
 };
 
 class RemoteTranscoderProcessor : public  ::common::CommonServiceProcessor {
@@ -1770,6 +1980,8 @@ class RemoteTranscoderProcessor : public  ::common::CommonServiceProcessor {
   void process_DownloadStart(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_DownloadList(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_DownloadRemove(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_DownloadRetry(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_DownloadConvert(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   RemoteTranscoderProcessor(::std::shared_ptr<RemoteTranscoderIf> iface) :
      ::common::CommonServiceProcessor(iface),
@@ -1790,6 +2002,8 @@ class RemoteTranscoderProcessor : public  ::common::CommonServiceProcessor {
     processMap_["DownloadStart"] = &RemoteTranscoderProcessor::process_DownloadStart;
     processMap_["DownloadList"] = &RemoteTranscoderProcessor::process_DownloadList;
     processMap_["DownloadRemove"] = &RemoteTranscoderProcessor::process_DownloadRemove;
+    processMap_["DownloadRetry"] = &RemoteTranscoderProcessor::process_DownloadRetry;
+    processMap_["DownloadConvert"] = &RemoteTranscoderProcessor::process_DownloadConvert;
   }
 
   virtual ~RemoteTranscoderProcessor() {}
@@ -1974,6 +2188,26 @@ class RemoteTranscoderMultiface : virtual public RemoteTranscoderIf, public  ::c
     return ifaces_[i]->DownloadRemove(input);
   }
 
+  void DownloadRetry(std::string& _return, const DownloadRetryType& input) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->DownloadRetry(_return, input);
+    }
+    ifaces_[i]->DownloadRetry(_return, input);
+    return;
+  }
+
+  void DownloadConvert(std::string& _return, const DownloadConvertType& input) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->DownloadConvert(_return, input);
+    }
+    ifaces_[i]->DownloadConvert(_return, input);
+    return;
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -2038,6 +2272,12 @@ class RemoteTranscoderConcurrentClient : virtual public RemoteTranscoderIf, publ
   bool DownloadRemove(const DownloadRemoveType& input) override;
   int32_t send_DownloadRemove(const DownloadRemoveType& input);
   bool recv_DownloadRemove(const int32_t seqid);
+  void DownloadRetry(std::string& _return, const DownloadRetryType& input) override;
+  int32_t send_DownloadRetry(const DownloadRetryType& input);
+  void recv_DownloadRetry(std::string& _return, const int32_t seqid);
+  void DownloadConvert(std::string& _return, const DownloadConvertType& input) override;
+  int32_t send_DownloadConvert(const DownloadConvertType& input);
+  void recv_DownloadConvert(std::string& _return, const int32_t seqid);
 };
 
 #ifdef _MSC_VER

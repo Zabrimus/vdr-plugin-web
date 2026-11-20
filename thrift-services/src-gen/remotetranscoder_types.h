@@ -46,6 +46,8 @@ class MseResetType;
 
 class MseEndOfStreamType;
 
+class DownloadEpgEvent;
+
 class DownloadLookupType;
 
 class DownloadCandidate;
@@ -57,6 +59,10 @@ class DownloadStartType;
 class DownloadInfo;
 
 class DownloadRemoveType;
+
+class DownloadRetryType;
+
+class DownloadConvertType;
 
 typedef struct _ProbeType__isset {
   _ProbeType__isset() : url(false), cookies(false), referer(false), userAgent(false), responseIp(false), responsePort(false), vdrIp(false), vdrPort(false), postfix(false) {}
@@ -598,9 +604,52 @@ void swap(MseEndOfStreamType &a, MseEndOfStreamType &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const MseEndOfStreamType& obj);
 
+typedef struct _DownloadEpgEvent__isset {
+  _DownloadEpgEvent__isset() : title(false), start(false) {}
+  bool title :1;
+  bool start :1;
+} _DownloadEpgEvent__isset;
+
+class DownloadEpgEvent : public virtual ::apache::thrift::TBase {
+ public:
+
+  DownloadEpgEvent(const DownloadEpgEvent&);
+  DownloadEpgEvent& operator=(const DownloadEpgEvent&);
+  DownloadEpgEvent() noexcept;
+
+  virtual ~DownloadEpgEvent() noexcept;
+  std::string title;
+  int64_t start;
+
+  _DownloadEpgEvent__isset __isset;
+
+  void __set_title(const std::string& val);
+
+  void __set_start(const int64_t val);
+
+  bool operator == (const DownloadEpgEvent & rhs) const;
+  bool operator != (const DownloadEpgEvent &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DownloadEpgEvent & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DownloadEpgEvent &a, DownloadEpgEvent &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const DownloadEpgEvent& obj);
+
 typedef struct _DownloadLookupType__isset {
-  _DownloadLookupType__isset() : channel(false) {}
+  _DownloadLookupType__isset() : channel(false), pageTitle(false), epg(false), maxHeight(false) {}
   bool channel :1;
+  bool pageTitle :1;
+  bool epg :1;
+  bool maxHeight :1;
 } _DownloadLookupType__isset;
 
 class DownloadLookupType : public virtual ::apache::thrift::TBase {
@@ -612,10 +661,19 @@ class DownloadLookupType : public virtual ::apache::thrift::TBase {
 
   virtual ~DownloadLookupType() noexcept;
   std::string channel;
+  std::string pageTitle;
+  std::vector<DownloadEpgEvent>  epg;
+  int32_t maxHeight;
 
   _DownloadLookupType__isset __isset;
 
   void __set_channel(const std::string& val);
+
+  void __set_pageTitle(const std::string& val);
+
+  void __set_epg(const std::vector<DownloadEpgEvent> & val);
+
+  void __set_maxHeight(const int32_t val);
 
   bool operator == (const DownloadLookupType & rhs) const;
   bool operator != (const DownloadLookupType &rhs) const {
@@ -635,7 +693,7 @@ void swap(DownloadLookupType &a, DownloadLookupType &b) noexcept;
 std::ostream& operator<<(std::ostream& out, const DownloadLookupType& obj);
 
 typedef struct _DownloadCandidate__isset {
-  _DownloadCandidate__isset() : name(false), url(false), duration(false), channel(false), topic(false), title(false), timestamp(false) {}
+  _DownloadCandidate__isset() : name(false), url(false), duration(false), channel(false), topic(false), title(false), timestamp(false), exact(false), variant(false), width(false), height(false), size(false), description(false) {}
   bool name :1;
   bool url :1;
   bool duration :1;
@@ -643,6 +701,12 @@ typedef struct _DownloadCandidate__isset {
   bool topic :1;
   bool title :1;
   bool timestamp :1;
+  bool exact :1;
+  bool variant :1;
+  bool width :1;
+  bool height :1;
+  bool size :1;
+  bool description :1;
 } _DownloadCandidate__isset;
 
 class DownloadCandidate : public virtual ::apache::thrift::TBase {
@@ -660,6 +724,12 @@ class DownloadCandidate : public virtual ::apache::thrift::TBase {
   std::string topic;
   std::string title;
   int64_t timestamp;
+  bool exact;
+  std::string variant;
+  int32_t width;
+  int32_t height;
+  int64_t size;
+  std::string description;
 
   _DownloadCandidate__isset __isset;
 
@@ -676,6 +746,18 @@ class DownloadCandidate : public virtual ::apache::thrift::TBase {
   void __set_title(const std::string& val);
 
   void __set_timestamp(const int64_t val);
+
+  void __set_exact(const bool val);
+
+  void __set_variant(const std::string& val);
+
+  void __set_width(const int32_t val);
+
+  void __set_height(const int32_t val);
+
+  void __set_size(const int64_t val);
+
+  void __set_description(const std::string& val);
 
   bool operator == (const DownloadCandidate & rhs) const;
   bool operator != (const DownloadCandidate &rhs) const {
@@ -695,11 +777,14 @@ void swap(DownloadCandidate &a, DownloadCandidate &b) noexcept;
 std::ostream& operator<<(std::ostream& out, const DownloadCandidate& obj);
 
 typedef struct _DownloadLookupResult__isset {
-  _DownloadLookupResult__isset() : stream(false), streamName(false), candidates(false), error(false) {}
+  _DownloadLookupResult__isset() : stream(false), streamName(false), candidates(false), error(false), streamWidth(false), streamHeight(false), streamSize(false) {}
   bool stream :1;
   bool streamName :1;
   bool candidates :1;
   bool error :1;
+  bool streamWidth :1;
+  bool streamHeight :1;
+  bool streamSize :1;
 } _DownloadLookupResult__isset;
 
 class DownloadLookupResult : public virtual ::apache::thrift::TBase {
@@ -714,6 +799,9 @@ class DownloadLookupResult : public virtual ::apache::thrift::TBase {
   std::string streamName;
   std::vector<DownloadCandidate>  candidates;
   std::string error;
+  int32_t streamWidth;
+  int32_t streamHeight;
+  int64_t streamSize;
 
   _DownloadLookupResult__isset __isset;
 
@@ -724,6 +812,12 @@ class DownloadLookupResult : public virtual ::apache::thrift::TBase {
   void __set_candidates(const std::vector<DownloadCandidate> & val);
 
   void __set_error(const std::string& val);
+
+  void __set_streamWidth(const int32_t val);
+
+  void __set_streamHeight(const int32_t val);
+
+  void __set_streamSize(const int64_t val);
 
   bool operator == (const DownloadLookupResult & rhs) const;
   bool operator != (const DownloadLookupResult &rhs) const {
@@ -743,11 +837,21 @@ void swap(DownloadLookupResult &a, DownloadLookupResult &b) noexcept;
 std::ostream& operator<<(std::ostream& out, const DownloadLookupResult& obj);
 
 typedef struct _DownloadStartType__isset {
-  _DownloadStartType__isset() : url(false), name(false), duration(false), maxRate(false) {}
+  _DownloadStartType__isset() : url(false), name(false), duration(false), maxRate(false), format(false), reserve(false), maxParallel(false), topic(false), title(false), channel(false), timestamp(false), description(false), width(false), height(false) {}
   bool url :1;
   bool name :1;
   bool duration :1;
   bool maxRate :1;
+  bool format :1;
+  bool reserve :1;
+  bool maxParallel :1;
+  bool topic :1;
+  bool title :1;
+  bool channel :1;
+  bool timestamp :1;
+  bool description :1;
+  bool width :1;
+  bool height :1;
 } _DownloadStartType__isset;
 
 class DownloadStartType : public virtual ::apache::thrift::TBase {
@@ -762,6 +866,16 @@ class DownloadStartType : public virtual ::apache::thrift::TBase {
   std::string name;
   int32_t duration;
   int32_t maxRate;
+  std::string format;
+  int32_t reserve;
+  int32_t maxParallel;
+  std::string topic;
+  std::string title;
+  std::string channel;
+  int64_t timestamp;
+  std::string description;
+  int32_t width;
+  int32_t height;
 
   _DownloadStartType__isset __isset;
 
@@ -772,6 +886,26 @@ class DownloadStartType : public virtual ::apache::thrift::TBase {
   void __set_duration(const int32_t val);
 
   void __set_maxRate(const int32_t val);
+
+  void __set_format(const std::string& val);
+
+  void __set_reserve(const int32_t val);
+
+  void __set_maxParallel(const int32_t val);
+
+  void __set_topic(const std::string& val);
+
+  void __set_title(const std::string& val);
+
+  void __set_channel(const std::string& val);
+
+  void __set_timestamp(const int64_t val);
+
+  void __set_description(const std::string& val);
+
+  void __set_width(const int32_t val);
+
+  void __set_height(const int32_t val);
 
   bool operator == (const DownloadStartType & rhs) const;
   bool operator != (const DownloadStartType &rhs) const {
@@ -791,13 +925,23 @@ void swap(DownloadStartType &a, DownloadStartType &b) noexcept;
 std::ostream& operator<<(std::ostream& out, const DownloadStartType& obj);
 
 typedef struct _DownloadInfo__isset {
-  _DownloadInfo__isset() : id(false), name(false), state(false), progress(false), size(false), error(false) {}
+  _DownloadInfo__isset() : id(false), name(false), state(false), progress(false), size(false), error(false), format(false), path(false), topic(false), title(false), channel(false), timestamp(false), description(false), duration(false), width(false), height(false) {}
   bool id :1;
   bool name :1;
   bool state :1;
   bool progress :1;
   bool size :1;
   bool error :1;
+  bool format :1;
+  bool path :1;
+  bool topic :1;
+  bool title :1;
+  bool channel :1;
+  bool timestamp :1;
+  bool description :1;
+  bool duration :1;
+  bool width :1;
+  bool height :1;
 } _DownloadInfo__isset;
 
 class DownloadInfo : public virtual ::apache::thrift::TBase {
@@ -814,6 +958,16 @@ class DownloadInfo : public virtual ::apache::thrift::TBase {
   int32_t progress;
   int64_t size;
   std::string error;
+  std::string format;
+  std::string path;
+  std::string topic;
+  std::string title;
+  std::string channel;
+  int64_t timestamp;
+  std::string description;
+  int32_t duration;
+  int32_t width;
+  int32_t height;
 
   _DownloadInfo__isset __isset;
 
@@ -828,6 +982,26 @@ class DownloadInfo : public virtual ::apache::thrift::TBase {
   void __set_size(const int64_t val);
 
   void __set_error(const std::string& val);
+
+  void __set_format(const std::string& val);
+
+  void __set_path(const std::string& val);
+
+  void __set_topic(const std::string& val);
+
+  void __set_title(const std::string& val);
+
+  void __set_channel(const std::string& val);
+
+  void __set_timestamp(const int64_t val);
+
+  void __set_description(const std::string& val);
+
+  void __set_duration(const int32_t val);
+
+  void __set_width(const int32_t val);
+
+  void __set_height(const int32_t val);
 
   bool operator == (const DownloadInfo & rhs) const;
   bool operator != (const DownloadInfo &rhs) const {
@@ -881,6 +1055,82 @@ class DownloadRemoveType : public virtual ::apache::thrift::TBase {
 void swap(DownloadRemoveType &a, DownloadRemoveType &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const DownloadRemoveType& obj);
+
+typedef struct _DownloadRetryType__isset {
+  _DownloadRetryType__isset() : id(false) {}
+  bool id :1;
+} _DownloadRetryType__isset;
+
+class DownloadRetryType : public virtual ::apache::thrift::TBase {
+ public:
+
+  DownloadRetryType(const DownloadRetryType&);
+  DownloadRetryType& operator=(const DownloadRetryType&);
+  DownloadRetryType() noexcept;
+
+  virtual ~DownloadRetryType() noexcept;
+  std::string id;
+
+  _DownloadRetryType__isset __isset;
+
+  void __set_id(const std::string& val);
+
+  bool operator == (const DownloadRetryType & rhs) const;
+  bool operator != (const DownloadRetryType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DownloadRetryType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DownloadRetryType &a, DownloadRetryType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const DownloadRetryType& obj);
+
+typedef struct _DownloadConvertType__isset {
+  _DownloadConvertType__isset() : id(false), reserve(false) {}
+  bool id :1;
+  bool reserve :1;
+} _DownloadConvertType__isset;
+
+class DownloadConvertType : public virtual ::apache::thrift::TBase {
+ public:
+
+  DownloadConvertType(const DownloadConvertType&);
+  DownloadConvertType& operator=(const DownloadConvertType&);
+  DownloadConvertType() noexcept;
+
+  virtual ~DownloadConvertType() noexcept;
+  std::string id;
+  int32_t reserve;
+
+  _DownloadConvertType__isset __isset;
+
+  void __set_id(const std::string& val);
+
+  void __set_reserve(const int32_t val);
+
+  bool operator == (const DownloadConvertType & rhs) const;
+  bool operator != (const DownloadConvertType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DownloadConvertType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DownloadConvertType &a, DownloadConvertType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const DownloadConvertType& obj);
 
 } // namespace
 

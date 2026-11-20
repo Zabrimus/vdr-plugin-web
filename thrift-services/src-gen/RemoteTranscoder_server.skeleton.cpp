@@ -100,6 +100,16 @@ class RemoteTranscoderHandler : virtual public RemoteTranscoderIf {
     printf("DownloadRemove\n");
   }
 
+  void DownloadRetry(std::string& _return, const DownloadRetryType& input) {
+    // Your implementation goes here
+    printf("DownloadRetry\n");
+  }
+
+  void DownloadConvert(std::string& _return, const DownloadConvertType& input) {
+    // Your implementation goes here
+    printf("DownloadConvert\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

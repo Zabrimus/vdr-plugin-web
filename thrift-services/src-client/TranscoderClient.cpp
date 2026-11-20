@@ -283,28 +283,19 @@ bool TranscoderClient::MseEndOfStream(const std::string &streamId) {
     });
 }
 
-bool TranscoderClient::DownloadLookup(DownloadLookupResult& result, const std::string& channel) {
-    DEBUGLOG("TranscoderClient::DownloadLookup: %s", channel.c_str());
+bool TranscoderClient::DownloadLookup(DownloadLookupResult& result, const DownloadLookupType& input) {
+    DEBUGLOG("TranscoderClient::DownloadLookup: %s", input.channel.c_str());
 
     return processInternal([&]() -> bool {
-        DownloadLookupType input;
-        input.channel = channel;
-
         client->DownloadLookup(result, input);
         return true;
     });
 }
 
-bool TranscoderClient::DownloadStart(std::string& error, const std::string& url, const std::string& name, int duration, int maxRate) {
-    DEBUGLOG("TranscoderClient::DownloadStart: %s", name.c_str());
+bool TranscoderClient::DownloadStart(std::string& error, const DownloadStartType& input) {
+    DEBUGLOG("TranscoderClient::DownloadStart: %s", input.name.c_str());
 
     return processInternal([&]() -> bool {
-        DownloadStartType input;
-        input.url = url;
-        input.name = name;
-        input.duration = duration;
-        input.maxRate = maxRate;
-
         client->DownloadStart(error, input);
         return true;
     });
@@ -327,5 +318,30 @@ bool TranscoderClient::DownloadRemove(const std::string& id) {
         input.id = id;
 
         return client->DownloadRemove(input);
+    });
+}
+
+bool TranscoderClient::DownloadRetry(std::string& error, const std::string& id) {
+    DEBUGLOG("TranscoderClient::DownloadRetry: %s", id.c_str());
+
+    return processInternal([&]() -> bool {
+        DownloadRetryType input;
+        input.id = id;
+
+        client->DownloadRetry(error, input);
+        return true;
+    });
+}
+
+bool TranscoderClient::DownloadConvert(std::string& error, const std::string& id, int reserve) {
+    DEBUGLOG("TranscoderClient::DownloadConvert: %s", id.c_str());
+
+    return processInternal([&]() -> bool {
+        DownloadConvertType input;
+        input.id = id;
+        input.reserve = reserve;
+
+        client->DownloadConvert(error, input);
+        return true;
     });
 }

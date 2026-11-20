@@ -1878,15 +1878,154 @@ void MseEndOfStreamType::printTo(std::ostream& out) const {
 }
 
 
+DownloadEpgEvent::~DownloadEpgEvent() noexcept {
+}
+
+DownloadEpgEvent::DownloadEpgEvent() noexcept
+   : title(),
+     start(0) {
+}
+
+void DownloadEpgEvent::__set_title(const std::string& val) {
+  this->title = val;
+}
+
+void DownloadEpgEvent::__set_start(const int64_t val) {
+  this->start = val;
+}
+std::ostream& operator<<(std::ostream& out, const DownloadEpgEvent& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t DownloadEpgEvent::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->title);
+          this->__isset.title = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->start);
+          this->__isset.start = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t DownloadEpgEvent::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("DownloadEpgEvent");
+
+  xfer += oprot->writeFieldBegin("title", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->title);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("start", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->start);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(DownloadEpgEvent &a, DownloadEpgEvent &b) noexcept {
+  using ::std::swap;
+  swap(a.title, b.title);
+  swap(a.start, b.start);
+  swap(a.__isset, b.__isset);
+}
+
+bool DownloadEpgEvent::operator==(const DownloadEpgEvent & rhs) const
+{
+  if (!(title == rhs.title))
+    return false;
+  if (!(start == rhs.start))
+    return false;
+  return true;
+}
+
+DownloadEpgEvent::DownloadEpgEvent(const DownloadEpgEvent& other30) {
+  title = other30.title;
+  start = other30.start;
+  __isset = other30.__isset;
+}
+DownloadEpgEvent& DownloadEpgEvent::operator=(const DownloadEpgEvent& other31) {
+  title = other31.title;
+  start = other31.start;
+  __isset = other31.__isset;
+  return *this;
+}
+void DownloadEpgEvent::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "DownloadEpgEvent(";
+  out << "title=" << to_string(title);
+  out << ", " << "start=" << to_string(start);
+  out << ")";
+}
+
+
 DownloadLookupType::~DownloadLookupType() noexcept {
 }
 
 DownloadLookupType::DownloadLookupType() noexcept
-   : channel() {
+   : channel(),
+     pageTitle(),
+     maxHeight(0) {
 }
 
 void DownloadLookupType::__set_channel(const std::string& val) {
   this->channel = val;
+}
+
+void DownloadLookupType::__set_pageTitle(const std::string& val) {
+  this->pageTitle = val;
+}
+
+void DownloadLookupType::__set_epg(const std::vector<DownloadEpgEvent> & val) {
+  this->epg = val;
+}
+
+void DownloadLookupType::__set_maxHeight(const int32_t val) {
+  this->maxHeight = val;
 }
 std::ostream& operator<<(std::ostream& out, const DownloadLookupType& obj)
 {
@@ -1924,6 +2063,42 @@ uint32_t DownloadLookupType::read(::apache::thrift::protocol::TProtocol* iprot) 
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->pageTitle);
+          this->__isset.pageTitle = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->epg.clear();
+            uint32_t _size32;
+            ::apache::thrift::protocol::TType _etype35;
+            xfer += iprot->readListBegin(_etype35, _size32);
+            this->epg.resize(_size32);
+            uint32_t _i36;
+            for (_i36 = 0; _i36 < _size32; ++_i36)
+            {
+              xfer += this->epg[_i36].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.epg = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->maxHeight);
+          this->__isset.maxHeight = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -1945,6 +2120,26 @@ uint32_t DownloadLookupType::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += oprot->writeString(this->channel);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("pageTitle", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->pageTitle);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("epg", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->epg.size()));
+    std::vector<DownloadEpgEvent> ::const_iterator _iter37;
+    for (_iter37 = this->epg.begin(); _iter37 != this->epg.end(); ++_iter37)
+    {
+      xfer += (*_iter37).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("maxHeight", ::apache::thrift::protocol::T_I32, 4);
+  xfer += oprot->writeI32(this->maxHeight);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -1953,6 +2148,9 @@ uint32_t DownloadLookupType::write(::apache::thrift::protocol::TProtocol* oprot)
 void swap(DownloadLookupType &a, DownloadLookupType &b) noexcept {
   using ::std::swap;
   swap(a.channel, b.channel);
+  swap(a.pageTitle, b.pageTitle);
+  swap(a.epg, b.epg);
+  swap(a.maxHeight, b.maxHeight);
   swap(a.__isset, b.__isset);
 }
 
@@ -1960,22 +2158,37 @@ bool DownloadLookupType::operator==(const DownloadLookupType & rhs) const
 {
   if (!(channel == rhs.channel))
     return false;
+  if (!(pageTitle == rhs.pageTitle))
+    return false;
+  if (!(epg == rhs.epg))
+    return false;
+  if (!(maxHeight == rhs.maxHeight))
+    return false;
   return true;
 }
 
-DownloadLookupType::DownloadLookupType(const DownloadLookupType& other30) {
-  channel = other30.channel;
-  __isset = other30.__isset;
+DownloadLookupType::DownloadLookupType(const DownloadLookupType& other38) {
+  channel = other38.channel;
+  pageTitle = other38.pageTitle;
+  epg = other38.epg;
+  maxHeight = other38.maxHeight;
+  __isset = other38.__isset;
 }
-DownloadLookupType& DownloadLookupType::operator=(const DownloadLookupType& other31) {
-  channel = other31.channel;
-  __isset = other31.__isset;
+DownloadLookupType& DownloadLookupType::operator=(const DownloadLookupType& other39) {
+  channel = other39.channel;
+  pageTitle = other39.pageTitle;
+  epg = other39.epg;
+  maxHeight = other39.maxHeight;
+  __isset = other39.__isset;
   return *this;
 }
 void DownloadLookupType::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "DownloadLookupType(";
   out << "channel=" << to_string(channel);
+  out << ", " << "pageTitle=" << to_string(pageTitle);
+  out << ", " << "epg=" << to_string(epg);
+  out << ", " << "maxHeight=" << to_string(maxHeight);
   out << ")";
 }
 
@@ -1990,7 +2203,13 @@ DownloadCandidate::DownloadCandidate() noexcept
      channel(),
      topic(),
      title(),
-     timestamp(0) {
+     timestamp(0),
+     exact(0),
+     variant(),
+     width(0),
+     height(0),
+     size(0),
+     description() {
 }
 
 void DownloadCandidate::__set_name(const std::string& val) {
@@ -2019,6 +2238,30 @@ void DownloadCandidate::__set_title(const std::string& val) {
 
 void DownloadCandidate::__set_timestamp(const int64_t val) {
   this->timestamp = val;
+}
+
+void DownloadCandidate::__set_exact(const bool val) {
+  this->exact = val;
+}
+
+void DownloadCandidate::__set_variant(const std::string& val) {
+  this->variant = val;
+}
+
+void DownloadCandidate::__set_width(const int32_t val) {
+  this->width = val;
+}
+
+void DownloadCandidate::__set_height(const int32_t val) {
+  this->height = val;
+}
+
+void DownloadCandidate::__set_size(const int64_t val) {
+  this->size = val;
+}
+
+void DownloadCandidate::__set_description(const std::string& val) {
+  this->description = val;
 }
 std::ostream& operator<<(std::ostream& out, const DownloadCandidate& obj)
 {
@@ -2104,6 +2347,54 @@ uint32_t DownloadCandidate::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->exact);
+          this->__isset.exact = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->variant);
+          this->__isset.variant = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->width);
+          this->__isset.width = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 11:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->height);
+          this->__isset.height = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 12:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->size);
+          this->__isset.size = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 13:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->description);
+          this->__isset.description = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -2149,6 +2440,30 @@ uint32_t DownloadCandidate::write(::apache::thrift::protocol::TProtocol* oprot) 
   xfer += oprot->writeI64(this->timestamp);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("exact", ::apache::thrift::protocol::T_BOOL, 8);
+  xfer += oprot->writeBool(this->exact);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("variant", ::apache::thrift::protocol::T_STRING, 9);
+  xfer += oprot->writeString(this->variant);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("width", ::apache::thrift::protocol::T_I32, 10);
+  xfer += oprot->writeI32(this->width);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("height", ::apache::thrift::protocol::T_I32, 11);
+  xfer += oprot->writeI32(this->height);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("size", ::apache::thrift::protocol::T_I64, 12);
+  xfer += oprot->writeI64(this->size);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("description", ::apache::thrift::protocol::T_STRING, 13);
+  xfer += oprot->writeString(this->description);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -2163,6 +2478,12 @@ void swap(DownloadCandidate &a, DownloadCandidate &b) noexcept {
   swap(a.topic, b.topic);
   swap(a.title, b.title);
   swap(a.timestamp, b.timestamp);
+  swap(a.exact, b.exact);
+  swap(a.variant, b.variant);
+  swap(a.width, b.width);
+  swap(a.height, b.height);
+  swap(a.size, b.size);
+  swap(a.description, b.description);
   swap(a.__isset, b.__isset);
 }
 
@@ -2182,28 +2503,52 @@ bool DownloadCandidate::operator==(const DownloadCandidate & rhs) const
     return false;
   if (!(timestamp == rhs.timestamp))
     return false;
+  if (!(exact == rhs.exact))
+    return false;
+  if (!(variant == rhs.variant))
+    return false;
+  if (!(width == rhs.width))
+    return false;
+  if (!(height == rhs.height))
+    return false;
+  if (!(size == rhs.size))
+    return false;
+  if (!(description == rhs.description))
+    return false;
   return true;
 }
 
-DownloadCandidate::DownloadCandidate(const DownloadCandidate& other32) {
-  name = other32.name;
-  url = other32.url;
-  duration = other32.duration;
-  channel = other32.channel;
-  topic = other32.topic;
-  title = other32.title;
-  timestamp = other32.timestamp;
-  __isset = other32.__isset;
+DownloadCandidate::DownloadCandidate(const DownloadCandidate& other40) {
+  name = other40.name;
+  url = other40.url;
+  duration = other40.duration;
+  channel = other40.channel;
+  topic = other40.topic;
+  title = other40.title;
+  timestamp = other40.timestamp;
+  exact = other40.exact;
+  variant = other40.variant;
+  width = other40.width;
+  height = other40.height;
+  size = other40.size;
+  description = other40.description;
+  __isset = other40.__isset;
 }
-DownloadCandidate& DownloadCandidate::operator=(const DownloadCandidate& other33) {
-  name = other33.name;
-  url = other33.url;
-  duration = other33.duration;
-  channel = other33.channel;
-  topic = other33.topic;
-  title = other33.title;
-  timestamp = other33.timestamp;
-  __isset = other33.__isset;
+DownloadCandidate& DownloadCandidate::operator=(const DownloadCandidate& other41) {
+  name = other41.name;
+  url = other41.url;
+  duration = other41.duration;
+  channel = other41.channel;
+  topic = other41.topic;
+  title = other41.title;
+  timestamp = other41.timestamp;
+  exact = other41.exact;
+  variant = other41.variant;
+  width = other41.width;
+  height = other41.height;
+  size = other41.size;
+  description = other41.description;
+  __isset = other41.__isset;
   return *this;
 }
 void DownloadCandidate::printTo(std::ostream& out) const {
@@ -2216,6 +2561,12 @@ void DownloadCandidate::printTo(std::ostream& out) const {
   out << ", " << "topic=" << to_string(topic);
   out << ", " << "title=" << to_string(title);
   out << ", " << "timestamp=" << to_string(timestamp);
+  out << ", " << "exact=" << to_string(exact);
+  out << ", " << "variant=" << to_string(variant);
+  out << ", " << "width=" << to_string(width);
+  out << ", " << "height=" << to_string(height);
+  out << ", " << "size=" << to_string(size);
+  out << ", " << "description=" << to_string(description);
   out << ")";
 }
 
@@ -2226,7 +2577,10 @@ DownloadLookupResult::~DownloadLookupResult() noexcept {
 DownloadLookupResult::DownloadLookupResult() noexcept
    : stream(0),
      streamName(),
-     error() {
+     error(),
+     streamWidth(0),
+     streamHeight(0),
+     streamSize(0) {
 }
 
 void DownloadLookupResult::__set_stream(const bool val) {
@@ -2243,6 +2597,18 @@ void DownloadLookupResult::__set_candidates(const std::vector<DownloadCandidate>
 
 void DownloadLookupResult::__set_error(const std::string& val) {
   this->error = val;
+}
+
+void DownloadLookupResult::__set_streamWidth(const int32_t val) {
+  this->streamWidth = val;
+}
+
+void DownloadLookupResult::__set_streamHeight(const int32_t val) {
+  this->streamHeight = val;
+}
+
+void DownloadLookupResult::__set_streamSize(const int64_t val) {
+  this->streamSize = val;
 }
 std::ostream& operator<<(std::ostream& out, const DownloadLookupResult& obj)
 {
@@ -2292,14 +2658,14 @@ uint32_t DownloadLookupResult::read(::apache::thrift::protocol::TProtocol* iprot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->candidates.clear();
-            uint32_t _size34;
-            ::apache::thrift::protocol::TType _etype37;
-            xfer += iprot->readListBegin(_etype37, _size34);
-            this->candidates.resize(_size34);
-            uint32_t _i38;
-            for (_i38 = 0; _i38 < _size34; ++_i38)
+            uint32_t _size42;
+            ::apache::thrift::protocol::TType _etype45;
+            xfer += iprot->readListBegin(_etype45, _size42);
+            this->candidates.resize(_size42);
+            uint32_t _i46;
+            for (_i46 = 0; _i46 < _size42; ++_i46)
             {
-              xfer += this->candidates[_i38].read(iprot);
+              xfer += this->candidates[_i46].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -2312,6 +2678,30 @@ uint32_t DownloadLookupResult::read(::apache::thrift::protocol::TProtocol* iprot
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->error);
           this->__isset.error = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->streamWidth);
+          this->__isset.streamWidth = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->streamHeight);
+          this->__isset.streamHeight = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->streamSize);
+          this->__isset.streamSize = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -2344,10 +2734,10 @@ uint32_t DownloadLookupResult::write(::apache::thrift::protocol::TProtocol* opro
   xfer += oprot->writeFieldBegin("candidates", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->candidates.size()));
-    std::vector<DownloadCandidate> ::const_iterator _iter39;
-    for (_iter39 = this->candidates.begin(); _iter39 != this->candidates.end(); ++_iter39)
+    std::vector<DownloadCandidate> ::const_iterator _iter47;
+    for (_iter47 = this->candidates.begin(); _iter47 != this->candidates.end(); ++_iter47)
     {
-      xfer += (*_iter39).write(oprot);
+      xfer += (*_iter47).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -2355,6 +2745,18 @@ uint32_t DownloadLookupResult::write(::apache::thrift::protocol::TProtocol* opro
 
   xfer += oprot->writeFieldBegin("error", ::apache::thrift::protocol::T_STRING, 4);
   xfer += oprot->writeString(this->error);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("streamWidth", ::apache::thrift::protocol::T_I32, 5);
+  xfer += oprot->writeI32(this->streamWidth);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("streamHeight", ::apache::thrift::protocol::T_I32, 6);
+  xfer += oprot->writeI32(this->streamHeight);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("streamSize", ::apache::thrift::protocol::T_I64, 7);
+  xfer += oprot->writeI64(this->streamSize);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -2368,6 +2770,9 @@ void swap(DownloadLookupResult &a, DownloadLookupResult &b) noexcept {
   swap(a.streamName, b.streamName);
   swap(a.candidates, b.candidates);
   swap(a.error, b.error);
+  swap(a.streamWidth, b.streamWidth);
+  swap(a.streamHeight, b.streamHeight);
+  swap(a.streamSize, b.streamSize);
   swap(a.__isset, b.__isset);
 }
 
@@ -2381,22 +2786,34 @@ bool DownloadLookupResult::operator==(const DownloadLookupResult & rhs) const
     return false;
   if (!(error == rhs.error))
     return false;
+  if (!(streamWidth == rhs.streamWidth))
+    return false;
+  if (!(streamHeight == rhs.streamHeight))
+    return false;
+  if (!(streamSize == rhs.streamSize))
+    return false;
   return true;
 }
 
-DownloadLookupResult::DownloadLookupResult(const DownloadLookupResult& other40) {
-  stream = other40.stream;
-  streamName = other40.streamName;
-  candidates = other40.candidates;
-  error = other40.error;
-  __isset = other40.__isset;
+DownloadLookupResult::DownloadLookupResult(const DownloadLookupResult& other48) {
+  stream = other48.stream;
+  streamName = other48.streamName;
+  candidates = other48.candidates;
+  error = other48.error;
+  streamWidth = other48.streamWidth;
+  streamHeight = other48.streamHeight;
+  streamSize = other48.streamSize;
+  __isset = other48.__isset;
 }
-DownloadLookupResult& DownloadLookupResult::operator=(const DownloadLookupResult& other41) {
-  stream = other41.stream;
-  streamName = other41.streamName;
-  candidates = other41.candidates;
-  error = other41.error;
-  __isset = other41.__isset;
+DownloadLookupResult& DownloadLookupResult::operator=(const DownloadLookupResult& other49) {
+  stream = other49.stream;
+  streamName = other49.streamName;
+  candidates = other49.candidates;
+  error = other49.error;
+  streamWidth = other49.streamWidth;
+  streamHeight = other49.streamHeight;
+  streamSize = other49.streamSize;
+  __isset = other49.__isset;
   return *this;
 }
 void DownloadLookupResult::printTo(std::ostream& out) const {
@@ -2406,6 +2823,9 @@ void DownloadLookupResult::printTo(std::ostream& out) const {
   out << ", " << "streamName=" << to_string(streamName);
   out << ", " << "candidates=" << to_string(candidates);
   out << ", " << "error=" << to_string(error);
+  out << ", " << "streamWidth=" << to_string(streamWidth);
+  out << ", " << "streamHeight=" << to_string(streamHeight);
+  out << ", " << "streamSize=" << to_string(streamSize);
   out << ")";
 }
 
@@ -2417,7 +2837,17 @@ DownloadStartType::DownloadStartType() noexcept
    : url(),
      name(),
      duration(0),
-     maxRate(0) {
+     maxRate(0),
+     format(),
+     reserve(0),
+     maxParallel(0),
+     topic(),
+     title(),
+     channel(),
+     timestamp(0),
+     description(),
+     width(0),
+     height(0) {
 }
 
 void DownloadStartType::__set_url(const std::string& val) {
@@ -2434,6 +2864,46 @@ void DownloadStartType::__set_duration(const int32_t val) {
 
 void DownloadStartType::__set_maxRate(const int32_t val) {
   this->maxRate = val;
+}
+
+void DownloadStartType::__set_format(const std::string& val) {
+  this->format = val;
+}
+
+void DownloadStartType::__set_reserve(const int32_t val) {
+  this->reserve = val;
+}
+
+void DownloadStartType::__set_maxParallel(const int32_t val) {
+  this->maxParallel = val;
+}
+
+void DownloadStartType::__set_topic(const std::string& val) {
+  this->topic = val;
+}
+
+void DownloadStartType::__set_title(const std::string& val) {
+  this->title = val;
+}
+
+void DownloadStartType::__set_channel(const std::string& val) {
+  this->channel = val;
+}
+
+void DownloadStartType::__set_timestamp(const int64_t val) {
+  this->timestamp = val;
+}
+
+void DownloadStartType::__set_description(const std::string& val) {
+  this->description = val;
+}
+
+void DownloadStartType::__set_width(const int32_t val) {
+  this->width = val;
+}
+
+void DownloadStartType::__set_height(const int32_t val) {
+  this->height = val;
 }
 std::ostream& operator<<(std::ostream& out, const DownloadStartType& obj)
 {
@@ -2495,6 +2965,86 @@ uint32_t DownloadStartType::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->format);
+          this->__isset.format = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->reserve);
+          this->__isset.reserve = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->maxParallel);
+          this->__isset.maxParallel = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->topic);
+          this->__isset.topic = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->title);
+          this->__isset.title = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->channel);
+          this->__isset.channel = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 11:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->timestamp);
+          this->__isset.timestamp = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 12:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->description);
+          this->__isset.description = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 13:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->width);
+          this->__isset.width = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 14:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->height);
+          this->__isset.height = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -2528,6 +3078,46 @@ uint32_t DownloadStartType::write(::apache::thrift::protocol::TProtocol* oprot) 
   xfer += oprot->writeI32(this->maxRate);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("format", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString(this->format);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("reserve", ::apache::thrift::protocol::T_I32, 6);
+  xfer += oprot->writeI32(this->reserve);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("maxParallel", ::apache::thrift::protocol::T_I32, 7);
+  xfer += oprot->writeI32(this->maxParallel);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("topic", ::apache::thrift::protocol::T_STRING, 8);
+  xfer += oprot->writeString(this->topic);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("title", ::apache::thrift::protocol::T_STRING, 9);
+  xfer += oprot->writeString(this->title);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("channel", ::apache::thrift::protocol::T_STRING, 10);
+  xfer += oprot->writeString(this->channel);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("timestamp", ::apache::thrift::protocol::T_I64, 11);
+  xfer += oprot->writeI64(this->timestamp);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("description", ::apache::thrift::protocol::T_STRING, 12);
+  xfer += oprot->writeString(this->description);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("width", ::apache::thrift::protocol::T_I32, 13);
+  xfer += oprot->writeI32(this->width);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("height", ::apache::thrift::protocol::T_I32, 14);
+  xfer += oprot->writeI32(this->height);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -2539,6 +3129,16 @@ void swap(DownloadStartType &a, DownloadStartType &b) noexcept {
   swap(a.name, b.name);
   swap(a.duration, b.duration);
   swap(a.maxRate, b.maxRate);
+  swap(a.format, b.format);
+  swap(a.reserve, b.reserve);
+  swap(a.maxParallel, b.maxParallel);
+  swap(a.topic, b.topic);
+  swap(a.title, b.title);
+  swap(a.channel, b.channel);
+  swap(a.timestamp, b.timestamp);
+  swap(a.description, b.description);
+  swap(a.width, b.width);
+  swap(a.height, b.height);
   swap(a.__isset, b.__isset);
 }
 
@@ -2552,22 +3152,62 @@ bool DownloadStartType::operator==(const DownloadStartType & rhs) const
     return false;
   if (!(maxRate == rhs.maxRate))
     return false;
+  if (!(format == rhs.format))
+    return false;
+  if (!(reserve == rhs.reserve))
+    return false;
+  if (!(maxParallel == rhs.maxParallel))
+    return false;
+  if (!(topic == rhs.topic))
+    return false;
+  if (!(title == rhs.title))
+    return false;
+  if (!(channel == rhs.channel))
+    return false;
+  if (!(timestamp == rhs.timestamp))
+    return false;
+  if (!(description == rhs.description))
+    return false;
+  if (!(width == rhs.width))
+    return false;
+  if (!(height == rhs.height))
+    return false;
   return true;
 }
 
-DownloadStartType::DownloadStartType(const DownloadStartType& other42) {
-  url = other42.url;
-  name = other42.name;
-  duration = other42.duration;
-  maxRate = other42.maxRate;
-  __isset = other42.__isset;
+DownloadStartType::DownloadStartType(const DownloadStartType& other50) {
+  url = other50.url;
+  name = other50.name;
+  duration = other50.duration;
+  maxRate = other50.maxRate;
+  format = other50.format;
+  reserve = other50.reserve;
+  maxParallel = other50.maxParallel;
+  topic = other50.topic;
+  title = other50.title;
+  channel = other50.channel;
+  timestamp = other50.timestamp;
+  description = other50.description;
+  width = other50.width;
+  height = other50.height;
+  __isset = other50.__isset;
 }
-DownloadStartType& DownloadStartType::operator=(const DownloadStartType& other43) {
-  url = other43.url;
-  name = other43.name;
-  duration = other43.duration;
-  maxRate = other43.maxRate;
-  __isset = other43.__isset;
+DownloadStartType& DownloadStartType::operator=(const DownloadStartType& other51) {
+  url = other51.url;
+  name = other51.name;
+  duration = other51.duration;
+  maxRate = other51.maxRate;
+  format = other51.format;
+  reserve = other51.reserve;
+  maxParallel = other51.maxParallel;
+  topic = other51.topic;
+  title = other51.title;
+  channel = other51.channel;
+  timestamp = other51.timestamp;
+  description = other51.description;
+  width = other51.width;
+  height = other51.height;
+  __isset = other51.__isset;
   return *this;
 }
 void DownloadStartType::printTo(std::ostream& out) const {
@@ -2577,6 +3217,16 @@ void DownloadStartType::printTo(std::ostream& out) const {
   out << ", " << "name=" << to_string(name);
   out << ", " << "duration=" << to_string(duration);
   out << ", " << "maxRate=" << to_string(maxRate);
+  out << ", " << "format=" << to_string(format);
+  out << ", " << "reserve=" << to_string(reserve);
+  out << ", " << "maxParallel=" << to_string(maxParallel);
+  out << ", " << "topic=" << to_string(topic);
+  out << ", " << "title=" << to_string(title);
+  out << ", " << "channel=" << to_string(channel);
+  out << ", " << "timestamp=" << to_string(timestamp);
+  out << ", " << "description=" << to_string(description);
+  out << ", " << "width=" << to_string(width);
+  out << ", " << "height=" << to_string(height);
   out << ")";
 }
 
@@ -2590,7 +3240,17 @@ DownloadInfo::DownloadInfo() noexcept
      state(),
      progress(0),
      size(0),
-     error() {
+     error(),
+     format(),
+     path(),
+     topic(),
+     title(),
+     channel(),
+     timestamp(0),
+     description(),
+     duration(0),
+     width(0),
+     height(0) {
 }
 
 void DownloadInfo::__set_id(const std::string& val) {
@@ -2615,6 +3275,46 @@ void DownloadInfo::__set_size(const int64_t val) {
 
 void DownloadInfo::__set_error(const std::string& val) {
   this->error = val;
+}
+
+void DownloadInfo::__set_format(const std::string& val) {
+  this->format = val;
+}
+
+void DownloadInfo::__set_path(const std::string& val) {
+  this->path = val;
+}
+
+void DownloadInfo::__set_topic(const std::string& val) {
+  this->topic = val;
+}
+
+void DownloadInfo::__set_title(const std::string& val) {
+  this->title = val;
+}
+
+void DownloadInfo::__set_channel(const std::string& val) {
+  this->channel = val;
+}
+
+void DownloadInfo::__set_timestamp(const int64_t val) {
+  this->timestamp = val;
+}
+
+void DownloadInfo::__set_description(const std::string& val) {
+  this->description = val;
+}
+
+void DownloadInfo::__set_duration(const int32_t val) {
+  this->duration = val;
+}
+
+void DownloadInfo::__set_width(const int32_t val) {
+  this->width = val;
+}
+
+void DownloadInfo::__set_height(const int32_t val) {
+  this->height = val;
 }
 std::ostream& operator<<(std::ostream& out, const DownloadInfo& obj)
 {
@@ -2692,6 +3392,86 @@ uint32_t DownloadInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->format);
+          this->__isset.format = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->path);
+          this->__isset.path = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->topic);
+          this->__isset.topic = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->title);
+          this->__isset.title = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 11:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->channel);
+          this->__isset.channel = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 12:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->timestamp);
+          this->__isset.timestamp = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 13:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->description);
+          this->__isset.description = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 14:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->duration);
+          this->__isset.duration = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 15:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->width);
+          this->__isset.width = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 16:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->height);
+          this->__isset.height = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -2733,6 +3513,46 @@ uint32_t DownloadInfo::write(::apache::thrift::protocol::TProtocol* oprot) const
   xfer += oprot->writeString(this->error);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("format", ::apache::thrift::protocol::T_STRING, 7);
+  xfer += oprot->writeString(this->format);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("path", ::apache::thrift::protocol::T_STRING, 8);
+  xfer += oprot->writeString(this->path);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("topic", ::apache::thrift::protocol::T_STRING, 9);
+  xfer += oprot->writeString(this->topic);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("title", ::apache::thrift::protocol::T_STRING, 10);
+  xfer += oprot->writeString(this->title);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("channel", ::apache::thrift::protocol::T_STRING, 11);
+  xfer += oprot->writeString(this->channel);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("timestamp", ::apache::thrift::protocol::T_I64, 12);
+  xfer += oprot->writeI64(this->timestamp);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("description", ::apache::thrift::protocol::T_STRING, 13);
+  xfer += oprot->writeString(this->description);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("duration", ::apache::thrift::protocol::T_I32, 14);
+  xfer += oprot->writeI32(this->duration);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("width", ::apache::thrift::protocol::T_I32, 15);
+  xfer += oprot->writeI32(this->width);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("height", ::apache::thrift::protocol::T_I32, 16);
+  xfer += oprot->writeI32(this->height);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -2746,6 +3566,16 @@ void swap(DownloadInfo &a, DownloadInfo &b) noexcept {
   swap(a.progress, b.progress);
   swap(a.size, b.size);
   swap(a.error, b.error);
+  swap(a.format, b.format);
+  swap(a.path, b.path);
+  swap(a.topic, b.topic);
+  swap(a.title, b.title);
+  swap(a.channel, b.channel);
+  swap(a.timestamp, b.timestamp);
+  swap(a.description, b.description);
+  swap(a.duration, b.duration);
+  swap(a.width, b.width);
+  swap(a.height, b.height);
   swap(a.__isset, b.__isset);
 }
 
@@ -2763,26 +3593,66 @@ bool DownloadInfo::operator==(const DownloadInfo & rhs) const
     return false;
   if (!(error == rhs.error))
     return false;
+  if (!(format == rhs.format))
+    return false;
+  if (!(path == rhs.path))
+    return false;
+  if (!(topic == rhs.topic))
+    return false;
+  if (!(title == rhs.title))
+    return false;
+  if (!(channel == rhs.channel))
+    return false;
+  if (!(timestamp == rhs.timestamp))
+    return false;
+  if (!(description == rhs.description))
+    return false;
+  if (!(duration == rhs.duration))
+    return false;
+  if (!(width == rhs.width))
+    return false;
+  if (!(height == rhs.height))
+    return false;
   return true;
 }
 
-DownloadInfo::DownloadInfo(const DownloadInfo& other44) {
-  id = other44.id;
-  name = other44.name;
-  state = other44.state;
-  progress = other44.progress;
-  size = other44.size;
-  error = other44.error;
-  __isset = other44.__isset;
+DownloadInfo::DownloadInfo(const DownloadInfo& other52) {
+  id = other52.id;
+  name = other52.name;
+  state = other52.state;
+  progress = other52.progress;
+  size = other52.size;
+  error = other52.error;
+  format = other52.format;
+  path = other52.path;
+  topic = other52.topic;
+  title = other52.title;
+  channel = other52.channel;
+  timestamp = other52.timestamp;
+  description = other52.description;
+  duration = other52.duration;
+  width = other52.width;
+  height = other52.height;
+  __isset = other52.__isset;
 }
-DownloadInfo& DownloadInfo::operator=(const DownloadInfo& other45) {
-  id = other45.id;
-  name = other45.name;
-  state = other45.state;
-  progress = other45.progress;
-  size = other45.size;
-  error = other45.error;
-  __isset = other45.__isset;
+DownloadInfo& DownloadInfo::operator=(const DownloadInfo& other53) {
+  id = other53.id;
+  name = other53.name;
+  state = other53.state;
+  progress = other53.progress;
+  size = other53.size;
+  error = other53.error;
+  format = other53.format;
+  path = other53.path;
+  topic = other53.topic;
+  title = other53.title;
+  channel = other53.channel;
+  timestamp = other53.timestamp;
+  description = other53.description;
+  duration = other53.duration;
+  width = other53.width;
+  height = other53.height;
+  __isset = other53.__isset;
   return *this;
 }
 void DownloadInfo::printTo(std::ostream& out) const {
@@ -2794,6 +3664,16 @@ void DownloadInfo::printTo(std::ostream& out) const {
   out << ", " << "progress=" << to_string(progress);
   out << ", " << "size=" << to_string(size);
   out << ", " << "error=" << to_string(error);
+  out << ", " << "format=" << to_string(format);
+  out << ", " << "path=" << to_string(path);
+  out << ", " << "topic=" << to_string(topic);
+  out << ", " << "title=" << to_string(title);
+  out << ", " << "channel=" << to_string(channel);
+  out << ", " << "timestamp=" << to_string(timestamp);
+  out << ", " << "description=" << to_string(description);
+  out << ", " << "duration=" << to_string(duration);
+  out << ", " << "width=" << to_string(width);
+  out << ", " << "height=" << to_string(height);
   out << ")";
 }
 
@@ -2883,19 +3763,246 @@ bool DownloadRemoveType::operator==(const DownloadRemoveType & rhs) const
   return true;
 }
 
-DownloadRemoveType::DownloadRemoveType(const DownloadRemoveType& other46) {
-  id = other46.id;
-  __isset = other46.__isset;
+DownloadRemoveType::DownloadRemoveType(const DownloadRemoveType& other54) {
+  id = other54.id;
+  __isset = other54.__isset;
 }
-DownloadRemoveType& DownloadRemoveType::operator=(const DownloadRemoveType& other47) {
-  id = other47.id;
-  __isset = other47.__isset;
+DownloadRemoveType& DownloadRemoveType::operator=(const DownloadRemoveType& other55) {
+  id = other55.id;
+  __isset = other55.__isset;
   return *this;
 }
 void DownloadRemoveType::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "DownloadRemoveType(";
   out << "id=" << to_string(id);
+  out << ")";
+}
+
+
+DownloadRetryType::~DownloadRetryType() noexcept {
+}
+
+DownloadRetryType::DownloadRetryType() noexcept
+   : id() {
+}
+
+void DownloadRetryType::__set_id(const std::string& val) {
+  this->id = val;
+}
+std::ostream& operator<<(std::ostream& out, const DownloadRetryType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t DownloadRetryType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t DownloadRetryType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("DownloadRetryType");
+
+  xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->id);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(DownloadRetryType &a, DownloadRetryType &b) noexcept {
+  using ::std::swap;
+  swap(a.id, b.id);
+  swap(a.__isset, b.__isset);
+}
+
+bool DownloadRetryType::operator==(const DownloadRetryType & rhs) const
+{
+  if (!(id == rhs.id))
+    return false;
+  return true;
+}
+
+DownloadRetryType::DownloadRetryType(const DownloadRetryType& other56) {
+  id = other56.id;
+  __isset = other56.__isset;
+}
+DownloadRetryType& DownloadRetryType::operator=(const DownloadRetryType& other57) {
+  id = other57.id;
+  __isset = other57.__isset;
+  return *this;
+}
+void DownloadRetryType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "DownloadRetryType(";
+  out << "id=" << to_string(id);
+  out << ")";
+}
+
+
+DownloadConvertType::~DownloadConvertType() noexcept {
+}
+
+DownloadConvertType::DownloadConvertType() noexcept
+   : id(),
+     reserve(0) {
+}
+
+void DownloadConvertType::__set_id(const std::string& val) {
+  this->id = val;
+}
+
+void DownloadConvertType::__set_reserve(const int32_t val) {
+  this->reserve = val;
+}
+std::ostream& operator<<(std::ostream& out, const DownloadConvertType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t DownloadConvertType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->reserve);
+          this->__isset.reserve = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t DownloadConvertType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("DownloadConvertType");
+
+  xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->id);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("reserve", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->reserve);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(DownloadConvertType &a, DownloadConvertType &b) noexcept {
+  using ::std::swap;
+  swap(a.id, b.id);
+  swap(a.reserve, b.reserve);
+  swap(a.__isset, b.__isset);
+}
+
+bool DownloadConvertType::operator==(const DownloadConvertType & rhs) const
+{
+  if (!(id == rhs.id))
+    return false;
+  if (!(reserve == rhs.reserve))
+    return false;
+  return true;
+}
+
+DownloadConvertType::DownloadConvertType(const DownloadConvertType& other58) {
+  id = other58.id;
+  reserve = other58.reserve;
+  __isset = other58.__isset;
+}
+DownloadConvertType& DownloadConvertType::operator=(const DownloadConvertType& other59) {
+  id = other59.id;
+  reserve = other59.reserve;
+  __isset = other59.__isset;
+  return *this;
+}
+void DownloadConvertType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "DownloadConvertType(";
+  out << "id=" << to_string(id);
+  out << ", " << "reserve=" << to_string(reserve);
   out << ")";
 }
 
