@@ -811,6 +811,10 @@ std::shared_ptr<TranscoderClient> NewTranscoderClient() {
     return std::make_shared<TranscoderClient>(transcoderIp, transcoderPort);
 }
 
+std::shared_ptr<BrowserClient> NewBrowserClient() {
+    return std::make_shared<BrowserClient>(browserIp, browserPort);
+}
+
 void OpenDownloads() {
     OpenDownloadMenu(DOWNLOAD_SELECT);
 }
@@ -865,16 +869,29 @@ cOsdObject *cPluginWeb::DownloadMenu(int command) {
         return new cMenuWebDownloads();
     }
 
-    std::string channel;
+    // the applications mostly show the broadcasts of the last days
+    DownloadLookupType input;
     {
         LOCK_CHANNELS_READ
+        LOCK_SCHEDULES_READ
         const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
         if (currentChannel != nullptr) {
-            channel = currentChannel->Name();
+            input.channel = currentChannel->Name();
+
+            const cSchedule *schedule = Schedules->GetSchedule(currentChannel);
+            time_t now = time(nullptr);
+            for (const cEvent *e = schedule != nullptr ? schedule->Events()->First() : nullptr; e != nullptr; e = schedule->Events()->Next(e)) {
+                if (e->Title() != nullptr && e->StartTime() >= now - 8 * 24 * 3600 && e->StartTime() <= now) {
+                    DownloadEpgEvent event;
+                    event.title = e->Title();
+                    event.start = e->StartTime();
+                    input.epg.push_back(event);
+                }
+            }
         }
     }
 
-    return new cMenuWebDownloadSelect(channel);
+    return new cMenuWebDownloadSelect(input);
 }
 
 cOsdObject *cPluginWeb::MainMenuAction() {

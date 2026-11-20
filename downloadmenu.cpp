@@ -21,6 +21,24 @@ static const char *transcoderErrors[] = {
     trNOOP("The download directory is not writable"),
 };
 
+// versions of a broadcast, named by the transcoder
+static const char *variants[] = {
+    trNOOP("audio description"),
+    trNOOP("sign language"),
+    trNOOP("original version"),
+    trNOOP("plain language"),
+    trNOOP("trailer"),
+};
+
+static const char *translateVariant(const std::string& variant) {
+    for (const char *v : variants) {
+        if (variant == v) {
+            return tr(v);
+        }
+    }
+    return variant.c_str();
+}
+
 static const char *translate(const std::string& error) {
     for (const char *e : transcoderErrors) {
         if (error == e) {
@@ -148,7 +166,7 @@ std::string DownloadStatus() {
 
 // --- cMenuWebDownloadSelect ------------------------------------------------------------------
 
-cMenuWebDownloadSelect::cMenuWebDownloadSelect(const std::string& channel)
+cMenuWebDownloadSelect::cMenuWebDownloadSelect(const DownloadLookupType& input)
         : cOsdMenu(tr("Download"), 9, 6) {
     lookup = std::make_shared<Lookup>();
 
@@ -158,12 +176,13 @@ cMenuWebDownloadSelect::cMenuWebDownloadSelect(const std::string& channel)
     // the query takes a while, don't block VDR. The menu may be closed before it ends.
     auto l = lookup;
     auto client = transcoderClient != nullptr ? NewTranscoderClient() : nullptr;
-    std::thread([l, client, channel]() {
-        DownloadLookupType input;
-        input.channel = channel;
+    auto browser = NewBrowserClient();
+    std::thread([l, client, browser, input]() {
+        DownloadLookupType in = input;
+        browser->PageTitle(in.pageTitle);
 
         DownloadLookupResult r;
-        bool ok = client != nullptr && client->DownloadLookup(r, input);
+        bool ok = client != nullptr && client->DownloadLookup(r, in);
 
         std::lock_guard<std::mutex> lock(l->mutex);
         l->result = r;
@@ -172,11 +191,11 @@ cMenuWebDownloadSelect::cMenuWebDownloadSelect(const std::string& channel)
     }).detach();
 }
 
-eOSState cMenuWebDownloadSelect::Start(const std::string& url, const std::string& name, int duration) {
+eOSState cMenuWebDownloadSelect::Start(const DownloadCandidate *candidate) {
     DownloadStartType input;
-    input.url = url;
-    input.name = name;
-    input.duration = duration;
+    input.url = candidate != nullptr ? candidate->url : "";
+    input.name = candidate != nullptr ? candidate->name : result.streamName;
+    input.duration = candidate != nullptr ? candidate->duration : 0;
     input.maxRate = webSetup.downloadRate * 1000;
 
     std::string error;
@@ -186,10 +205,24 @@ eOSState cMenuWebDownloadSelect::Start(const std::string& url, const std::string
         Skins.Message(mtError, translate(error));
     } else {
         WatchDownloads();
-        Skins.Message(mtInfo, *cString::sprintf(tr("Download started: %s"), name.c_str()));
+        Skins.Message(mtInfo, *cString::sprintf(tr("Download started: %s"), input.name.c_str()));
     }
 
     return osEnd;
+}
+
+void cMenuWebDownloadSelect::AddCandidate(int index) {
+    const auto& c = result.candidates[index];
+
+    std::string title = c.title.find(c.topic) == std::string::npos ? c.topic + " - " + c.title : c.title;
+    if (!c.variant.empty()) {
+        title += std::string(" (") + translateVariant(c.variant) + ")";
+    }
+
+    std::string text = *cString::sprintf("%s\t%s\t%s - %s", *ShortDateString(c.timestamp), formatDuration(c.duration).c_str(),
+                                         c.channel.c_str(), title.c_str());
+    Add(new cOsdItem(text.c_str()));
+    items.push_back(index);
 }
 
 eOSState cMenuWebDownloadSelect::ShowResult() {
@@ -216,23 +249,52 @@ eOSState cMenuWebDownloadSelect::ShowResult() {
     }
 
     if (result.candidates.empty()) {
-        return Start("", result.streamName, 0);
+        return Start(nullptr);
+    }
+
+    // one entry is the video for sure, or the only one
+    const DownloadCandidate *exact = nullptr;
+    int count = 0;
+    for (const auto& c : result.candidates) {
+        if (c.exact) {
+            exact = &c;
+            ++count;
+        }
+    }
+
+    if (count == 1) {
+        return Start(exact);
     }
 
     if (result.candidates.size() == 1) {
-        const auto& c = result.candidates[0];
-        return Start(c.url, c.name, c.duration);
+        return Start(&result.candidates[0]);
     }
 
+    // the normal versions first, then the other versions like audio description
     Clear();
-    for (const auto& c : result.candidates) {
-        std::string text = *cString::sprintf("%s\t%s\t%s - %s", *ShortDateString(c.timestamp), formatDuration(c.duration).c_str(), c.channel.c_str(),
-                                 c.title.find(c.topic) == std::string::npos ? (c.topic + " - " + c.title).c_str() : c.title.c_str());
-        Add(new cOsdItem(text.c_str()));
+    items.clear();
+
+    for (size_t i = 0; i < result.candidates.size(); ++i) {
+        if (result.candidates[i].variant.empty() || result.candidates[i].exact) {
+            AddCandidate((int) i);
+        }
     }
 
     if (result.stream) {
         Add(new cOsdItem(tr("Stream without MediathekView entry")));
+        items.push_back(itemStream);
+    }
+
+    bool header = false;
+    for (size_t i = 0; i < result.candidates.size(); ++i) {
+        if (!result.candidates[i].variant.empty() && !result.candidates[i].exact) {
+            if (!header) {
+                Add(new cOsdItem(tr("Other versions:"), osUnknown, false));
+                items.push_back(itemStream - 1);
+                header = true;
+            }
+            AddCandidate((int) i);
+        }
     }
 
     listed = true;
@@ -259,13 +321,12 @@ eOSState cMenuWebDownloadSelect::ProcessKey(eKeys Key) {
         if (done) {
             state = ShowResult();
         }
-    } else if (state == osUnknown && Key == kOk && Current() >= 0) {
-        size_t index = Current();
-        if (index < result.candidates.size()) {
-            const auto& c = result.candidates[index];
-            state = Start(c.url, c.name, c.duration);
-        } else {
-            state = Start("", result.streamName, 0);
+    } else if (state == osUnknown && Key == kOk && Current() >= 0 && Current() < (int) items.size()) {
+        int item = items[Current()];
+        if (item >= 0) {
+            state = Start(&result.candidates[item]);
+        } else if (item == itemStream) {
+            state = Start(nullptr);
         }
     }
 

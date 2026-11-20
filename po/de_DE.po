@@ -151,3 +151,21 @@ msgstr "nie"
 
 msgid "Close HbbTV without display after (s)"
 msgstr "HbbTV ohne Anzeige beenden nach (s)"
+
+msgid "audio description"
+msgstr "Audiodeskription"
+
+msgid "sign language"
+msgstr "Gebärdensprache"
+
+msgid "original version"
+msgstr "Originalfassung"
+
+msgid "plain language"
+msgstr "Klare Sprache"
+
+msgid "trailer"
+msgstr "Trailer"
+
+msgid "Other versions:"
+msgstr "Weitere Fassungen:"
