@@ -871,6 +871,7 @@ cOsdObject *cPluginWeb::DownloadMenu(int command) {
 
     // the applications mostly show the broadcasts of the last days
     DownloadLookupType input;
+    input.maxHeight = webSetup.DownloadMaxHeight();
     {
         LOCK_CHANNELS_READ
         LOCK_SCHEDULES_READ
@@ -981,6 +982,8 @@ bool cPluginWeb::SetupParse(const char *Name, const char *Value) {
         webSetup.autoClose = seconds > 0 && seconds < 5 ? 5 : seconds;
     } else if (!strcasecmp(Name, "DownloadRate")) {
         webSetup.downloadRate = constrain(atoi(Value), 0, 1000);
+    } else if (!strcasecmp(Name, "DownloadQuality")) {
+        webSetup.downloadQuality = constrain(atoi(Value), 0, 2);
     } else {
         return false;
     }

@@ -22,6 +22,11 @@ int cWebSetup::FrameRate() const {
     return (frameRate >= 0 && frameRate <= 4) ? rates[frameRate] : 0;
 }
 
+int cWebSetup::DownloadMaxHeight() const {
+    static const int heights[] = { 0, 720, 576 };
+    return (downloadQuality >= 0 && downloadQuality <= 2) ? heights[downloadQuality] : 0;
+}
+
 void SendRenderParameters() {
     if (browserClient == nullptr) {
         return;
@@ -74,6 +79,10 @@ cMenuSetupWeb::cMenuSetupWeb() {
     frameRates[3] = "50";
     frameRates[4] = "60";
 
+    qualities[0] = tr("best");
+    qualities[1] = tr("720p at most");
+    qualities[2] = "SD";
+
     Add(new cMenuEditBoolItem(tr("Show HbbTV hint"), &hint.enabled));
     Add(new cMenuEditIntItem(tr("HbbTV hint duration (s)"), &hint.duration, 1, 60));
     Add(new cMenuEditStraItem(tr("HbbTV hint position"), &hint.position, 4, positions));
@@ -86,6 +95,7 @@ cMenuSetupWeb::cMenuSetupWeb() {
     Add(new cMenuEditBoolItem(tr("Media Source Extensions"), &web.mse));
     Add(new cMenuEditBoolItem(tr("ZDF special handling"), &web.zdfQuirks));
     Add(new cMenuEditIntItem(tr("Max. download speed (Mbit/s)"), &web.downloadRate, 0, 1000, tr("unlimited")));
+    Add(new cMenuEditStraItem(tr("Download quality"), &web.downloadQuality, 3, qualities));
     Add(new cMenuEditAutoCloseItem(tr("Close HbbTV without display after (s)"), &web.autoClose));
 }
 
@@ -104,6 +114,7 @@ void cMenuSetupWeb::Store() {
     SetupStore("Mse", webSetup.mse);
     SetupStore("ZdfQuirks", webSetup.zdfQuirks);
     SetupStore("DownloadRate", webSetup.downloadRate);
+    SetupStore("DownloadQuality", webSetup.downloadQuality);
     SetupStore("AutoClose", webSetup.autoClose);
 
     SendRenderParameters();

@@ -52,6 +52,20 @@ static std::string formatDuration(int seconds) {
     return *cString::sprintf("%d:%02d", seconds / 60, seconds % 60);
 }
 
+static std::string formatHeight(int height) {
+    return height > 0 ? *cString::sprintf("%dp", height) : "";
+}
+
+static std::string formatSize(int64_t bytes) {
+    if (bytes <= 0) {
+        return "";
+    }
+    if (bytes >= 1000LL * 1000 * 1000) {
+        return *cString::sprintf("%.1f GB", bytes / 1e9);
+    }
+    return *cString::sprintf("%d MB", (int) (bytes / 1000000));
+}
+
 // --- the watcher -----------------------------------------------------------------------------
 
 namespace {
@@ -167,7 +181,7 @@ std::string DownloadStatus() {
 // --- cMenuWebDownloadSelect ------------------------------------------------------------------
 
 cMenuWebDownloadSelect::cMenuWebDownloadSelect(const DownloadLookupType& input)
-        : cOsdMenu(tr("Download"), 9, 6) {
+        : cOsdMenu(tr("Download"), 9, 6, 6, 8) {
     lookup = std::make_shared<Lookup>();
 
     Add(new cOsdItem(tr("Searching in MediathekView..."), osUnknown, false));
@@ -197,6 +211,8 @@ eOSState cMenuWebDownloadSelect::Start(const DownloadCandidate *candidate) {
     input.name = candidate != nullptr ? candidate->name : result.streamName;
     input.duration = candidate != nullptr ? candidate->duration : 0;
     input.maxRate = webSetup.downloadRate * 1000;
+    input.width = candidate != nullptr ? candidate->width : result.streamWidth;
+    input.height = candidate != nullptr ? candidate->height : result.streamHeight;
 
     std::string error;
     if (transcoderClient == nullptr || !transcoderClient->DownloadStart(error, input)) {
@@ -219,8 +235,8 @@ void cMenuWebDownloadSelect::AddCandidate(int index) {
         title += std::string(" (") + translateVariant(c.variant) + ")";
     }
 
-    std::string text = *cString::sprintf("%s\t%s\t%s - %s", *ShortDateString(c.timestamp), formatDuration(c.duration).c_str(),
-                                         c.channel.c_str(), title.c_str());
+    std::string text = *cString::sprintf("%s\t%s\t%s\t%s\t%s - %s", *ShortDateString(c.timestamp), formatDuration(c.duration).c_str(),
+                                         formatHeight(c.height).c_str(), formatSize(c.size).c_str(), c.channel.c_str(), title.c_str());
     Add(new cOsdItem(text.c_str()));
     items.push_back(index);
 }
@@ -281,7 +297,9 @@ eOSState cMenuWebDownloadSelect::ShowResult() {
     }
 
     if (result.stream) {
-        Add(new cOsdItem(tr("Stream without MediathekView entry")));
+        std::string text = *cString::sprintf("\t\t%s\t%s\t%s", formatHeight(result.streamHeight).c_str(), formatSize(result.streamSize).c_str(),
+                                             tr("Stream without MediathekView entry"));
+        Add(new cOsdItem(text.c_str()));
         items.push_back(itemStream);
     }
 

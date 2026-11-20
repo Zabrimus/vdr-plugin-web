@@ -169,3 +169,12 @@ msgstr "Trailer"
 
 msgid "Other versions:"
 msgstr "Weitere Fassungen:"
+
+msgid "best"
+msgstr "beste"
+
+msgid "720p at most"
+msgstr "höchstens 720p"
+
+msgid "Download quality"
+msgstr "Download-Qualität"

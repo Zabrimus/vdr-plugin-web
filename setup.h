@@ -16,10 +16,12 @@ struct cWebSetup {
     int mse = 1;           // Media Source Extensions (dash.js, hls.js, ...)
     int zdfQuirks = 1;     // special handling of the ZDF applications
     int downloadRate = 0;  // Mbit/s, 0 = unlimited
+    int downloadQuality = 0;  // 0 = best, 1 = 720p at most, 2 = SD
     int autoClose = 0;     // s without a visible page and a key until HbbTV is closed, 0 = never
 
     int Width() const;
     int FrameRate() const;
+    int DownloadMaxHeight() const;  // 0 = the best
 };
 
 extern cWebSetup webSetup;
@@ -34,6 +36,7 @@ private:
     const char *positions[4];
     const char *resolutions[5];
     const char *frameRates[5];
+    const char *qualities[3];
 
 protected:
     void Store() override;
