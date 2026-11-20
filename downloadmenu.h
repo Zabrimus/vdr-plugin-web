@@ -65,6 +65,7 @@ private:
     const DownloadInfo *Selected();
     void SetHelpKeys();
     eOSState Remove();
+    eOSState Retry();
 
 public:
     cMenuWebDownloads();

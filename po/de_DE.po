@@ -190,3 +190,9 @@ msgstr "Gleichzeitige Downloads"
 
 msgid "waiting"
 msgstr "wartet"
+
+msgid "Interrupted"
+msgstr "Unterbrochen"
+
+msgid "Button$Retry"
+msgstr "Wiederholen"

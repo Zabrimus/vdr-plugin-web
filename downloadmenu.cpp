@@ -20,6 +20,7 @@ static const char *transcoderErrors[] = {
     trNOOP("This video can't be downloaded"),
     trNOOP("The download directory is not writable"),
     trNOOP("Not enough disk space"),
+    trNOOP("Interrupted"),
 };
 
 // versions of a broadcast, named by the transcoder
@@ -425,7 +426,7 @@ void cMenuWebDownloads::SetHelpKeys() {
     } else if (d->state == "running" || d->state == "queued") {
         SetHelp(tr("Button$Cancel"));
     } else if (d->state == "failed") {
-        SetHelp(tr("Button$Remove"));
+        SetHelp(tr("Button$Remove"), nullptr, tr("Button$Retry"));
     } else {
         SetHelp(tr("Button$Delete"));
     }
@@ -452,6 +453,24 @@ eOSState cMenuWebDownloads::Remove() {
     return osContinue;
 }
 
+eOSState cMenuWebDownloads::Retry() {
+    const DownloadInfo *d = Selected();
+    if (d == nullptr || d->state != "failed") {
+        return osContinue;
+    }
+
+    std::string error;
+    if (transcoderClient == nullptr || !transcoderClient->DownloadRetry(error, d->id)) {
+        Skins.Message(mtError, tr("Transcoder not available"));
+    } else if (!error.empty()) {
+        Skins.Message(mtError, translate(error));
+    }
+    WatchDownloads();
+
+    Load();
+    return osContinue;
+}
+
 eOSState cMenuWebDownloads::ProcessKey(eKeys Key) {
     if (Key == kMenu) {
         Key = kBack;
@@ -463,6 +482,10 @@ eOSState cMenuWebDownloads::ProcessKey(eKeys Key) {
         switch (Key) {
             case kRed:
                 state = Remove();
+                break;
+
+            case kYellow:
+                state = Retry();
                 break;
 
             case kOk:
