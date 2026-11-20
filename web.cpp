@@ -13,6 +13,8 @@
 #include <vdr/videodir.h>
 #include <Magick++.h>
 #include <mutex>
+#include <condition_variable>
+#include <chrono>
 #include <atomic>
 
 #include <memory>
@@ -445,8 +447,83 @@ bool VdrPluginWebServer::EndOfStream() {
     return true;
 }
 
+// setChannel() of an application: VDR switches the channel in the main thread
+static std::mutex switchMutex;
+static std::condition_variable switchCondition;
+static int switchNumber = 0;        // the requested channel, 0: none
+static bool switchDone = false;
+static bool switchResult = false;
+
 bool VdrPluginWebServer::SwitchChannel(const SwitchChannelType &input) {
-    return false;
+    int number = 0;
+    {
+        LOCK_CHANNELS_READ
+        const cChannel *channel = nullptr;
+
+        if (!input.channelId.empty()) {
+            channel = Channels->GetByChannelID(tChannelID::FromString(input.channelId.c_str()));
+        }
+
+        // the same service may be received from several sources: the one of the current channel
+        if (channel == nullptr && input.sid > 0) {
+            const cChannel *current = Channels->GetByNumber(cDevice::CurrentChannel());
+            for (const cChannel *c = Channels->First(); c != nullptr; c = Channels->Next(c)) {
+                if (c->GroupSep() || c->Nid() != input.onid || c->Tid() != input.tsid || c->Sid() != input.sid) {
+                    continue;
+                }
+                if (channel == nullptr || (current != nullptr && c->Source() == current->Source() && channel->Source() != current->Source())) {
+                    channel = c;
+                }
+            }
+        }
+
+        if (channel != nullptr) {
+            number = channel->Number();
+        }
+    }
+
+    if (number == 0) {
+        isyslog("[vdrweb] SwitchChannel: unknown channel %s %d.%d.%d", input.channelId.c_str(), input.onid, input.tsid, input.sid);
+        return false;
+    }
+
+    std::unique_lock<std::mutex> lock(switchMutex);
+    switchNumber = number;
+    switchDone = false;
+
+    if (!switchCondition.wait_for(lock, std::chrono::seconds(5), [] { return switchDone; })) {
+        switchNumber = 0;
+        esyslog("[vdrweb] SwitchChannel: channel %d not switched in time", number);
+        return false;
+    }
+
+    return switchResult;
+}
+
+static void SwitchChannelInMainThread() {
+    int number;
+    {
+        std::lock_guard<std::mutex> lock(switchMutex);
+        number = switchNumber;
+        switchNumber = 0;
+    }
+
+    if (number == 0) {
+        return;
+    }
+
+    bool result;
+    {
+        LOCK_CHANNELS_READ
+        result = Channels->SwitchTo(number);
+    }
+
+    {
+        std::lock_guard<std::mutex> lock(switchMutex);
+        switchResult = result;
+        switchDone = true;
+    }
+    switchCondition.notify_all();
 }
 
 bool VdrPluginWebServer::StreamEventFilter(const StreamEventFilterType &input) {
@@ -702,6 +779,7 @@ void cPluginWeb::MainThreadHook() {
     // Perform actions in the context of the main program thread.
     // WARNING: Use with great care - see PLUGINS.html!
     cHbbtvHint::Process();
+    SwitchChannelInMainThread();
 }
 
 cString cPluginWeb::Active() {
