@@ -267,6 +267,9 @@ void cHbbtvDeviceStatus::SetVolume(int Volume, bool Absolute) {
     // instead using the parameter (relative volume change), use the absolute volume of the Device
 
    volume = Absolute ? Volume : volume + Volume;
+
+   // another thread may delete the page (releasePlayer)
+   std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
    WebOSDPage* page = WebOSDPage::Get();
    if (page)
        page->DrawVolume(volume);
