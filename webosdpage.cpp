@@ -1,4 +1,8 @@
 #include <vdr/config.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <vdr/device.h>
 #include <vdr/remote.h>
 #include <Magick++/Blob.h>
@@ -421,7 +425,7 @@ struct tOsdStats {
 
 static tOsdStats osdStats;
 
-static void measureFrame(const pluginweb::ProcessOsdFrameType &frame, uint64_t draw, uint64_t flush) {
+static void measureFrame(int rects, size_t bytes, uint64_t draw, uint64_t flush) {
     std::lock_guard<std::mutex> lock(measureMutex);
 
     if (measureKey != kNone) {
@@ -431,10 +435,8 @@ static void measureFrame(const pluginweb::ProcessOsdFrameType &frame, uint64_t d
     }
 
     osdStats.frames++;
-    osdStats.rects += (int) frame.rects.size();
-    for (const auto &r : frame.rects) {
-        osdStats.bytes += r.data.size();
-    }
+    osdStats.rects += rects;
+    osdStats.bytes += bytes;
     osdStats.draw += draw;
     osdStats.drawMax = std::max(osdStats.drawMax, draw);
     osdStats.flush += flush;
@@ -488,10 +490,107 @@ bool WebOSDPage::drawFrame(const pluginweb::ProcessOsdFrameType &frame) {
     }
 
     if (measureOsd) {
-        measureFrame(frame, draw, flushTime.Elapsed());
+        size_t bytes = 0;
+        for (const auto &r : frame.rects) {
+            bytes += r.data.size();
+        }
+        measureFrame((int) frame.rects.size(), bytes, draw, flushTime.Elapsed());
     }
 
     return ok;
+}
+
+// the shared memory of the browser, kept until it changes (a new size)
+static std::string shmName;
+static uint8_t *shmData = nullptr;
+static size_t shmSize = 0;
+
+void WebOSDPage::ReleaseShm() {
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+    if (shmData != nullptr) {
+        munmap(shmData, shmSize);
+        shmData = nullptr;
+        shmSize = 0;
+        shmName.clear();
+    }
+}
+
+bool WebOSDPage::drawShmFrame(const pluginweb::ProcessOsdShmType &frame) {
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+
+    size_t size = (size_t) frame.render_width * frame.render_height * 4;
+    if (frame.render_width <= 0 || frame.render_height <= 0 || frame.render_width > 3840 || frame.render_height > 2160) {
+        return false;
+    }
+
+    if (frame.name != shmName || shmData == nullptr) {
+        ReleaseShm();
+
+        // a file of /dev/shm, nothing else
+        if (frame.name.empty() || frame.name.find('/') != std::string::npos || frame.name[0] == '.') {
+            return false;
+        }
+
+        std::string path = "/dev/shm/" + frame.name;
+        int fd = open(path.c_str(), O_RDONLY);
+        if (fd < 0) {
+            esyslog("[vdrweb] unable to open the OSD in %s: %s", path.c_str(), strerror(errno));
+            return false;
+        }
+
+        struct stat st {};
+        void *p = MAP_FAILED;
+        if (fstat(fd, &st) == 0 && (size_t) st.st_size >= size) {
+            p = mmap(nullptr, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
+        }
+        close(fd);
+
+        if (p == MAP_FAILED) {
+            esyslog("[vdrweb] unable to map the OSD in %s", path.c_str());
+            return false;
+        }
+
+        shmData = (uint8_t *) p;
+        shmSize = st.st_size;
+        shmName = frame.name;
+        isyslog("[vdrweb] OSD in shared memory %s", path.c_str());
+    }
+
+    if (shmSize < size) {
+        return false;
+    }
+
+    cTimeMs drawTime;
+    size_t bytes = 0;
+    std::vector<uint8_t> region;
+
+    for (const auto &r : frame.rects) {
+        if (r.x < 0 || r.y < 0 || r.width <= 0 || r.height <= 0 || r.x + r.width > frame.render_width || r.y + r.height > frame.render_height) {
+            continue;
+        }
+
+        // the rows of the region one after another
+        region.resize((size_t) r.width * r.height * 4);
+        for (int y = 0; y < r.height; ++y) {
+            memcpy(region.data() + (size_t) y * r.width * 4, shmData + (((size_t) (r.y + y) * frame.render_width) + r.x) * 4, (size_t) r.width * 4);
+        }
+        bytes += region.size();
+
+        scaleAndPaint(region.data(), frame.render_width, frame.render_height, r.x, r.y, r.width, r.height, false);
+    }
+
+    uint64_t draw = drawTime.Elapsed();
+    cTimeMs flushTime;
+
+    if (osd != nullptr) {
+        osd->Flush();
+    }
+
+    if (measureOsd) {
+        measureFrame((int) frame.rects.size(), bytes, draw, flushTime.Elapsed());
+    }
+
+    return true;
 }
 
 bool WebOSDPage::drawImageQOI(const std::string qoibuffer, const int render_width, const int render_height, const int x, const int y) {

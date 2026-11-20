@@ -456,8 +456,18 @@ bool VdrPluginWebServer::OsdEmpty(const OsdEmptyType &input) {
 }
 
 bool VdrPluginWebServer::ProcessOsdShm(const ProcessOsdShmType &input) {
-    // not supported yet: the browser sends the OSD via thrift
-    return false;
+    // the page must not be deleted while drawing
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+
+    WebOSDPage* page = WebOSDPage::Get();
+    if (page == nullptr) {
+        // the frame is dropped, false would switch the browser to thrift
+        logMissingPage("ProcessOsdShm");
+        return true;
+    }
+    missingPageLogged = false;
+
+    return page->drawShmFrame(input);
 }
 
 // setChannel() of an application: VDR switches the channel in the main thread
@@ -764,6 +774,7 @@ void cPluginWeb::Stop() {
     regularWorker->Stop();
     StreamEventsShutdown();
     StopDownloadWatcher();
+    WebOSDPage::ReleaseShm();
 
     delete hbbtvDeviceStatus;
     hbbtvDeviceStatus = nullptr;
@@ -1011,6 +1022,8 @@ bool cPluginWeb::SetupParse(const char *Name, const char *Value) {
         webSetup.downloadReserve = constrain(atoi(Value), 0, 1000);
     } else if (!strcasecmp(Name, "DownloadParallel")) {
         webSetup.downloadParallel = constrain(atoi(Value), 1, 10);
+    } else if (!strcasecmp(Name, "OsdSharedMemory")) {
+        webSetup.osdSharedMemory = atoi(Value) != 0;
     } else if (!strcasecmp(Name, "DownloadsKey")) {
         webSetup.downloadsKey = constrain(atoi(Value), 0, 3);
     } else if (!strcasecmp(Name, "DownloadRecording")) {

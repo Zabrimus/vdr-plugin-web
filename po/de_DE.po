@@ -244,3 +244,6 @@ msgstr "Downloads..."
 
 msgid "none"
 msgstr "keine"
+
+msgid "OSD in shared memory"
+msgstr "OSD per Shared Memory"

@@ -89,6 +89,7 @@ VDR uses the red key itself. To start HbbTV with a key, map it to the plugin in
 | Setup entry             | Default | Description |
 |-------------------------|---------|-------------|
 | Media Source Extensions | yes     | Videos of players like dash.js are sent to VDR via the transcoder. Switch it off if an application worked better without. |
+| OSD in shared memory    | no      | The browser writes the OSD into a file of /dev/shm, only the changed regions are sent. Faster, needs the browser on the same machine (otherwise the browser falls back). |
 | ZDF special handling    | yes     | The ZDF applications are forced to plain HTML5 videos. Without it they use their dash player (needs Media Source Extensions). |
 | Max. download speed (Mbit/s) | unlimited | Limits the speed of a download (see Downloads). |
 | Download quality        | best    | The best quality, 720p at most or SD. |

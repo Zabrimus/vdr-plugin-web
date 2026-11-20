@@ -92,6 +92,12 @@ public:
     // all regions of a frame, the OSD is flushed once
     bool drawFrame(const pluginweb::ProcessOsdFrameType &frame);
 
+    // the regions of the frame in shared memory, false: the memory can't be read
+    bool drawShmFrame(const pluginweb::ProcessOsdShmType &frame);
+
+    // the mapping of the shared memory, at the end of the plugin
+    static void ReleaseShm();
+
     void DrawVolume(int volume = 0);
 
     // get current OSD mode

@@ -44,7 +44,7 @@ void SendRenderParameters() {
     }
 
     // used by the next page
-    browserClient->SetBrowserOptions(webSetup.mse != 0, webSetup.zdfQuirks != 0);
+    browserClient->SetBrowserOptions(webSetup.mse != 0, webSetup.zdfQuirks != 0, webSetup.osdSharedMemory != 0);
 }
 
 // 0 (never) or 5 to 60 seconds: 1 to 4 are skipped
@@ -109,6 +109,7 @@ cMenuSetupWeb::cMenuSetupWeb() {
     Add(new cMenuEditStraItem(tr("Browser frame rate"), &web.frameRate, 5, frameRates));
     Add(new cMenuEditBoolItem(tr("Media Source Extensions"), &web.mse));
     Add(new cMenuEditBoolItem(tr("ZDF special handling"), &web.zdfQuirks));
+    Add(new cMenuEditBoolItem(tr("OSD in shared memory"), &web.osdSharedMemory));
     Add(new cMenuEditIntItem(tr("Max. download speed (Mbit/s)"), &web.downloadRate, 0, 1000, tr("unlimited")));
     Add(new cMenuEditStraItem(tr("Download quality"), &web.downloadQuality, 3, qualities));
     Add(new cMenuEditIntItem(tr("Keep free on the disk (GB)"), &web.downloadReserve, 0, 1000));
@@ -134,6 +135,7 @@ void cMenuSetupWeb::Store() {
     SetupStore("FrameRate", webSetup.frameRate);
     SetupStore("Mse", webSetup.mse);
     SetupStore("ZdfQuirks", webSetup.zdfQuirks);
+    SetupStore("OsdSharedMemory", webSetup.osdSharedMemory);
     SetupStore("DownloadRate", webSetup.downloadRate);
     SetupStore("DownloadQuality", webSetup.downloadQuality);
     SetupStore("DownloadReserve", webSetup.downloadReserve);

@@ -15,6 +15,7 @@ struct cWebSetup {
     int frameRate = 0;     // 0 = browser default, 1 = 25, 2 = 30, 3 = 50, 4 = 60
     int mse = 1;           // Media Source Extensions (dash.js, hls.js, ...)
     int zdfQuirks = 1;     // special handling of the ZDF applications
+    int osdSharedMemory = 0;  // the OSD in shared memory, the browser on the same machine
     int downloadRate = 0;  // Mbit/s, 0 = unlimited
     int downloadQuality = 0;  // 0 = best, 1 = 720p at most, 2 = SD
     int downloadReserve = 5;  // GB kept free on the disk
