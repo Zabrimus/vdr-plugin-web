@@ -36,6 +36,9 @@
 
 TThreadedServer *thriftServer;
 
+static const char *MAINMENUENTRY = "Web";
+static char *MAINMENUENTRYALT = nullptr;
+
 bool saveTS;
 char* currentTSFilename;
 char *currentTSDir;

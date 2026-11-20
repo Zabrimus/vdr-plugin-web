@@ -72,18 +72,16 @@ cAIT::cAIT(const u_char *Data, u_short Pid) : SI::AIT(Data, true) {
         URLBaseBuffer[0] = '\0';
         URLLocBuffer[0] = '\0';
         URLExtBuffer[0] = '\0';
-        uchar ApplPriority = 0;
 
         SI::Descriptor *d;
         for (SI::Loop::Iterator it2; (d = aitApp.applicationDescriptors.getNext(it2));) {
             switch (d->getDescriptorTag()) {
                 case SI::MHP_ApplicationDescriptorTag: {
                     //DSYSLOG("[vdrweb] SI::AIT::Application ApplicationId=0x%04x ControlCode=0x%04x Appl_Prority=%02x\n",aitApp.getApplicationId(), aitApp.getControlCode(), aitApp.getApplicationPriority());
-                    SI::MHP_ApplicationDescriptor *app = (SI::MHP_ApplicationDescriptor *) d;
+                    [[maybe_unused]] SI::MHP_ApplicationDescriptor *app = (SI::MHP_ApplicationDescriptor *) d;
 
                     DSYSLOG("[vdrweb] SI::MHP_ApplicationDescriptor Visibility=%x Priority=%x\n",
                             app->getVisibility(), app->getApplicationPriority());
-                    ApplPriority = app->getApplicationPriority();
                 }
                     break;
 

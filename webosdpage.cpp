@@ -549,12 +549,8 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
     double scaley = disp_height / (double)render_height;
 
     // calculate coordinates
-    int osd_x = (int)lround(scalex * x);
-    int osd_y = (int)lround(scaley * y);
     int osd_width = (int)lround(scalex * width);
     int osd_height = (int)lround(scaley * height);
-
-    // dsyslog("[vdrweb] Scaling: scalex=%2f, scaley=%2f, osd_x=%d, osd_y=%d", scalex, scaley, osd_x, osd_y);
 
 #ifdef ENABLE_FAST_SCALE
     if (useOutputDeviceScale) {
