@@ -719,6 +719,10 @@ static bool OpenDownloadMenu(OSD_COMMAND command) {
     return true;
 }
 
+std::shared_ptr<TranscoderClient> NewTranscoderClient() {
+    return std::make_shared<TranscoderClient>(transcoderIp, transcoderPort);
+}
+
 void OpenDownloads() {
     OpenDownloadMenu(DOWNLOAD_SELECT);
 }

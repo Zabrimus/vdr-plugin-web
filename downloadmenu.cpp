@@ -117,7 +117,7 @@ void StartDownloadWatcher() {
     // downloads may still run from before a restart of VDR
     watchStop = false;
     watchActive = true;
-    watchThread = std::thread(Watch, transcoderClient);
+    watchThread = std::thread(Watch, NewTranscoderClient());
 }
 
 void StopDownloadWatcher() {
@@ -157,7 +157,7 @@ cMenuWebDownloadSelect::cMenuWebDownloadSelect(const std::string& channel)
 
     // the query takes a while, don't block VDR. The menu may be closed before it ends.
     auto l = lookup;
-    auto client = transcoderClient;
+    auto client = transcoderClient != nullptr ? NewTranscoderClient() : nullptr;
     std::thread([l, client, channel]() {
         DownloadLookupResult r;
         bool ok = client != nullptr && client->DownloadLookup(r, channel);

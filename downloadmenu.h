@@ -9,6 +9,10 @@
 // shared: a lookup thread may still use it when the plugin stops
 extern std::shared_ptr<TranscoderClient> transcoderClient;
 
+// A connection of its own: a call waits for the running call of the same connection.
+// The slow lookup and the watcher must not block VDR.
+std::shared_ptr<TranscoderClient> NewTranscoderClient();
+
 // While downloads run, a thread asks the transcoder for their progress
 // and shows a message when one has finished or failed.
 void StartDownloadWatcher();
