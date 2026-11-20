@@ -46,6 +46,8 @@ class StreamEventFilterType;
 
 class SwitchChannelType;
 
+class OsdEmptyType;
+
 typedef struct _ProcessOsdUpdateType__isset {
   _ProcessOsdUpdateType__isset() : disp_width(false), disp_height(false), x(false), y(false), width(false), height(false), data(false) {}
   bool disp_width :1;
@@ -581,6 +583,42 @@ class SwitchChannelType : public virtual ::apache::thrift::TBase {
 void swap(SwitchChannelType &a, SwitchChannelType &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const SwitchChannelType& obj);
+
+typedef struct _OsdEmptyType__isset {
+  _OsdEmptyType__isset() : empty(false) {}
+  bool empty :1;
+} _OsdEmptyType__isset;
+
+class OsdEmptyType : public virtual ::apache::thrift::TBase {
+ public:
+
+  OsdEmptyType(const OsdEmptyType&) noexcept;
+  OsdEmptyType& operator=(const OsdEmptyType&) noexcept;
+  OsdEmptyType() noexcept;
+
+  virtual ~OsdEmptyType() noexcept;
+  bool empty;
+
+  _OsdEmptyType__isset __isset;
+
+  void __set_empty(const bool val);
+
+  bool operator == (const OsdEmptyType & rhs) const;
+  bool operator != (const OsdEmptyType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const OsdEmptyType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(OsdEmptyType &a, OsdEmptyType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const OsdEmptyType& obj);
 
 } // namespace
 

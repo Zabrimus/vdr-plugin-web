@@ -79,6 +79,11 @@ struct SwitchChannelType {
     4: i32 sid
 }
 
+// the page shows nothing (all pixels transparent) or again something
+struct OsdEmptyType {
+    1: bool empty
+}
+
 service VdrPluginWeb extends common.CommonService {
     bool ProcessOsdUpdate(1: ProcessOsdUpdateType input) throws (1:common.OperationFailed err),
     bool ProcessOsdUpdateQOI(1: ProcessOsdUpdateQOIType input) throws (1:common.OperationFailed err),
@@ -97,5 +102,6 @@ service VdrPluginWeb extends common.CommonService {
     bool EndOfStream() throws (1:common.OperationFailed err),
     bool StreamEventFilter(1: StreamEventFilterType input) throws (1:common.OperationFailed err),
     bool ProcessOsdFrame(1: ProcessOsdFrameType input) throws (1:common.OperationFailed err),
-    bool SwitchChannel(1: SwitchChannelType input) throws (1:common.OperationFailed err)   // false: unknown channel or not switched
+    bool SwitchChannel(1: SwitchChannelType input) throws (1:common.OperationFailed err),   // false: unknown channel or not switched
+    bool OsdEmpty(1: OsdEmptyType input) throws (1:common.OperationFailed err)
 }

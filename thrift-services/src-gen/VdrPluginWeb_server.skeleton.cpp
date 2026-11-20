@@ -110,6 +110,11 @@ class VdrPluginWebHandler : virtual public VdrPluginWebIf {
     printf("SwitchChannel\n");
   }
 
+  bool OsdEmpty(const OsdEmptyType& input) {
+    // Your implementation goes here
+    printf("OsdEmpty\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

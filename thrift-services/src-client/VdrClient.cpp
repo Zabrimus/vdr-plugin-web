@@ -310,3 +310,14 @@ bool VdrClient::SwitchChannel(const std::string& channelId, int onid, int tsid, 
         return client->SwitchChannel(input);
     });
 }
+
+bool VdrClient::OsdEmpty(bool empty) {
+    DEBUGLOG("VdrClient::OsdEmpty");
+
+    return processInternal([&]() -> bool {
+        OsdEmptyType input;
+        input.empty = empty;
+
+        return client->OsdEmpty(input);
+    });
+}

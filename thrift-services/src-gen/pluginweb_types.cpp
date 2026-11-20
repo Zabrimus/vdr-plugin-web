@@ -1854,4 +1854,106 @@ void SwitchChannelType::printTo(std::ostream& out) const {
   out << ")";
 }
 
+
+OsdEmptyType::~OsdEmptyType() noexcept {
+}
+
+OsdEmptyType::OsdEmptyType() noexcept
+   : empty(0) {
+}
+
+void OsdEmptyType::__set_empty(const bool val) {
+  this->empty = val;
+}
+std::ostream& operator<<(std::ostream& out, const OsdEmptyType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t OsdEmptyType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->empty);
+          this->__isset.empty = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t OsdEmptyType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("OsdEmptyType");
+
+  xfer += oprot->writeFieldBegin("empty", ::apache::thrift::protocol::T_BOOL, 1);
+  xfer += oprot->writeBool(this->empty);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(OsdEmptyType &a, OsdEmptyType &b) noexcept {
+  using ::std::swap;
+  swap(a.empty, b.empty);
+  swap(a.__isset, b.__isset);
+}
+
+bool OsdEmptyType::operator==(const OsdEmptyType & rhs) const
+{
+  if (!(empty == rhs.empty))
+    return false;
+  return true;
+}
+
+OsdEmptyType::OsdEmptyType(const OsdEmptyType& other30) noexcept {
+  empty = other30.empty;
+  __isset = other30.__isset;
+}
+OsdEmptyType& OsdEmptyType::operator=(const OsdEmptyType& other31) noexcept {
+  empty = other31.empty;
+  __isset = other31.__isset;
+  return *this;
+}
+void OsdEmptyType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "OsdEmptyType(";
+  out << "empty=" << to_string(empty);
+  out << ")";
+}
+
 } // namespace

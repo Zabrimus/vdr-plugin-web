@@ -447,6 +447,10 @@ bool VdrPluginWebServer::EndOfStream() {
     return true;
 }
 
+bool VdrPluginWebServer::OsdEmpty(const OsdEmptyType &input) {
+    return true;
+}
+
 // setChannel() of an application: VDR switches the channel in the main thread
 static std::mutex switchMutex;
 static std::condition_variable switchCondition;
