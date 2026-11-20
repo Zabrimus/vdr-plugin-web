@@ -178,3 +178,15 @@ msgstr "höchstens 720p"
 
 msgid "Download quality"
 msgstr "Download-Qualität"
+
+msgid "Not enough disk space"
+msgstr "Nicht genug Speicherplatz"
+
+msgid "Keep free on the disk (GB)"
+msgstr "Frei lassen auf der Platte (GB)"
+
+msgid "Downloads at the same time"
+msgstr "Gleichzeitige Downloads"
+
+msgid "waiting"
+msgstr "wartet"

@@ -984,6 +984,10 @@ bool cPluginWeb::SetupParse(const char *Name, const char *Value) {
         webSetup.downloadRate = constrain(atoi(Value), 0, 1000);
     } else if (!strcasecmp(Name, "DownloadQuality")) {
         webSetup.downloadQuality = constrain(atoi(Value), 0, 2);
+    } else if (!strcasecmp(Name, "DownloadReserve")) {
+        webSetup.downloadReserve = constrain(atoi(Value), 0, 1000);
+    } else if (!strcasecmp(Name, "DownloadParallel")) {
+        webSetup.downloadParallel = constrain(atoi(Value), 1, 10);
     } else {
         return false;
     }

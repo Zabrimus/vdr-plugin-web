@@ -17,6 +17,8 @@ struct cWebSetup {
     int zdfQuirks = 1;     // special handling of the ZDF applications
     int downloadRate = 0;  // Mbit/s, 0 = unlimited
     int downloadQuality = 0;  // 0 = best, 1 = 720p at most, 2 = SD
+    int downloadReserve = 5;  // GB kept free on the disk
+    int downloadParallel = 2; // downloads at the same time
     int autoClose = 0;     // s without a visible page and a key until HbbTV is closed, 0 = never
 
     int Width() const;

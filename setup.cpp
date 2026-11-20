@@ -96,6 +96,8 @@ cMenuSetupWeb::cMenuSetupWeb() {
     Add(new cMenuEditBoolItem(tr("ZDF special handling"), &web.zdfQuirks));
     Add(new cMenuEditIntItem(tr("Max. download speed (Mbit/s)"), &web.downloadRate, 0, 1000, tr("unlimited")));
     Add(new cMenuEditStraItem(tr("Download quality"), &web.downloadQuality, 3, qualities));
+    Add(new cMenuEditIntItem(tr("Keep free on the disk (GB)"), &web.downloadReserve, 0, 1000));
+    Add(new cMenuEditIntItem(tr("Downloads at the same time"), &web.downloadParallel, 1, 10));
     Add(new cMenuEditAutoCloseItem(tr("Close HbbTV without display after (s)"), &web.autoClose));
 }
 
@@ -115,6 +117,8 @@ void cMenuSetupWeb::Store() {
     SetupStore("ZdfQuirks", webSetup.zdfQuirks);
     SetupStore("DownloadRate", webSetup.downloadRate);
     SetupStore("DownloadQuality", webSetup.downloadQuality);
+    SetupStore("DownloadReserve", webSetup.downloadReserve);
+    SetupStore("DownloadParallel", webSetup.downloadParallel);
     SetupStore("AutoClose", webSetup.autoClose);
 
     SendRenderParameters();

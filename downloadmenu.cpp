@@ -19,6 +19,7 @@ static const char *transcoderErrors[] = {
     trNOOP("MediathekView is not reachable"),
     trNOOP("This video can't be downloaded"),
     trNOOP("The download directory is not writable"),
+    trNOOP("Not enough disk space"),
 };
 
 // versions of a broadcast, named by the transcoder
@@ -97,7 +98,7 @@ static void Watch(std::shared_ptr<TranscoderClient> client) {
         std::map<std::string, std::string> running;
         int progress = 0;
         for (const auto& d : downloads) {
-            if (d.state == "running") {
+            if (d.state == "running" || d.state == "queued") {
                 running[d.id] = d.name;
                 progress = d.progress;
             }
@@ -114,7 +115,9 @@ static void Watch(std::shared_ptr<TranscoderClient> client) {
                 if (d.name == r.second && d.state == "done") {
                     messages.emplace_back(mtInfo, *cString::sprintf(tr("Download finished: %s"), d.name.c_str()));
                 } else if (d.id == r.first && d.state == "failed") {
-                    messages.emplace_back(mtError, *cString::sprintf(tr("Download failed: %s"), d.name.c_str()));
+                    // a known reason, not the message of ffmpeg
+                    std::string reason = translate(d.error) != d.error.c_str() ? std::string(" - ") + translate(d.error) : "";
+                    messages.emplace_back(mtError, *cString::sprintf(tr("Download failed: %s"), (d.name + reason).c_str()));
                 }
             }
         }
@@ -211,6 +214,8 @@ eOSState cMenuWebDownloadSelect::Start(const DownloadCandidate *candidate) {
     input.name = candidate != nullptr ? candidate->name : result.streamName;
     input.duration = candidate != nullptr ? candidate->duration : 0;
     input.maxRate = webSetup.downloadRate * 1000;
+    input.reserve = webSetup.downloadReserve * 1024;
+    input.maxParallel = webSetup.downloadParallel;
     input.width = candidate != nullptr ? candidate->width : result.streamWidth;
     input.height = candidate != nullptr ? candidate->height : result.streamHeight;
 
@@ -382,6 +387,8 @@ void cMenuWebDownloads::Load() {
         std::string state;
         if (d.state == "running") {
             state = *cString::sprintf("%d%%", d.progress);
+        } else if (d.state == "queued") {
+            state = tr("waiting");
         } else if (d.state == "failed") {
             state = tr("failed");
         }
@@ -415,7 +422,7 @@ void cMenuWebDownloads::SetHelpKeys() {
 
     if (d == nullptr) {
         SetHelp(nullptr);
-    } else if (d->state == "running") {
+    } else if (d->state == "running" || d->state == "queued") {
         SetHelp(tr("Button$Cancel"));
     } else if (d->state == "failed") {
         SetHelp(tr("Button$Remove"));
@@ -430,7 +437,8 @@ eOSState cMenuWebDownloads::Remove() {
         return osContinue;
     }
 
-    const char *question = d->state == "running" ? tr("Cancel download?") : d->state == "failed" ? nullptr : tr("Delete file?");
+    bool running = d->state == "running" || d->state == "queued";
+    const char *question = running ? tr("Cancel download?") : d->state == "failed" ? nullptr : tr("Delete file?");
     if (question != nullptr && !Interface->Confirm(question)) {
         return osContinue;
     }
@@ -459,7 +467,7 @@ eOSState cMenuWebDownloads::ProcessKey(eKeys Key) {
 
             case kOk:
                 if (const DownloadInfo *d = Selected(); d != nullptr && d->state == "failed") {
-                    Skins.Message(mtError, d->error.c_str());
+                    Skins.Message(mtError, translate(d->error));
                 }
                 state = osContinue;
                 break;
@@ -473,7 +481,7 @@ eOSState cMenuWebDownloads::ProcessKey(eKeys Key) {
     if (Key == kNone && refresh.TimedOut()) {
         bool running = false;
         for (const auto& d : downloads) {
-            running = running || d.state == "running";
+            running = running || d.state == "running" || d.state == "queued";
         }
 
         if (running) {
