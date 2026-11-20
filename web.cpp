@@ -754,21 +754,19 @@ bool cPluginWeb::Start() {
 }
 
 void cPluginWeb::Stop() {
+    // first everything that uses the clients, then the clients
     thriftServer->stop();
-
-    delete browserClient;
-    browserClient = nullptr;
-
-    StopDownloadWatcher();
-    transcoderClient.reset();
-
     regularWorker->Stop();
-
     StreamEventsShutdown();
+    StopDownloadWatcher();
 
-    if (hbbtvDeviceStatus != nullptr) {
-        delete hbbtvDeviceStatus;
-    }
+    delete hbbtvDeviceStatus;
+    hbbtvDeviceStatus = nullptr;
+
+    BrowserClient *client = browserClient;
+    browserClient = nullptr;
+    delete client;
+    transcoderClient.reset();
 
     if (currentTSDir != nullptr) {
         delete currentTSDir;

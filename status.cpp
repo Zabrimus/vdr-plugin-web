@@ -173,6 +173,11 @@ cHbbtvDeviceStatus::cHbbtvDeviceStatus() {
 }
 
 cHbbtvDeviceStatus::~cHbbtvDeviceStatus() {
+   // the filter sends the applications to the browser
+   if (device) {
+      device->Detach(aitFilter);
+   }
+   delete aitFilter;
 }
 
 void cHbbtvDeviceStatus::ChannelSwitch(const cDevice * vdrDevice, int channelNumber, bool LiveView) {
