@@ -44,6 +44,8 @@ class SelectSubtitleTrackType;
 
 class StreamEventFilterType;
 
+class SwitchChannelType;
+
 typedef struct _ProcessOsdUpdateType__isset {
   _ProcessOsdUpdateType__isset() : disp_width(false), disp_height(false), x(false), y(false), width(false), height(false), data(false) {}
   bool disp_width :1;
@@ -531,6 +533,54 @@ class StreamEventFilterType : public virtual ::apache::thrift::TBase {
 void swap(StreamEventFilterType &a, StreamEventFilterType &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const StreamEventFilterType& obj);
+
+typedef struct _SwitchChannelType__isset {
+  _SwitchChannelType__isset() : channelId(false), onid(false), tsid(false), sid(false) {}
+  bool channelId :1;
+  bool onid :1;
+  bool tsid :1;
+  bool sid :1;
+} _SwitchChannelType__isset;
+
+class SwitchChannelType : public virtual ::apache::thrift::TBase {
+ public:
+
+  SwitchChannelType(const SwitchChannelType&);
+  SwitchChannelType& operator=(const SwitchChannelType&);
+  SwitchChannelType() noexcept;
+
+  virtual ~SwitchChannelType() noexcept;
+  std::string channelId;
+  int32_t onid;
+  int32_t tsid;
+  int32_t sid;
+
+  _SwitchChannelType__isset __isset;
+
+  void __set_channelId(const std::string& val);
+
+  void __set_onid(const int32_t val);
+
+  void __set_tsid(const int32_t val);
+
+  void __set_sid(const int32_t val);
+
+  bool operator == (const SwitchChannelType & rhs) const;
+  bool operator != (const SwitchChannelType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SwitchChannelType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SwitchChannelType &a, SwitchChannelType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const SwitchChannelType& obj);
 
 } // namespace
 

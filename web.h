@@ -117,6 +117,7 @@ public:
     bool EndOfStream() override;
     bool StreamEventFilter(const StreamEventFilterType& input) override;
     bool ProcessOsdFrame(const ProcessOsdFrameType& input) override;
+    bool SwitchChannel(const SwitchChannelType& input) override;
 };
 
 class VdrPluginWebCloneFactory : virtual public VdrPluginWebIfFactory {

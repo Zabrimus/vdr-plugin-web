@@ -105,6 +105,11 @@ class VdrPluginWebHandler : virtual public VdrPluginWebIf {
     printf("ProcessOsdFrame\n");
   }
 
+  bool SwitchChannel(const SwitchChannelType& input) {
+    // Your implementation goes here
+    printf("SwitchChannel\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

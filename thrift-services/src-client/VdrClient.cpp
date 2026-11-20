@@ -296,3 +296,17 @@ bool VdrClient::IsWebActive() {
         return client->IsWebActive();
     });
 }
+
+bool VdrClient::SwitchChannel(const std::string& channelId, int onid, int tsid, int sid) {
+    DEBUGLOG("VdrClient::SwitchChannel");
+
+    return processInternal([&]() -> bool {
+        SwitchChannelType input;
+        input.channelId = channelId;
+        input.onid = onid;
+        input.tsid = tsid;
+        input.sid = sid;
+
+        return client->SwitchChannel(input);
+    });
+}

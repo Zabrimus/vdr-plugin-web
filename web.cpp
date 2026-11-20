@@ -445,6 +445,10 @@ bool VdrPluginWebServer::EndOfStream() {
     return true;
 }
 
+bool VdrPluginWebServer::SwitchChannel(const SwitchChannelType &input) {
+    return false;
+}
+
 bool VdrPluginWebServer::StreamEventFilter(const StreamEventFilterType &input) {
     dsyslog("[vdrweb] StreamEventFilter: component tag %d, %s", input.componentTag, input.enable ? "on" : "off");
     return StreamEventsRequest(input.componentTag, input.enable);

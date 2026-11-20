@@ -43,6 +43,8 @@ public:
     bool EndOfStream();
     bool StreamEventFilter(int componentTag, bool enable);
 
+    bool SwitchChannel(const std::string& channelId, int onid, int tsid, int sid);
+
     bool IsWebActive();
 
 private:

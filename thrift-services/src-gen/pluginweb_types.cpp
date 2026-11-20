@@ -1683,4 +1683,175 @@ void StreamEventFilterType::printTo(std::ostream& out) const {
   out << ")";
 }
 
+
+SwitchChannelType::~SwitchChannelType() noexcept {
+}
+
+SwitchChannelType::SwitchChannelType() noexcept
+   : channelId(),
+     onid(0),
+     tsid(0),
+     sid(0) {
+}
+
+void SwitchChannelType::__set_channelId(const std::string& val) {
+  this->channelId = val;
+}
+
+void SwitchChannelType::__set_onid(const int32_t val) {
+  this->onid = val;
+}
+
+void SwitchChannelType::__set_tsid(const int32_t val) {
+  this->tsid = val;
+}
+
+void SwitchChannelType::__set_sid(const int32_t val) {
+  this->sid = val;
+}
+std::ostream& operator<<(std::ostream& out, const SwitchChannelType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t SwitchChannelType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->channelId);
+          this->__isset.channelId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->onid);
+          this->__isset.onid = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->tsid);
+          this->__isset.tsid = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->sid);
+          this->__isset.sid = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t SwitchChannelType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("SwitchChannelType");
+
+  xfer += oprot->writeFieldBegin("channelId", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->channelId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("onid", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->onid);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tsid", ::apache::thrift::protocol::T_I32, 3);
+  xfer += oprot->writeI32(this->tsid);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("sid", ::apache::thrift::protocol::T_I32, 4);
+  xfer += oprot->writeI32(this->sid);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(SwitchChannelType &a, SwitchChannelType &b) noexcept {
+  using ::std::swap;
+  swap(a.channelId, b.channelId);
+  swap(a.onid, b.onid);
+  swap(a.tsid, b.tsid);
+  swap(a.sid, b.sid);
+  swap(a.__isset, b.__isset);
+}
+
+bool SwitchChannelType::operator==(const SwitchChannelType & rhs) const
+{
+  if (!(channelId == rhs.channelId))
+    return false;
+  if (!(onid == rhs.onid))
+    return false;
+  if (!(tsid == rhs.tsid))
+    return false;
+  if (!(sid == rhs.sid))
+    return false;
+  return true;
+}
+
+SwitchChannelType::SwitchChannelType(const SwitchChannelType& other28) {
+  channelId = other28.channelId;
+  onid = other28.onid;
+  tsid = other28.tsid;
+  sid = other28.sid;
+  __isset = other28.__isset;
+}
+SwitchChannelType& SwitchChannelType::operator=(const SwitchChannelType& other29) {
+  channelId = other29.channelId;
+  onid = other29.onid;
+  tsid = other29.tsid;
+  sid = other29.sid;
+  __isset = other29.__isset;
+  return *this;
+}
+void SwitchChannelType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "SwitchChannelType(";
+  out << "channelId=" << to_string(channelId);
+  out << ", " << "onid=" << to_string(onid);
+  out << ", " << "tsid=" << to_string(tsid);
+  out << ", " << "sid=" << to_string(sid);
+  out << ")";
+}
+
 } // namespace
