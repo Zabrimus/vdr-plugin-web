@@ -1,3 +1,4 @@
+#include <vdr/config.h>
 #include <vdr/device.h>
 #include <vdr/remote.h>
 #include <Magick++/Blob.h>
@@ -174,19 +175,72 @@ void WebOSDPage::ShowHint(bool show) {
         return;
     }
 
+    // "HbbTV  (red key) Start  (MENU key) Close"
     const cFont *font = cFont::GetFont(fontOsd);
-    const char *text = tr("HbbTV is running - Red: application, Menu: close");
-    int border = font->Height() / 2;
-    int w = font->Width(text) + 2 * border;
-    int h = font->Height() + border;
+    const char *hbbtv = "HbbTV";
+    const char *start = tr("Start");
+    const char *closeText = tr("Close");
+    const char *menu = "MENU";
+
+    int lineHeight = font->Height();
+    int border = lineHeight / 2;
+    int gap = lineHeight / 4;            // between a key and its text
+    int space = lineHeight;              // between the parts
+    int keyHeight = lineHeight * 3 / 4;
+    cFont *keyFont = cFont::CreateFont(Setup.FontSml, keyHeight / 2);
+
+    int redWidth = keyHeight * 3 / 2;
+    int menuWidth = keyFont->Width(menu) + keyHeight * 2 / 3;
+    int w = border + font->Width(hbbtv) + space + redWidth + gap + font->Width(start) +
+            space + menuWidth + gap + font->Width(closeText) + border;
+    int h = lineHeight + border;
     int x = disp_width - w - disp_width / 20;
     int y = disp_height / 20;
 
     pixmapHint = osd->CreatePixmap(7, cRect(x, y, w, h));
     LOCK_PIXMAPS;
     pixmapHint->Fill(0xC0000000);
-    pixmapHint->DrawText(cPoint(border, border / 2), text, clrWhite, clrTransparent, font);
+
+    int textY = border / 2;
+    int keyY = textY + (lineHeight - keyHeight) / 2;
+    int pos = border;
+
+    auto text = [&](const char *s) {
+        pixmapHint->DrawText(cPoint(pos, textY), s, clrWhite, clrTransparent, font);
+        pos += font->Width(s);
+    };
+
+    text(hbbtv);
+    pos += space;
+    DrawKey(pixmapHint, cRect(pos, keyY, redWidth, keyHeight), 0xFFE01010);
+    pos += redWidth + gap;
+    text(start);
+    pos += space;
+    DrawKey(pixmapHint, cRect(pos, keyY, menuWidth, keyHeight), 0xFF505050);
+    pixmapHint->DrawText(cPoint(pos, keyY), menu, clrWhite, clrTransparent, keyFont, menuWidth, keyHeight, taCenter);
+    pos += menuWidth + gap;
+    text(closeText);
+
+    delete keyFont;
     osd->Flush();
+}
+
+// a key of the remote control: a light frame and rounded corners
+void WebOSDPage::DrawKey(cPixmap *pixmap, const cRect& rect, tColor color) {
+    auto rounded = [pixmap](const cRect& r, tColor c) {
+        int d = std::max(2, r.Height() / 3);
+        pixmap->DrawRectangle(cRect(r.X() + d, r.Y(), r.Width() - 2 * d, r.Height()), c);
+        pixmap->DrawRectangle(cRect(r.X(), r.Y() + d, d, r.Height() - 2 * d), c);
+        pixmap->DrawRectangle(cRect(r.Right() - d + 1, r.Y() + d, d, r.Height() - 2 * d), c);
+        pixmap->DrawEllipse(cRect(r.Right() - d + 1, r.Y(), d, d), c, 1);
+        pixmap->DrawEllipse(cRect(r.X(), r.Y(), d, d), c, 2);
+        pixmap->DrawEllipse(cRect(r.X(), r.Bottom() - d + 1, d, d), c, 3);
+        pixmap->DrawEllipse(cRect(r.Right() - d + 1, r.Bottom() - d + 1, d, d), c, 4);
+    };
+
+    int frame = std::max(1, rect.Height() / 12);
+    rounded(rect, 0xFFD0D0D0);
+    rounded(cRect(rect.X() + frame, rect.Y() + frame, rect.Width() - 2 * frame, rect.Height() - 2 * frame), color);
 }
 
 // The application shows nothing, e.g. the red button hint has disappeared: a hint

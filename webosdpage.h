@@ -51,6 +51,7 @@ private:
 
     void CheckEmptyPage(eKeys key);
     void ShowHint(bool show);
+    static void DrawKey(cPixmap *pixmap, const cRect& rect, tColor color);
 
     void DestroyOsd();
 
