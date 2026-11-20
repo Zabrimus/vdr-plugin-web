@@ -4,6 +4,7 @@
  * See the README file for copyright information and how to reach the author.
  */
 
+#include <vdr/config.h>
 #include <vdr/i18n.h>
 #include "setup.h"
 #include "web.h"
@@ -83,6 +84,9 @@ cMenuSetupWeb::cMenuSetupWeb() {
     qualities[1] = tr("720p at most");
     qualities[2] = "SD";
 
+    recordingModes[0] = tr("manually");
+    recordingModes[1] = tr("automatically");
+
     Add(new cMenuEditBoolItem(tr("Show HbbTV hint"), &hint.enabled));
     Add(new cMenuEditIntItem(tr("HbbTV hint duration (s)"), &hint.duration, 1, 60));
     Add(new cMenuEditStraItem(tr("HbbTV hint position"), &hint.position, 4, positions));
@@ -98,6 +102,8 @@ cMenuSetupWeb::cMenuSetupWeb() {
     Add(new cMenuEditStraItem(tr("Download quality"), &web.downloadQuality, 3, qualities));
     Add(new cMenuEditIntItem(tr("Keep free on the disk (GB)"), &web.downloadReserve, 0, 1000));
     Add(new cMenuEditIntItem(tr("Downloads at the same time"), &web.downloadParallel, 1, 10));
+    Add(new cMenuEditStraItem(tr("Downloads as recording"), &web.downloadRecording, 2, recordingModes));
+    Add(new cMenuEditIntItem(tr("Lifetime of the recordings"), &web.recordingLifetime, 0, MAXLIFETIME));
     Add(new cMenuEditAutoCloseItem(tr("Close HbbTV without display after (s)"), &web.autoClose));
 }
 
@@ -119,6 +125,8 @@ void cMenuSetupWeb::Store() {
     SetupStore("DownloadQuality", webSetup.downloadQuality);
     SetupStore("DownloadReserve", webSetup.downloadReserve);
     SetupStore("DownloadParallel", webSetup.downloadParallel);
+    SetupStore("DownloadRecording", webSetup.downloadRecording);
+    SetupStore("RecordingLifetime", webSetup.recordingLifetime);
     SetupStore("AutoClose", webSetup.autoClose);
 
     SendRenderParameters();

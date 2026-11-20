@@ -196,3 +196,42 @@ msgstr "Unterbrochen"
 
 msgid "Button$Retry"
 msgstr "Wiederholen"
+
+msgid "This video can't be converted"
+msgstr "Dieses Video kann nicht umgewandelt werden"
+
+msgid "The download directory is not reachable by VDR"
+msgstr "VDR erreicht das Download-Verzeichnis nicht"
+
+msgid "The recording can't be created"
+msgstr "Die Aufnahme kann nicht erstellt werden"
+
+msgid "Recording created: %s"
+msgstr "Aufnahme erstellt: %s"
+
+msgid "Recording failed: %s"
+msgstr "Aufnahme fehlgeschlagen: %s"
+
+msgid "Recording"
+msgstr "Aufnahme"
+
+msgid "conv."
+msgstr "Umw."
+
+msgid "recording"
+msgstr "Aufnahme"
+
+msgid "Button$Recording"
+msgstr "Aufnahme"
+
+msgid "manually"
+msgstr "manuell"
+
+msgid "automatically"
+msgstr "automatisch"
+
+msgid "Downloads as recording"
+msgstr "Downloads als Aufnahme"
+
+msgid "Lifetime of the recordings"
+msgstr "Lebensdauer der Aufnahmen"

@@ -1,14 +1,19 @@
 #include "downloadmenu.h"
 
+#include <atomic>
 #include <chrono>
 #include <condition_variable>
+#include <deque>
 #include <map>
+#include <set>
 #include <thread>
+#include <vdr/config.h>
 #include <vdr/i18n.h>
 #include <vdr/interface.h>
 #include <vdr/skins.h>
 #include "web.h"
 #include "setup.h"
+#include "recordings.h"
 
 std::shared_ptr<TranscoderClient> transcoderClient;
 
@@ -21,6 +26,9 @@ static const char *transcoderErrors[] = {
     trNOOP("The download directory is not writable"),
     trNOOP("Not enough disk space"),
     trNOOP("Interrupted"),
+    trNOOP("This video can't be converted"),
+    trNOOP("The download directory is not reachable by VDR"),
+    trNOOP("The recording can't be created"),
 };
 
 // versions of a broadcast, named by the transcoder
@@ -79,6 +87,79 @@ bool watchActive = false;
 bool watchWake = false;            // ask now, not after the interval
 std::string watchStatus;
 std::map<std::string, std::string> watchRunning;   // id -> file name
+
+// TS files become recordings
+std::thread importThread;
+std::deque<DownloadInfo> importQueue;
+std::set<std::string> importing;                    // file names, queued or in work
+std::map<std::string, std::string> importFailed;    // file name -> error, no new try by itself
+std::atomic<bool> importStop(false);
+}
+
+static void Import(std::shared_ptr<TranscoderClient> client) {
+    std::unique_lock<std::mutex> lock(watchMutex);
+
+    while (!watchStop) {
+        if (importQueue.empty()) {
+            watchCondition.wait(lock, [] { return watchStop || !importQueue.empty(); });
+            continue;
+        }
+
+        DownloadInfo d = importQueue.front();
+        importQueue.pop_front();
+        lock.unlock();
+
+        std::string name;
+        std::string error = recordings::Create(d, Setup.DefaultPriority, webSetup.recordingLifetime, webSetup.downloadReserve * 1024, importStop, name);
+
+        // the file is in the recording: forget the download
+        bool created = error.empty();
+        if (created) {
+            client->DownloadRemove("file:" + d.name);
+        }
+
+        if (!importStop) {
+            std::string title = d.title.empty() ? d.name : d.title;
+            if (error.empty()) {
+                Skins.QueueMessage(mtInfo, *cString::sprintf(tr("Recording created: %s"), title.c_str()));
+            } else {
+                Skins.QueueMessage(mtError, *cString::sprintf(tr("Recording failed: %s"), (title + " - " + translate(error)).c_str()));
+            }
+        }
+
+        lock.lock();
+        importing.erase(d.name);
+        if (!created) {
+            importFailed[d.name] = error;
+        }
+        watchWake = true;
+        watchCondition.notify_all();
+    }
+}
+
+std::string ImportState(const std::string& file, std::string *error) {
+    std::lock_guard<std::mutex> lock(watchMutex);
+    if (importing.count(file) > 0) {
+        return "importing";
+    }
+
+    auto it = importFailed.find(file);
+    if (it != importFailed.end()) {
+        if (error != nullptr) {
+            *error = it->second;
+        }
+        return "failed";
+    }
+
+    return "";
+}
+
+void ImportAgain(const std::string& file) {
+    {
+        std::lock_guard<std::mutex> lock(watchMutex);
+        importFailed.erase(file);
+    }
+    WatchDownloads();
 }
 
 static void Watch(std::shared_ptr<TranscoderClient> client) {
@@ -99,9 +180,16 @@ static void Watch(std::shared_ptr<TranscoderClient> client) {
         std::map<std::string, std::string> running;
         int progress = 0;
         for (const auto& d : downloads) {
-            if (d.state == "running" || d.state == "queued") {
+            if (d.state == "running" || d.state == "queued" || d.state == "converting") {
                 running[d.id] = d.name;
                 progress = d.progress;
+            }
+
+            // a finished TS file becomes a recording
+            if (ok && d.state == "done" && d.format == "ts" && importing.count(d.name) == 0 && importFailed.count(d.name) == 0) {
+                importing.insert(d.name);
+                importQueue.push_back(d);
+                watchCondition.notify_all();
             }
         }
 
@@ -124,9 +212,11 @@ static void Watch(std::shared_ptr<TranscoderClient> client) {
         }
 
         watchRunning = running;
-        if (running.empty()) {
+        if (running.empty() && importing.empty()) {
             watchStatus.clear();
             watchActive = false;
+        } else if (running.empty()) {
+            watchStatus = tr("Recording");
         } else if (running.size() == 1) {
             watchStatus = *cString::sprintf(tr("Download %d%%"), progress);
         } else {
@@ -153,18 +243,24 @@ void StartDownloadWatcher() {
     // downloads may still run from before a restart of VDR
     watchStop = false;
     watchActive = true;
+    importStop = false;
     watchThread = std::thread(Watch, NewTranscoderClient());
+    importThread = std::thread(Import, NewTranscoderClient());
 }
 
 void StopDownloadWatcher() {
     {
         std::lock_guard<std::mutex> lock(watchMutex);
         watchStop = true;
+        importStop = true;
     }
     watchCondition.notify_all();
 
     if (watchThread.joinable()) {
         watchThread.join();
+    }
+    if (importThread.joinable()) {
+        importThread.join();
     }
 }
 
@@ -184,8 +280,8 @@ std::string DownloadStatus() {
 
 // --- cMenuWebDownloadSelect ------------------------------------------------------------------
 
-cMenuWebDownloadSelect::cMenuWebDownloadSelect(const DownloadLookupType& input)
-        : cOsdMenu(tr("Download"), 9, 6, 6, 8) {
+cMenuWebDownloadSelect::cMenuWebDownloadSelect(const DownloadLookupType& input, const std::string& channelId)
+        : cOsdMenu(tr("Download"), 9, 6, 6, 8), channelId(channelId) {
     lookup = std::make_shared<Lookup>();
 
     Add(new cOsdItem(tr("Searching in MediathekView..."), osUnknown, false));
@@ -219,6 +315,19 @@ eOSState cMenuWebDownloadSelect::Start(const DownloadCandidate *candidate) {
     input.maxParallel = webSetup.downloadParallel;
     input.width = candidate != nullptr ? candidate->width : result.streamWidth;
     input.height = candidate != nullptr ? candidate->height : result.streamHeight;
+
+    // automatically a recording: TS
+    input.format = webSetup.downloadRecording ? "ts" : "mp4";
+    input.channel = channelId;
+    if (candidate != nullptr) {
+        input.topic = candidate->topic;
+        input.title = candidate->title;
+        input.description = candidate->description;
+        input.timestamp = candidate->timestamp;
+    } else {
+        input.title = result.streamName;
+        input.timestamp = time(nullptr);
+    }
 
     std::string error;
     if (transcoderClient == nullptr || !transcoderClient->DownloadStart(error, input)) {
@@ -388,10 +497,15 @@ void cMenuWebDownloads::Load() {
         std::string state;
         if (d.state == "running") {
             state = *cString::sprintf("%d%%", d.progress);
+        } else if (d.state == "converting") {
+            state = *cString::sprintf("%s %d%%", tr("conv."), d.progress);
         } else if (d.state == "queued") {
             state = tr("waiting");
         } else if (d.state == "failed") {
             state = tr("failed");
+        } else if (d.format == "ts") {
+            std::string import = ImportState(d.name, nullptr);
+            state = import == "importing" ? tr("recording") : import == "failed" ? tr("failed") : "";
         }
 
         std::string text = *cString::sprintf("%s\t%.1f MB\t%s", state.c_str(), d.size / 1048576.0, d.name.c_str());
@@ -423,10 +537,12 @@ void cMenuWebDownloads::SetHelpKeys() {
 
     if (d == nullptr) {
         SetHelp(nullptr);
-    } else if (d->state == "running" || d->state == "queued") {
+    } else if (d->state == "running" || d->state == "queued" || d->state == "converting") {
         SetHelp(tr("Button$Cancel"));
     } else if (d->state == "failed") {
         SetHelp(tr("Button$Remove"), nullptr, tr("Button$Retry"));
+    } else if (d->format == "mp4" || ImportState(d->name, nullptr) == "failed") {
+        SetHelp(tr("Button$Delete"), tr("Button$Recording"));
     } else {
         SetHelp(tr("Button$Delete"));
     }
@@ -438,7 +554,7 @@ eOSState cMenuWebDownloads::Remove() {
         return osContinue;
     }
 
-    bool running = d->state == "running" || d->state == "queued";
+    bool running = d->state == "running" || d->state == "queued" || d->state == "converting";
     const char *question = running ? tr("Cancel download?") : d->state == "failed" ? nullptr : tr("Delete file?");
     if (question != nullptr && !Interface->Confirm(question)) {
         return osContinue;
@@ -471,6 +587,33 @@ eOSState cMenuWebDownloads::Retry() {
     return osContinue;
 }
 
+// a MP4 file is converted, the TS file becomes a recording
+eOSState cMenuWebDownloads::Record() {
+    const DownloadInfo *d = Selected();
+    if (d == nullptr || d->state != "done") {
+        return osContinue;
+    }
+
+    if (d->format == "ts") {
+        if (ImportState(d->name, nullptr) == "failed") {
+            ImportAgain(d->name);
+        }
+        Load();
+        return osContinue;
+    }
+
+    std::string error;
+    if (transcoderClient == nullptr || !transcoderClient->DownloadConvert(error, d->id, webSetup.downloadReserve * 1024)) {
+        Skins.Message(mtError, tr("Transcoder not available"));
+    } else if (!error.empty()) {
+        Skins.Message(mtError, translate(error));
+    }
+    WatchDownloads();
+
+    Load();
+    return osContinue;
+}
+
 eOSState cMenuWebDownloads::ProcessKey(eKeys Key) {
     if (Key == kMenu) {
         Key = kBack;
@@ -484,6 +627,10 @@ eOSState cMenuWebDownloads::ProcessKey(eKeys Key) {
                 state = Remove();
                 break;
 
+            case kGreen:
+                state = Record();
+                break;
+
             case kYellow:
                 state = Retry();
                 break;
@@ -491,6 +638,8 @@ eOSState cMenuWebDownloads::ProcessKey(eKeys Key) {
             case kOk:
                 if (const DownloadInfo *d = Selected(); d != nullptr && d->state == "failed") {
                     Skins.Message(mtError, translate(d->error));
+                } else if (std::string error; d != nullptr && ImportState(d->name, &error) == "failed") {
+                    Skins.Message(mtError, translate(error));
                 }
                 state = osContinue;
                 break;
@@ -504,7 +653,8 @@ eOSState cMenuWebDownloads::ProcessKey(eKeys Key) {
     if (Key == kNone && refresh.TimedOut()) {
         bool running = false;
         for (const auto& d : downloads) {
-            running = running || d.state == "running" || d.state == "queued";
+            running = running || d.state == "running" || d.state == "queued" || d.state == "converting" ||
+                      (d.state == "done" && d.format == "ts");
         }
 
         if (running) {

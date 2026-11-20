@@ -872,12 +872,14 @@ cOsdObject *cPluginWeb::DownloadMenu(int command) {
     // the applications mostly show the broadcasts of the last days
     DownloadLookupType input;
     input.maxHeight = webSetup.DownloadMaxHeight();
+    std::string channelId;
     {
         LOCK_CHANNELS_READ
         LOCK_SCHEDULES_READ
         const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
         if (currentChannel != nullptr) {
             input.channel = currentChannel->Name();
+            channelId = *currentChannel->GetChannelID().ToString();
 
             const cSchedule *schedule = Schedules->GetSchedule(currentChannel);
             time_t now = time(nullptr);
@@ -892,7 +894,7 @@ cOsdObject *cPluginWeb::DownloadMenu(int command) {
         }
     }
 
-    return new cMenuWebDownloadSelect(input);
+    return new cMenuWebDownloadSelect(input, channelId);
 }
 
 cOsdObject *cPluginWeb::MainMenuAction() {
@@ -988,6 +990,10 @@ bool cPluginWeb::SetupParse(const char *Name, const char *Value) {
         webSetup.downloadReserve = constrain(atoi(Value), 0, 1000);
     } else if (!strcasecmp(Name, "DownloadParallel")) {
         webSetup.downloadParallel = constrain(atoi(Value), 1, 10);
+    } else if (!strcasecmp(Name, "DownloadRecording")) {
+        webSetup.downloadRecording = constrain(atoi(Value), 0, 1);
+    } else if (!strcasecmp(Name, "RecordingLifetime")) {
+        webSetup.recordingLifetime = constrain(atoi(Value), 0, MAXLIFETIME);
     } else {
         return false;
     }

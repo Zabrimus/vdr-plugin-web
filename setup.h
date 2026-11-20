@@ -19,6 +19,8 @@ struct cWebSetup {
     int downloadQuality = 0;  // 0 = best, 1 = 720p at most, 2 = SD
     int downloadReserve = 5;  // GB kept free on the disk
     int downloadParallel = 2; // downloads at the same time
+    int downloadRecording = 0; // a recording of VDR: 0 = manually, 1 = automatically
+    int recordingLifetime = 99; // lifetime of these recordings
     int autoClose = 0;     // s without a visible page and a key until HbbTV is closed, 0 = never
 
     int Width() const;
@@ -39,6 +41,7 @@ private:
     const char *resolutions[5];
     const char *frameRates[5];
     const char *qualities[3];
+    const char *recordingModes[2];
 
 protected:
     void Store() override;
