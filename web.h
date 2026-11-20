@@ -120,6 +120,7 @@ public:
     bool ProcessOsdFrame(const ProcessOsdFrameType& input) override;
     bool SwitchChannel(const SwitchChannelType& input) override;
     bool OsdEmpty(const OsdEmptyType& input) override;
+    bool ProcessOsdShm(const ProcessOsdShmType& input) override;
 };
 
 class VdrPluginWebCloneFactory : virtual public VdrPluginWebIfFactory {

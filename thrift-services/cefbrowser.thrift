@@ -53,7 +53,8 @@ struct RenderParametersType {
 
 struct BrowserOptionsType {
     1: bool mse = true,        // Media Source Extensions for VDR
-    2: bool zdfQuirks = true   // special handling of the ZDF applications
+    2: bool zdfQuirks = true,  // special handling of the ZDF applications
+    3: bool sharedMemory = false   // the OSD in shared memory, VDR on the same machine
 }
 
 struct StreamEventType {

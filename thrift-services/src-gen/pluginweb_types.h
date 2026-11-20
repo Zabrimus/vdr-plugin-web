@@ -30,6 +30,8 @@ class OsdRectType;
 
 class ProcessOsdFrameType;
 
+class ProcessOsdShmType;
+
 class ProcessTSPacketType;
 
 class StartVideoType;
@@ -259,6 +261,54 @@ class ProcessOsdFrameType : public virtual ::apache::thrift::TBase {
 void swap(ProcessOsdFrameType &a, ProcessOsdFrameType &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const ProcessOsdFrameType& obj);
+
+typedef struct _ProcessOsdShmType__isset {
+  _ProcessOsdShmType__isset() : render_width(false), render_height(false), name(false), rects(false) {}
+  bool render_width :1;
+  bool render_height :1;
+  bool name :1;
+  bool rects :1;
+} _ProcessOsdShmType__isset;
+
+class ProcessOsdShmType : public virtual ::apache::thrift::TBase {
+ public:
+
+  ProcessOsdShmType(const ProcessOsdShmType&);
+  ProcessOsdShmType& operator=(const ProcessOsdShmType&);
+  ProcessOsdShmType() noexcept;
+
+  virtual ~ProcessOsdShmType() noexcept;
+  int32_t render_width;
+  int32_t render_height;
+  std::string name;
+  std::vector<OsdRectType>  rects;
+
+  _ProcessOsdShmType__isset __isset;
+
+  void __set_render_width(const int32_t val);
+
+  void __set_render_height(const int32_t val);
+
+  void __set_name(const std::string& val);
+
+  void __set_rects(const std::vector<OsdRectType> & val);
+
+  bool operator == (const ProcessOsdShmType & rhs) const;
+  bool operator != (const ProcessOsdShmType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ProcessOsdShmType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ProcessOsdShmType &a, ProcessOsdShmType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const ProcessOsdShmType& obj);
 
 typedef struct _ProcessTSPacketType__isset {
   _ProcessTSPacketType__isset() : ts(false) {}

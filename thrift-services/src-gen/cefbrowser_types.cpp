@@ -1204,7 +1204,8 @@ BrowserOptionsType::~BrowserOptionsType() noexcept {
 
 BrowserOptionsType::BrowserOptionsType() noexcept
    : mse(true),
-     zdfQuirks(true) {
+     zdfQuirks(true),
+     sharedMemory(false) {
 }
 
 void BrowserOptionsType::__set_mse(const bool val) {
@@ -1213,6 +1214,10 @@ void BrowserOptionsType::__set_mse(const bool val) {
 
 void BrowserOptionsType::__set_zdfQuirks(const bool val) {
   this->zdfQuirks = val;
+}
+
+void BrowserOptionsType::__set_sharedMemory(const bool val) {
+  this->sharedMemory = val;
 }
 std::ostream& operator<<(std::ostream& out, const BrowserOptionsType& obj)
 {
@@ -1258,6 +1263,14 @@ uint32_t BrowserOptionsType::read(::apache::thrift::protocol::TProtocol* iprot) 
           xfer += iprot->skip(ftype);
         }
         break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->sharedMemory);
+          this->__isset.sharedMemory = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -1283,6 +1296,10 @@ uint32_t BrowserOptionsType::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += oprot->writeBool(this->zdfQuirks);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("sharedMemory", ::apache::thrift::protocol::T_BOOL, 3);
+  xfer += oprot->writeBool(this->sharedMemory);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -1292,6 +1309,7 @@ void swap(BrowserOptionsType &a, BrowserOptionsType &b) noexcept {
   using ::std::swap;
   swap(a.mse, b.mse);
   swap(a.zdfQuirks, b.zdfQuirks);
+  swap(a.sharedMemory, b.sharedMemory);
   swap(a.__isset, b.__isset);
 }
 
@@ -1301,17 +1319,21 @@ bool BrowserOptionsType::operator==(const BrowserOptionsType & rhs) const
     return false;
   if (!(zdfQuirks == rhs.zdfQuirks))
     return false;
+  if (!(sharedMemory == rhs.sharedMemory))
+    return false;
   return true;
 }
 
 BrowserOptionsType::BrowserOptionsType(const BrowserOptionsType& other20) noexcept {
   mse = other20.mse;
   zdfQuirks = other20.zdfQuirks;
+  sharedMemory = other20.sharedMemory;
   __isset = other20.__isset;
 }
 BrowserOptionsType& BrowserOptionsType::operator=(const BrowserOptionsType& other21) noexcept {
   mse = other21.mse;
   zdfQuirks = other21.zdfQuirks;
+  sharedMemory = other21.sharedMemory;
   __isset = other21.__isset;
   return *this;
 }
@@ -1320,6 +1342,7 @@ void BrowserOptionsType::printTo(std::ostream& out) const {
   out << "BrowserOptionsType(";
   out << "mse=" << to_string(mse);
   out << ", " << "zdfQuirks=" << to_string(zdfQuirks);
+  out << ", " << "sharedMemory=" << to_string(sharedMemory);
   out << ")";
 }
 

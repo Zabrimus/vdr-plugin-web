@@ -115,6 +115,11 @@ class VdrPluginWebHandler : virtual public VdrPluginWebIf {
     printf("OsdEmpty\n");
   }
 
+  bool ProcessOsdShm(const ProcessOsdShmType& input) {
+    // Your implementation goes here
+    printf("ProcessOsdShm\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

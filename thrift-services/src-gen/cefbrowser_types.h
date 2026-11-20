@@ -435,9 +435,10 @@ void swap(RenderParametersType &a, RenderParametersType &b) noexcept;
 std::ostream& operator<<(std::ostream& out, const RenderParametersType& obj);
 
 typedef struct _BrowserOptionsType__isset {
-  _BrowserOptionsType__isset() : mse(true), zdfQuirks(true) {}
+  _BrowserOptionsType__isset() : mse(true), zdfQuirks(true), sharedMemory(true) {}
   bool mse :1;
   bool zdfQuirks :1;
+  bool sharedMemory :1;
 } _BrowserOptionsType__isset;
 
 class BrowserOptionsType : public virtual ::apache::thrift::TBase {
@@ -450,12 +451,15 @@ class BrowserOptionsType : public virtual ::apache::thrift::TBase {
   virtual ~BrowserOptionsType() noexcept;
   bool mse;
   bool zdfQuirks;
+  bool sharedMemory;
 
   _BrowserOptionsType__isset __isset;
 
   void __set_mse(const bool val);
 
   void __set_zdfQuirks(const bool val);
+
+  void __set_sharedMemory(const bool val);
 
   bool operator == (const BrowserOptionsType & rhs) const;
   bool operator != (const BrowserOptionsType &rhs) const {

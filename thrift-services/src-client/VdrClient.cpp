@@ -321,3 +321,17 @@ bool VdrClient::OsdEmpty(bool empty) {
         return client->OsdEmpty(input);
     });
 }
+
+bool VdrClient::ProcessOsdShm(int render_width, int render_height, const std::string& name, const std::vector<OsdRectType>& rects) {
+    DEBUGLOG("VdrClient::ProcessOsdShm");
+
+    return processInternal([&]() -> bool {
+        ProcessOsdShmType input;
+        input.render_width = render_width;
+        input.render_height = render_height;
+        input.name = name;
+        input.rects = rects;
+
+        return client->ProcessOsdShm(input);
+    });
+}

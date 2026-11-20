@@ -832,6 +832,196 @@ void ProcessOsdFrameType::printTo(std::ostream& out) const {
 }
 
 
+ProcessOsdShmType::~ProcessOsdShmType() noexcept {
+}
+
+ProcessOsdShmType::ProcessOsdShmType() noexcept
+   : render_width(0),
+     render_height(0),
+     name() {
+}
+
+void ProcessOsdShmType::__set_render_width(const int32_t val) {
+  this->render_width = val;
+}
+
+void ProcessOsdShmType::__set_render_height(const int32_t val) {
+  this->render_height = val;
+}
+
+void ProcessOsdShmType::__set_name(const std::string& val) {
+  this->name = val;
+}
+
+void ProcessOsdShmType::__set_rects(const std::vector<OsdRectType> & val) {
+  this->rects = val;
+}
+std::ostream& operator<<(std::ostream& out, const ProcessOsdShmType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t ProcessOsdShmType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->render_width);
+          this->__isset.render_width = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->render_height);
+          this->__isset.render_height = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->name);
+          this->__isset.name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->rects.clear();
+            uint32_t _size14;
+            ::apache::thrift::protocol::TType _etype17;
+            xfer += iprot->readListBegin(_etype17, _size14);
+            this->rects.resize(_size14);
+            uint32_t _i18;
+            for (_i18 = 0; _i18 < _size14; ++_i18)
+            {
+              xfer += this->rects[_i18].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.rects = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ProcessOsdShmType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ProcessOsdShmType");
+
+  xfer += oprot->writeFieldBegin("render_width", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->render_width);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("render_height", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->render_height);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->name);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("rects", ::apache::thrift::protocol::T_LIST, 4);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->rects.size()));
+    std::vector<OsdRectType> ::const_iterator _iter19;
+    for (_iter19 = this->rects.begin(); _iter19 != this->rects.end(); ++_iter19)
+    {
+      xfer += (*_iter19).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ProcessOsdShmType &a, ProcessOsdShmType &b) noexcept {
+  using ::std::swap;
+  swap(a.render_width, b.render_width);
+  swap(a.render_height, b.render_height);
+  swap(a.name, b.name);
+  swap(a.rects, b.rects);
+  swap(a.__isset, b.__isset);
+}
+
+bool ProcessOsdShmType::operator==(const ProcessOsdShmType & rhs) const
+{
+  if (!(render_width == rhs.render_width))
+    return false;
+  if (!(render_height == rhs.render_height))
+    return false;
+  if (!(name == rhs.name))
+    return false;
+  if (!(rects == rhs.rects))
+    return false;
+  return true;
+}
+
+ProcessOsdShmType::ProcessOsdShmType(const ProcessOsdShmType& other20) {
+  render_width = other20.render_width;
+  render_height = other20.render_height;
+  name = other20.name;
+  rects = other20.rects;
+  __isset = other20.__isset;
+}
+ProcessOsdShmType& ProcessOsdShmType::operator=(const ProcessOsdShmType& other21) {
+  render_width = other21.render_width;
+  render_height = other21.render_height;
+  name = other21.name;
+  rects = other21.rects;
+  __isset = other21.__isset;
+  return *this;
+}
+void ProcessOsdShmType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ProcessOsdShmType(";
+  out << "render_width=" << to_string(render_width);
+  out << ", " << "render_height=" << to_string(render_height);
+  out << ", " << "name=" << to_string(name);
+  out << ", " << "rects=" << to_string(rects);
+  out << ")";
+}
+
+
 ProcessTSPacketType::~ProcessTSPacketType() noexcept {
 }
 
@@ -917,13 +1107,13 @@ bool ProcessTSPacketType::operator==(const ProcessTSPacketType & rhs) const
   return true;
 }
 
-ProcessTSPacketType::ProcessTSPacketType(const ProcessTSPacketType& other14) {
-  ts = other14.ts;
-  __isset = other14.__isset;
+ProcessTSPacketType::ProcessTSPacketType(const ProcessTSPacketType& other22) {
+  ts = other22.ts;
+  __isset = other22.__isset;
 }
-ProcessTSPacketType& ProcessTSPacketType::operator=(const ProcessTSPacketType& other15) {
-  ts = other15.ts;
-  __isset = other15.__isset;
+ProcessTSPacketType& ProcessTSPacketType::operator=(const ProcessTSPacketType& other23) {
+  ts = other23.ts;
+  __isset = other23.__isset;
   return *this;
 }
 void ProcessTSPacketType::printTo(std::ostream& out) const {
@@ -1039,15 +1229,15 @@ bool StartVideoType::operator==(const StartVideoType & rhs) const
   return true;
 }
 
-StartVideoType::StartVideoType(const StartVideoType& other16) {
-  videoInfo = other16.videoInfo;
-  mse = other16.mse;
-  __isset = other16.__isset;
+StartVideoType::StartVideoType(const StartVideoType& other24) {
+  videoInfo = other24.videoInfo;
+  mse = other24.mse;
+  __isset = other24.__isset;
 }
-StartVideoType& StartVideoType::operator=(const StartVideoType& other17) {
-  videoInfo = other17.videoInfo;
-  mse = other17.mse;
-  __isset = other17.__isset;
+StartVideoType& StartVideoType::operator=(const StartVideoType& other25) {
+  videoInfo = other25.videoInfo;
+  mse = other25.mse;
+  __isset = other25.__isset;
   return *this;
 }
 void StartVideoType::printTo(std::ostream& out) const {
@@ -1204,19 +1394,19 @@ bool VideoSizeType::operator==(const VideoSizeType & rhs) const
   return true;
 }
 
-VideoSizeType::VideoSizeType(const VideoSizeType& other18) noexcept {
-  x = other18.x;
-  y = other18.y;
-  w = other18.w;
-  h = other18.h;
-  __isset = other18.__isset;
+VideoSizeType::VideoSizeType(const VideoSizeType& other26) noexcept {
+  x = other26.x;
+  y = other26.y;
+  w = other26.w;
+  h = other26.h;
+  __isset = other26.__isset;
 }
-VideoSizeType& VideoSizeType::operator=(const VideoSizeType& other19) noexcept {
-  x = other19.x;
-  y = other19.y;
-  w = other19.w;
-  h = other19.h;
-  __isset = other19.__isset;
+VideoSizeType& VideoSizeType::operator=(const VideoSizeType& other27) noexcept {
+  x = other27.x;
+  y = other27.y;
+  w = other27.w;
+  h = other27.h;
+  __isset = other27.__isset;
   return *this;
 }
 void VideoSizeType::printTo(std::ostream& out) const {
@@ -1335,15 +1525,15 @@ bool ResetVideoType::operator==(const ResetVideoType & rhs) const
   return true;
 }
 
-ResetVideoType::ResetVideoType(const ResetVideoType& other20) {
-  videoInfo = other20.videoInfo;
-  mse = other20.mse;
-  __isset = other20.__isset;
+ResetVideoType::ResetVideoType(const ResetVideoType& other28) {
+  videoInfo = other28.videoInfo;
+  mse = other28.mse;
+  __isset = other28.__isset;
 }
-ResetVideoType& ResetVideoType::operator=(const ResetVideoType& other21) {
-  videoInfo = other21.videoInfo;
-  mse = other21.mse;
-  __isset = other21.__isset;
+ResetVideoType& ResetVideoType::operator=(const ResetVideoType& other29) {
+  videoInfo = other29.videoInfo;
+  mse = other29.mse;
+  __isset = other29.__isset;
   return *this;
 }
 void ResetVideoType::printTo(std::ostream& out) const {
@@ -1440,13 +1630,13 @@ bool SelectAudioTrackType::operator==(const SelectAudioTrackType & rhs) const
   return true;
 }
 
-SelectAudioTrackType::SelectAudioTrackType(const SelectAudioTrackType& other22) {
-  audioTrack = other22.audioTrack;
-  __isset = other22.__isset;
+SelectAudioTrackType::SelectAudioTrackType(const SelectAudioTrackType& other30) {
+  audioTrack = other30.audioTrack;
+  __isset = other30.__isset;
 }
-SelectAudioTrackType& SelectAudioTrackType::operator=(const SelectAudioTrackType& other23) {
-  audioTrack = other23.audioTrack;
-  __isset = other23.__isset;
+SelectAudioTrackType& SelectAudioTrackType::operator=(const SelectAudioTrackType& other31) {
+  audioTrack = other31.audioTrack;
+  __isset = other31.__isset;
   return *this;
 }
 void SelectAudioTrackType::printTo(std::ostream& out) const {
@@ -1542,13 +1732,13 @@ bool SelectSubtitleTrackType::operator==(const SelectSubtitleTrackType & rhs) co
   return true;
 }
 
-SelectSubtitleTrackType::SelectSubtitleTrackType(const SelectSubtitleTrackType& other24) {
-  subtitleTrack = other24.subtitleTrack;
-  __isset = other24.__isset;
+SelectSubtitleTrackType::SelectSubtitleTrackType(const SelectSubtitleTrackType& other32) {
+  subtitleTrack = other32.subtitleTrack;
+  __isset = other32.__isset;
 }
-SelectSubtitleTrackType& SelectSubtitleTrackType::operator=(const SelectSubtitleTrackType& other25) {
-  subtitleTrack = other25.subtitleTrack;
-  __isset = other25.__isset;
+SelectSubtitleTrackType& SelectSubtitleTrackType::operator=(const SelectSubtitleTrackType& other33) {
+  subtitleTrack = other33.subtitleTrack;
+  __isset = other33.__isset;
   return *this;
 }
 void SelectSubtitleTrackType::printTo(std::ostream& out) const {
@@ -1664,15 +1854,15 @@ bool StreamEventFilterType::operator==(const StreamEventFilterType & rhs) const
   return true;
 }
 
-StreamEventFilterType::StreamEventFilterType(const StreamEventFilterType& other26) noexcept {
-  componentTag = other26.componentTag;
-  enable = other26.enable;
-  __isset = other26.__isset;
+StreamEventFilterType::StreamEventFilterType(const StreamEventFilterType& other34) noexcept {
+  componentTag = other34.componentTag;
+  enable = other34.enable;
+  __isset = other34.__isset;
 }
-StreamEventFilterType& StreamEventFilterType::operator=(const StreamEventFilterType& other27) noexcept {
-  componentTag = other27.componentTag;
-  enable = other27.enable;
-  __isset = other27.__isset;
+StreamEventFilterType& StreamEventFilterType::operator=(const StreamEventFilterType& other35) noexcept {
+  componentTag = other35.componentTag;
+  enable = other35.enable;
+  __isset = other35.__isset;
   return *this;
 }
 void StreamEventFilterType::printTo(std::ostream& out) const {
@@ -1829,19 +2019,19 @@ bool SwitchChannelType::operator==(const SwitchChannelType & rhs) const
   return true;
 }
 
-SwitchChannelType::SwitchChannelType(const SwitchChannelType& other28) {
-  channelId = other28.channelId;
-  onid = other28.onid;
-  tsid = other28.tsid;
-  sid = other28.sid;
-  __isset = other28.__isset;
+SwitchChannelType::SwitchChannelType(const SwitchChannelType& other36) {
+  channelId = other36.channelId;
+  onid = other36.onid;
+  tsid = other36.tsid;
+  sid = other36.sid;
+  __isset = other36.__isset;
 }
-SwitchChannelType& SwitchChannelType::operator=(const SwitchChannelType& other29) {
-  channelId = other29.channelId;
-  onid = other29.onid;
-  tsid = other29.tsid;
-  sid = other29.sid;
-  __isset = other29.__isset;
+SwitchChannelType& SwitchChannelType::operator=(const SwitchChannelType& other37) {
+  channelId = other37.channelId;
+  onid = other37.onid;
+  tsid = other37.tsid;
+  sid = other37.sid;
+  __isset = other37.__isset;
   return *this;
 }
 void SwitchChannelType::printTo(std::ostream& out) const {
@@ -1940,13 +2130,13 @@ bool OsdEmptyType::operator==(const OsdEmptyType & rhs) const
   return true;
 }
 
-OsdEmptyType::OsdEmptyType(const OsdEmptyType& other30) noexcept {
-  empty = other30.empty;
-  __isset = other30.__isset;
+OsdEmptyType::OsdEmptyType(const OsdEmptyType& other38) noexcept {
+  empty = other38.empty;
+  __isset = other38.__isset;
 }
-OsdEmptyType& OsdEmptyType::operator=(const OsdEmptyType& other31) noexcept {
-  empty = other31.empty;
-  __isset = other31.__isset;
+OsdEmptyType& OsdEmptyType::operator=(const OsdEmptyType& other39) noexcept {
+  empty = other39.empty;
+  __isset = other39.__isset;
   return *this;
 }
 void OsdEmptyType::printTo(std::ostream& out) const {

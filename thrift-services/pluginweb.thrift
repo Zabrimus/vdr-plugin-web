@@ -37,6 +37,14 @@ struct ProcessOsdFrameType {
     4: list<OsdRectType> rects
 }
 
+// the whole frame in shared memory of the same machine, BGRA
+struct ProcessOsdShmType {
+    1: i32 render_width,  // width of page
+    2: i32 render_height, // height of page
+    3: string name,       // file in /dev/shm
+    4: list<OsdRectType> rects   // the changed regions, without data
+}
+
 struct ProcessTSPacketType {
     1: binary ts;
 }
@@ -103,5 +111,6 @@ service VdrPluginWeb extends common.CommonService {
     bool StreamEventFilter(1: StreamEventFilterType input) throws (1:common.OperationFailed err),
     bool ProcessOsdFrame(1: ProcessOsdFrameType input) throws (1:common.OperationFailed err),
     bool SwitchChannel(1: SwitchChannelType input) throws (1:common.OperationFailed err),   // false: unknown channel or not switched
-    bool OsdEmpty(1: OsdEmptyType input) throws (1:common.OperationFailed err)
+    bool OsdEmpty(1: OsdEmptyType input) throws (1:common.OperationFailed err),
+    bool ProcessOsdShm(1: ProcessOsdShmType input) throws (1:common.OperationFailed err)   // false: shared memory not possible
 }

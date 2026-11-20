@@ -455,6 +455,11 @@ bool VdrPluginWebServer::OsdEmpty(const OsdEmptyType &input) {
     return true;
 }
 
+bool VdrPluginWebServer::ProcessOsdShm(const ProcessOsdShmType &input) {
+    // not supported yet: the browser sends the OSD via thrift
+    return false;
+}
+
 // setChannel() of an application: VDR switches the channel in the main thread
 static std::mutex switchMutex;
 static std::condition_variable switchCondition;
