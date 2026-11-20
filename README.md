@@ -91,6 +91,11 @@ VDR uses the red key itself. To start HbbTV with a key, map it to the plugin in
 | Media Source Extensions | yes     | Videos of players like dash.js are sent to VDR via the transcoder. Switch it off if an application worked better without. |
 | ZDF special handling    | yes     | The ZDF applications are forced to plain HTML5 videos. Without it they use their dash player (needs Media Source Extensions). |
 | Max. download speed (Mbit/s) | unlimited | Limits the speed of a download (see Downloads). |
+| Download quality        | best    | The best quality, 720p at most or SD. |
+| Keep free on the disk (GB) | 5    | A download needs this space and its estimated size, it is stopped when the space is reached. |
+| Downloads at the same time | 2    | More downloads wait in a queue. |
+| Downloads as recording  | manually | automatically: a download becomes a recording of VDR. manually: a MP4 file, green in the list converts it. |
+| Lifetime of the recordings | 99   | The lifetime of these recordings. |
 | Close HbbTV without display after (s) | never | An application which shows nothing anymore (e.g. the red button hint has disappeared) gets the hint "HbbTV is running". Without a key HbbTV is closed after this time (5 to 60 s). |
 
 Both take effect with the next application.
@@ -114,17 +119,23 @@ Otherwise VDR handles them (e.g. the numeric and channel keys switch the channel
 Record isn't sent to the application, during a video it downloads the video (see Downloads).
 
 ## Downloads
-The current video can be downloaded as MP4, if remotetranscode has a download directory
-(parameter ```-d```). The download runs in the background, also after the end of the video.
+The current video can be downloaded, if remotetranscode has a download directory (parameter ```-d```).
+The download runs in the background, also after the end of the video.
 
 - Record while a video plays: remotetranscode looks up the video in MediathekViewWeb by channel and
-  duration. If more than one entry matches, a menu shows them to choose from, together with the stream
-  itself. The file gets the name of channel, topic, title and date. With ```--dummyosd``` VDR takes
-  the key, it doesn't reach the plugin.
-- The SVDRP command ```PLUG web DOWNLOADS``` opens the list of the running downloads and the downloaded
-  files. Red cancels a download or deletes a file.
+  duration. The title of the page, the EPG of the channel and an ID shared by the stream and the entry
+  help to find it. Is it the video for sure, or there is one entry only, the download starts at once.
+  Otherwise a menu shows the entries with date, duration, resolution and size, versions like audio
+  description at the end, together with the stream itself. With ```--dummyosd``` VDR takes the key,
+  it doesn't reach the plugin.
+- The SVDRP command ```PLUG web DOWNLOADS``` opens the list of the downloads and files. Red cancels a
+  download or deletes a file, green makes a recording of a MP4 file, yellow starts a failed or
+  interrupted download again.
 - While downloads run, the main menu entry shows the progress, e.g. ```Web (Download 45%)```. A message
   tells when a download has finished or failed.
+- A recording is created in ```Mediathek/<topic>/<title>``` with info and index, like one of VDR. The
+  file is moved into the video directory, copied if it is another file system. VDR must reach the
+  download directory, i.e. remotetranscode runs on the same machine or the directory is shared.
 
 ## Logging
 Uses the VDR logging mechanism. Log entries can be found in ```/var/log/syslog``` with ```[vdrweb]``` prefix.
