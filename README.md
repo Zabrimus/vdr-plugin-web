@@ -97,7 +97,7 @@ VDR uses the red key itself. To start HbbTV with a key, map it to the plugin in
 | Downloads at the same time | 2    | More downloads wait in a queue. |
 | Downloads as recording  | manually | automatically: a download becomes a recording of VDR. manually: a MP4 file, green in the list converts it. |
 | Lifetime of the recordings | 99   | The lifetime of these recordings. |
-| Key for the downloads   | Info    | Opens the list of the downloads from an application, if the application doesn't use the key (Info, Stop or Blue). Back returns to the application. |
+| Key for the downloads   | Info    | Opens the list of the downloads from an application, if the application doesn't use the key (Info, Stop or Blue). Back returns to the application. A user key (User1 - User9) is never used by an application, it needs a VDR which passes a user key without a macro in keymacros.conf on to the plugin. |
 | Downloads...            |         | Opens the list of the downloads. |
 | Close HbbTV without display after (s) | never | An application which shows nothing anymore (e.g. the red button hint has disappeared) gets the hint "HbbTV is running". Without a key HbbTV is closed after this time (5 to 60 s). |
 

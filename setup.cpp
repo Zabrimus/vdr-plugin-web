@@ -30,8 +30,8 @@ int cWebSetup::DownloadMaxHeight() const {
 }
 
 eKeys cWebSetup::DownloadsKey() const {
-    static const eKeys keys[] = { kNone, kInfo, kStop, kBlue };
-    return (downloadsKey >= 0 && downloadsKey <= 3) ? keys[downloadsKey] : kNone;
+    static const eKeys keys[] = { kNone, kInfo, kStop, kBlue, kUser1, kUser2, kUser3, kUser4, kUser5, kUser6, kUser7, kUser8, kUser9 };
+    return (downloadsKey >= 0 && downloadsKey <= 12) ? keys[downloadsKey] : kNone;
 }
 
 void SendRenderParameters() {
@@ -97,6 +97,10 @@ cMenuSetupWeb::cMenuSetupWeb() {
     downloadsKeys[1] = tr("Key$Info");
     downloadsKeys[2] = tr("Key$Stop");
     downloadsKeys[3] = tr("Key$Blue");
+    for (int i = 0; i < 9; ++i) {
+        // a user key without a macro reaches the plugin, if VDR passes it on
+        downloadsKeys[4 + i] = cKey::ToString(eKeys(kUser1 + i), true);
+    }
 
     Add(new cMenuEditBoolItem(tr("Show HbbTV hint"), &hint.enabled));
     Add(new cMenuEditIntItem(tr("HbbTV hint duration (s)"), &hint.duration, 1, 60));
@@ -116,7 +120,7 @@ cMenuSetupWeb::cMenuSetupWeb() {
     Add(new cMenuEditIntItem(tr("Downloads at the same time"), &web.downloadParallel, 1, 10));
     Add(new cMenuEditStraItem(tr("Downloads as recording"), &web.downloadRecording, 2, recordingModes));
     Add(new cMenuEditIntItem(tr("Lifetime of the recordings"), &web.recordingLifetime, 0, MAXLIFETIME));
-    Add(new cMenuEditStraItem(tr("Key for the downloads"), &web.downloadsKey, 4, downloadsKeys));
+    Add(new cMenuEditStraItem(tr("Key for the downloads"), &web.downloadsKey, 13, downloadsKeys));
     Add(downloadsItem = new cOsdItem(tr("Downloads...")));
     Add(new cMenuEditAutoCloseItem(tr("Close HbbTV without display after (s)"), &web.autoClose));
 }

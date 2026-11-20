@@ -1025,7 +1025,7 @@ bool cPluginWeb::SetupParse(const char *Name, const char *Value) {
     } else if (!strcasecmp(Name, "OsdSharedMemory")) {
         webSetup.osdSharedMemory = atoi(Value) != 0;
     } else if (!strcasecmp(Name, "DownloadsKey")) {
-        webSetup.downloadsKey = constrain(atoi(Value), 0, 3);
+        webSetup.downloadsKey = constrain(atoi(Value), 0, 12);
     } else if (!strcasecmp(Name, "DownloadRecording")) {
         webSetup.downloadRecording = constrain(atoi(Value), 0, 1);
     } else if (!strcasecmp(Name, "RecordingLifetime")) {
