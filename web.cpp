@@ -728,8 +728,15 @@ void OpenDownloads() {
 }
 
 void ReturnFromDownloads() {
-    WebOSDPage *page = WebOSDPage::Get();
-    if (page != nullptr && page->getCurrentOsdMode() == PLAYER) {
+    bool player;
+    {
+        // another thread may delete the page (releasePlayer)
+        std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+        WebOSDPage *page = WebOSDPage::Get();
+        player = page != nullptr && page->getCurrentOsdMode() == PLAYER;
+    }
+
+    if (player) {
         OpenDownloadMenu(SHOW_PLAYER_PAGE);
     }
 }
@@ -747,19 +754,23 @@ const char *cPluginWeb::MainMenuEntry() {
 }
 
 cOsdObject *cPluginWeb::DownloadMenu(int command) {
-    WebOSDPage *page = WebOSDPage::Get();
-    bool player = page != nullptr && page->getCurrentOsdMode() == PLAYER;
+    {
+        // another thread may delete the page (releasePlayer)
+        std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+        WebOSDPage *page = WebOSDPage::Get();
+        bool player = page != nullptr && page->getCurrentOsdMode() == PLAYER;
 
-    if (command == SHOW_PLAYER_PAGE) {
-        if (player) {
-            page->Display();
+        if (command == SHOW_PLAYER_PAGE) {
+            if (player) {
+                page->Display();
+            }
+            return nullptr;
         }
-        return nullptr;
-    }
 
-    // the page of a video lies above the menu, it gives its OSD free
-    if (player) {
-        page->HideOsd();
+        // the page of a video lies above the menu, it gives its OSD free
+        if (player) {
+            page->HideOsd();
+        }
     }
 
     if (command == DOWNLOADS) {
