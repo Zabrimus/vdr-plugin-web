@@ -653,6 +653,14 @@ eOSState WebOSDPage::ProcessKey(eKeys Key) {
         return osContinue;
     }
 
+    // the key of the setup opens the list of the downloads, if the application doesn't use it
+    if (key == webSetup.DownloadsKey() && key != kNone) {
+        if (!(Key & k_Repeat)) {
+            OpenDownloadList();
+        }
+        return osContinue;
+    }
+
     // The application doesn't use this key (not in its keyset or not mapped).
     // Like a TV: the numeric and channel keys switch the channel. Close the page
     // and let VDR handle the key in normal viewing mode.

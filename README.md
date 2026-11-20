@@ -96,6 +96,8 @@ VDR uses the red key itself. To start HbbTV with a key, map it to the plugin in
 | Downloads at the same time | 2    | More downloads wait in a queue. |
 | Downloads as recording  | manually | automatically: a download becomes a recording of VDR. manually: a MP4 file, green in the list converts it. |
 | Lifetime of the recordings | 99   | The lifetime of these recordings. |
+| Key for the downloads   | Info    | Opens the list of the downloads from an application, if the application doesn't use the key (Info, Stop or Blue). Back returns to the application. |
+| Downloads...            |         | Opens the list of the downloads. |
 | Close HbbTV without display after (s) | never | An application which shows nothing anymore (e.g. the red button hint has disappeared) gets the hint "HbbTV is running". Without a key HbbTV is closed after this time (5 to 60 s). |
 
 Both take effect with the next application.
@@ -128,7 +130,8 @@ The download runs in the background, also after the end of the video.
   Otherwise a menu shows the entries with date, duration, resolution and size, versions like audio
   description at the end, together with the stream itself. With ```--dummyosd``` VDR takes the key,
   it doesn't reach the plugin.
-- The SVDRP command ```PLUG web DOWNLOADS``` opens the list of the downloads and files. Red cancels a
+- The list of the downloads and files opens with the key of the setup in an application, in the
+  setup of the plugin or with the SVDRP command ```PLUG web DOWNLOADS```. Red cancels a
   download or deletes a file, green makes a recording of a MP4 file, yellow starts a failed or
   interrupted download again.
 - While downloads run, the main menu entry shows the progress, e.g. ```Web (Download 45%)```. A message

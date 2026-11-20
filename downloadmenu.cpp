@@ -473,8 +473,8 @@ eOSState cMenuWebDownloadSelect::ProcessKey(eKeys Key) {
 
 // --- cMenuWebDownloads -----------------------------------------------------------------------
 
-cMenuWebDownloads::cMenuWebDownloads()
-        : cOsdMenu(tr("Downloads"), 7, 9) {
+cMenuWebDownloads::cMenuWebDownloads(bool subMenu)
+        : cOsdMenu(tr("Downloads"), 7, 9), subMenu(subMenu) {
     Load();
 }
 
@@ -666,6 +666,10 @@ eOSState cMenuWebDownloads::ProcessKey(eKeys Key) {
 
     if (Key != kNone) {
         SetHelpKeys();
+    }
+
+    if (subMenu) {
+        return state;
     }
 
     if (state == osBack || state == osEnd) {

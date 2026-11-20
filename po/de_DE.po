@@ -235,3 +235,12 @@ msgstr "Downloads als Aufnahme"
 
 msgid "Lifetime of the recordings"
 msgstr "Lebensdauer der Aufnahmen"
+
+msgid "Key for the downloads"
+msgstr "Taste für die Downloads"
+
+msgid "Downloads..."
+msgstr "Downloads..."
+
+msgid "none"
+msgstr "keine"

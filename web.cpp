@@ -819,6 +819,19 @@ void OpenDownloads() {
     OpenDownloadMenu(DOWNLOAD_SELECT);
 }
 
+// the list was opened from the page of an application, which keeps running
+static bool returnToApplication = false;
+
+void OpenDownloadList() {
+    {
+        std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+        WebOSDPage *page = WebOSDPage::Get();
+        returnToApplication = page != nullptr && page->getCurrentOsdMode() == OSD;
+    }
+
+    OpenDownloadMenu(DOWNLOADS);
+}
+
 void ReturnFromDownloads() {
     bool player;
     {
@@ -830,6 +843,9 @@ void ReturnFromDownloads() {
 
     if (player) {
         OpenDownloadMenu(SHOW_PLAYER_PAGE);
+    } else if (returnToApplication) {
+        returnToApplication = false;
+        OpenDownloadMenu(REOPEN);
     }
 }
 
@@ -990,6 +1006,8 @@ bool cPluginWeb::SetupParse(const char *Name, const char *Value) {
         webSetup.downloadReserve = constrain(atoi(Value), 0, 1000);
     } else if (!strcasecmp(Name, "DownloadParallel")) {
         webSetup.downloadParallel = constrain(atoi(Value), 1, 10);
+    } else if (!strcasecmp(Name, "DownloadsKey")) {
+        webSetup.downloadsKey = constrain(atoi(Value), 0, 3);
     } else if (!strcasecmp(Name, "DownloadRecording")) {
         webSetup.downloadRecording = constrain(atoi(Value), 0, 1);
     } else if (!strcasecmp(Name, "RecordingLifetime")) {

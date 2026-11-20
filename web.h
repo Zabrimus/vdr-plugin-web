@@ -39,7 +39,10 @@ extern BrowserClient* browserClient;
 // Rec during a video: the selection of the MediathekView entry
 void OpenDownloads();
 
-// after a download menu: show the page of a video again
+// the key of the setup: the list of the downloads, then the application again
+void OpenDownloadList();
+
+// after a download menu: show the page of a video or the application again
 void ReturnFromDownloads();
 
 class cRegularWorker: public cThread {

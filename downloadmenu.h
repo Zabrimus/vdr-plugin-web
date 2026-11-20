@@ -67,6 +67,7 @@ class cMenuWebDownloads : public cOsdMenu {
 private:
     std::vector<DownloadInfo> downloads;
     cTimeMs refresh;
+    bool subMenu;                       // of the setup
 
     void Load();
     const DownloadInfo *Selected();
@@ -76,7 +77,7 @@ private:
     eOSState Record();
 
 public:
-    cMenuWebDownloads();
+    explicit cMenuWebDownloads(bool subMenu = false);
 
     eOSState ProcessKey(eKeys Key) override;
 };

@@ -8,6 +8,7 @@
 #include <vdr/i18n.h>
 #include "setup.h"
 #include "web.h"
+#include "downloadmenu.h"
 
 cWebSetup webSetup;
 
@@ -26,6 +27,11 @@ int cWebSetup::FrameRate() const {
 int cWebSetup::DownloadMaxHeight() const {
     static const int heights[] = { 0, 720, 576 };
     return (downloadQuality >= 0 && downloadQuality <= 2) ? heights[downloadQuality] : 0;
+}
+
+eKeys cWebSetup::DownloadsKey() const {
+    static const eKeys keys[] = { kNone, kInfo, kStop, kBlue };
+    return (downloadsKey >= 0 && downloadsKey <= 3) ? keys[downloadsKey] : kNone;
 }
 
 void SendRenderParameters() {
@@ -87,6 +93,11 @@ cMenuSetupWeb::cMenuSetupWeb() {
     recordingModes[0] = tr("manually");
     recordingModes[1] = tr("automatically");
 
+    downloadsKeys[0] = tr("none");
+    downloadsKeys[1] = tr("Key$Info");
+    downloadsKeys[2] = tr("Key$Stop");
+    downloadsKeys[3] = tr("Key$Blue");
+
     Add(new cMenuEditBoolItem(tr("Show HbbTV hint"), &hint.enabled));
     Add(new cMenuEditIntItem(tr("HbbTV hint duration (s)"), &hint.duration, 1, 60));
     Add(new cMenuEditStraItem(tr("HbbTV hint position"), &hint.position, 4, positions));
@@ -104,6 +115,8 @@ cMenuSetupWeb::cMenuSetupWeb() {
     Add(new cMenuEditIntItem(tr("Downloads at the same time"), &web.downloadParallel, 1, 10));
     Add(new cMenuEditStraItem(tr("Downloads as recording"), &web.downloadRecording, 2, recordingModes));
     Add(new cMenuEditIntItem(tr("Lifetime of the recordings"), &web.recordingLifetime, 0, MAXLIFETIME));
+    Add(new cMenuEditStraItem(tr("Key for the downloads"), &web.downloadsKey, 4, downloadsKeys));
+    Add(downloadsItem = new cOsdItem(tr("Downloads...")));
     Add(new cMenuEditAutoCloseItem(tr("Close HbbTV without display after (s)"), &web.autoClose));
 }
 
@@ -127,7 +140,17 @@ void cMenuSetupWeb::Store() {
     SetupStore("DownloadParallel", webSetup.downloadParallel);
     SetupStore("DownloadRecording", webSetup.downloadRecording);
     SetupStore("RecordingLifetime", webSetup.recordingLifetime);
+    SetupStore("DownloadsKey", webSetup.downloadsKey);
     SetupStore("AutoClose", webSetup.autoClose);
 
     SendRenderParameters();
+}
+
+eOSState cMenuSetupWeb::ProcessKey(eKeys Key) {
+    // the list of the downloads, back to the setup afterwards
+    if (!HasSubMenu() && Key == kOk && Get(Current()) == downloadsItem) {
+        return AddSubMenu(new cMenuWebDownloads(true));
+    }
+
+    return cMenuSetupPage::ProcessKey(Key);
 }

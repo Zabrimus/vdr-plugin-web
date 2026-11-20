@@ -21,11 +21,13 @@ struct cWebSetup {
     int downloadParallel = 2; // downloads at the same time
     int downloadRecording = 0; // a recording of VDR: 0 = manually, 1 = automatically
     int recordingLifetime = 99; // lifetime of these recordings
+    int downloadsKey = 1;  // opens the list of the downloads: 0 = none, 1 = Info, 2 = Stop, 3 = Blue
     int autoClose = 0;     // s without a visible page and a key until HbbTV is closed, 0 = never
 
     int Width() const;
     int FrameRate() const;
     int DownloadMaxHeight() const;  // 0 = the best
+    eKeys DownloadsKey() const;     // kNone = none
 };
 
 extern cWebSetup webSetup;
@@ -42,10 +44,14 @@ private:
     const char *frameRates[5];
     const char *qualities[3];
     const char *recordingModes[2];
+    const char *downloadsKeys[4];
+    cOsdItem *downloadsItem;
 
 protected:
     void Store() override;
 
 public:
     cMenuSetupWeb();
+
+    eOSState ProcessKey(eKeys Key) override;
 };
