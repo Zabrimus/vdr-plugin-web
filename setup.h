@@ -16,6 +16,7 @@ struct cWebSetup {
     int mse = 1;           // Media Source Extensions (dash.js, hls.js, ...)
     int zdfQuirks = 1;     // special handling of the ZDF applications
     int downloadRate = 0;  // Mbit/s, 0 = unlimited
+    int autoClose = 0;     // s without a visible page and a key until HbbTV is closed, 0 = never
 
     int Width() const;
     int FrameRate() const;

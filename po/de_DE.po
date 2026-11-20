@@ -139,3 +139,12 @@ msgstr "Download %d%%"
 
 msgid "%d downloads"
 msgstr "%d Downloads"
+
+msgid "HbbTV is running - Red: application, Menu: close"
+msgstr "HbbTV läuft - Rot: Anwendung, Menü: Beenden"
+
+msgid "never"
+msgstr "nie"
+
+msgid "Close HbbTV without display after (s)"
+msgstr "HbbTV ohne Anzeige beenden nach (s)"

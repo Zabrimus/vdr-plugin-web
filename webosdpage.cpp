@@ -2,6 +2,7 @@
 #include <vdr/remote.h>
 #include <Magick++/Blob.h>
 #include <Magick++/Image.h>
+#include <atomic>
 #include <chrono>
 #include <mutex>
 #include "webosdpage.h"
@@ -9,12 +10,17 @@
 
 extern bool measureOsd;
 #include "web.h"
+#include "setup.h"
 
 // #define MEASURE_SCALE_TIME 1
 // #define DEBUG_SAVE_OSD_IMAGE 1
 
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
+
+// the state of the browser page, also before a WebOSDPage exists
+static std::atomic<bool> pageEmpty(false);
+static std::atomic<uint64_t> pageEmptySince(0);
 
 std::recursive_mutex pixmap_mutex;
 
@@ -114,6 +120,10 @@ WebOSDPage::WebOSDPage(bool useOutputDeviceScale, OSD_MODE osdMode)
     lastVolumeTime = time(NULL);
 
     currentMode = osdMode;
+
+    // the browser may show the application already
+    contentSeen = !pageEmpty;
+    lastKey.Set();
 }
 
 WebOSDPage::~WebOSDPage() {
@@ -144,6 +154,71 @@ void WebOSDPage::Show() {
     Display();
 }
 
+void WebOSDPage::SetEmpty(bool empty) {
+    if (empty && !pageEmpty) {
+        pageEmptySince = cTimeMs::Now();
+    }
+    pageEmpty = empty;
+}
+
+void WebOSDPage::ShowHint(bool show) {
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+    if (osd == nullptr || show == (pixmapHint != nullptr)) {
+        return;
+    }
+
+    if (!show) {
+        osd->DestroyPixmap(pixmapHint);
+        pixmapHint = nullptr;
+        osd->Flush();
+        return;
+    }
+
+    const cFont *font = cFont::GetFont(fontOsd);
+    const char *text = tr("HbbTV is running - Red: application, Menu: close");
+    int border = font->Height() / 2;
+    int w = font->Width(text) + 2 * border;
+    int h = font->Height() + border;
+    int x = disp_width - w - disp_width / 20;
+    int y = disp_height / 20;
+
+    pixmapHint = osd->CreatePixmap(7, cRect(x, y, w, h));
+    LOCK_PIXMAPS;
+    pixmapHint->Fill(0xC0000000);
+    pixmapHint->DrawText(cPoint(border, border / 2), text, clrWhite, clrTransparent, font);
+    osd->Flush();
+}
+
+// The application shows nothing, e.g. the red button hint has disappeared: a hint
+// tells that HbbTV is still open, and without a key it is closed after a while.
+void WebOSDPage::CheckEmptyPage(eKeys key) {
+    if (currentMode != OSD || hidden) {
+        return;
+    }
+
+    if (key != kNone) {
+        lastKey.Set();
+    }
+
+    bool empty = pageEmpty;
+    if (!empty) {
+        contentSeen = true;
+    }
+
+    uint64_t now = cTimeMs::Now();
+    uint64_t emptyFor = now - pageEmptySince;
+
+    // a short gap while the application changes its page shows no hint
+    bool hint = empty && contentSeen && emptyFor >= 1000;
+    ShowHint(hint);
+
+    int seconds = webSetup.autoClose;
+    if (hint && seconds > 0 && emptyFor >= (uint64_t) seconds * 1000 && lastKey.Elapsed() >= (uint64_t) seconds * 1000) {
+        isyslog("[vdrweb] the application shows nothing for %d s, close", seconds);
+        closeEmptyPage = true;
+    }
+}
+
 void WebOSDPage::DestroyOsd() {
     std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
 
@@ -156,6 +231,11 @@ void WebOSDPage::DestroyOsd() {
         if (pixmapVol != nullptr) {
             osd->DestroyPixmap(pixmapVol);
             pixmapVol = nullptr;
+        }
+
+        if (pixmapHint != nullptr) {
+            osd->DestroyPixmap(pixmapHint);
+            pixmapHint = nullptr;
         }
 
         delete osd;
@@ -491,6 +571,11 @@ eOSState WebOSDPage::ProcessKey(eKeys Key) {
     // a volume change resets the timeout
     if (pixmapVol && (time(NULL) - lastVolumeTime > 3))
         DeleteVolume();
+
+    CheckEmptyPage(Key);
+    if (closeEmptyPage) {
+        return osEnd;
+    }
 
     if (Key & k_Release) {
         return osContinue;

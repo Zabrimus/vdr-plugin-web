@@ -35,6 +35,24 @@ void SendRenderParameters() {
     browserClient->SetBrowserOptions(webSetup.mse != 0, webSetup.zdfQuirks != 0);
 }
 
+// 0 (never) or 5 to 60 seconds: 1 to 4 are skipped
+class cMenuEditAutoCloseItem : public cMenuEditIntItem {
+public:
+    cMenuEditAutoCloseItem(const char *Name, int *Value) : cMenuEditIntItem(Name, Value, 0, 60, tr("never")) {}
+
+    eOSState ProcessKey(eKeys Key) override {
+        int old = *value;
+        eOSState state = cMenuEditIntItem::ProcessKey(Key);
+
+        if (*value > 0 && *value < 5) {
+            *value = old == 0 ? 5 : 0;
+            Set();
+        }
+
+        return state;
+    }
+};
+
 cMenuSetupWeb::cMenuSetupWeb() {
     hint = hbbtvHintSetup;
     web = webSetup;
@@ -68,6 +86,7 @@ cMenuSetupWeb::cMenuSetupWeb() {
     Add(new cMenuEditBoolItem(tr("Media Source Extensions"), &web.mse));
     Add(new cMenuEditBoolItem(tr("ZDF special handling"), &web.zdfQuirks));
     Add(new cMenuEditIntItem(tr("Max. download speed (Mbit/s)"), &web.downloadRate, 0, 1000, tr("unlimited")));
+    Add(new cMenuEditAutoCloseItem(tr("Close HbbTV without display after (s)"), &web.autoClose));
 }
 
 void cMenuSetupWeb::Store() {
@@ -85,6 +104,7 @@ void cMenuSetupWeb::Store() {
     SetupStore("Mse", webSetup.mse);
     SetupStore("ZdfQuirks", webSetup.zdfQuirks);
     SetupStore("DownloadRate", webSetup.downloadRate);
+    SetupStore("AutoClose", webSetup.autoClose);
 
     SendRenderParameters();
 }

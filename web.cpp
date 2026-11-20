@@ -448,6 +448,7 @@ bool VdrPluginWebServer::EndOfStream() {
 }
 
 bool VdrPluginWebServer::OsdEmpty(const OsdEmptyType &input) {
+    WebOSDPage::SetEmpty(input.empty);
     return true;
 }
 
@@ -957,6 +958,9 @@ bool cPluginWeb::SetupParse(const char *Name, const char *Value) {
         webSetup.mse = atoi(Value) ? 1 : 0;
     } else if (!strcasecmp(Name, "ZdfQuirks")) {
         webSetup.zdfQuirks = atoi(Value) ? 1 : 0;
+    } else if (!strcasecmp(Name, "AutoClose")) {
+        int seconds = constrain(atoi(Value), 0, 60);
+        webSetup.autoClose = seconds > 0 && seconds < 5 ? 5 : seconds;
     } else if (!strcasecmp(Name, "DownloadRate")) {
         webSetup.downloadRate = constrain(atoi(Value), 0, 1000);
     } else {

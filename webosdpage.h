@@ -23,6 +23,7 @@ class WebOSDPage : public cControl {
 private:
     cPixmap *pixmap = nullptr;
     cPixmap *pixmapVol = nullptr;
+    cPixmap *pixmapHint = nullptr;     // "HbbTV is running" while the page shows nothing
     cOsd* osd;
 
     tColor clrVolumeBarUpper = clrRed;
@@ -43,6 +44,14 @@ private:
     // the OSD is given free for a menu of VDR, Display() shows it again
     bool hidden = false;
 
+    // the application has shown something: an empty page afterwards gets the hint
+    bool contentSeen = false;
+    bool closeEmptyPage = false;
+    cTimeMs lastKey;
+
+    void CheckEmptyPage(eKeys key);
+    void ShowHint(bool show);
+
     void DestroyOsd();
 
 private:
@@ -55,6 +64,9 @@ private:
 public:
     static WebOSDPage* Create(bool useOutputDeviceScale, OSD_MODE osdMode);
     static WebOSDPage* Get();
+
+    // the browser reports a page without visible pixels
+    static void SetEmpty(bool empty);
     static bool IsOpen();
 
     ~WebOSDPage() override;
