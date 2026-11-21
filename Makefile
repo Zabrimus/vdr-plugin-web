@@ -48,15 +48,15 @@ CXXFLAGS += -std=c++17 -Wno-overloaded-virtual
 
 # graphicsmagick
 CXXFLAGS += $(shell pkg-config --cflags GraphicsMagick++)
-LDFLAGS += $(shell pkg-config --libs GraphicsMagick++)
+LIBS += $(shell pkg-config --libs GraphicsMagick++)
 
 # thrift
 ifeq ($(USE_THRIFT_PKGCONFIG),1)
 CXXFLAGS += $(shell pkg-config --cflags thrift) -fPIC
-LDFLAGS += $(shell pkg-config --libs thrift)
+LIBS += $(shell pkg-config --libs thrift)
 else
 CXXFLAGS += -Ithrift-install/install/include -fPIC
-LDFLAGS += -Lthrift-install/install/lib -lthrift
+LIBS += -Lthrift-install/install/lib -lthrift
 endif
 
 ### The version number of VDR's plugin API:
@@ -161,7 +161,7 @@ install-i18n: $(I18Nmsgs)
 
 $(SOFILE): $(OBJS)
 	@echo LD $@
-	$(Q)$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LDFLAGS) -o $@
+	$(Q)$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LDFLAGS) $(LIBS) -o $@
 
 compile-thrift-service:
 	cd thrift-services && ../thrift-install/install/bin/thrift --gen cpp -out src-gen common.thrift
