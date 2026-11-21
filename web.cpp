@@ -200,6 +200,8 @@ void VdrPluginWebServer::ping() {
 bool VdrPluginWebServer::ProcessOsdUpdate(const ProcessOsdUpdateType &input) {
     DEBUGLOG("[vdrweb] VdrPluginWebServer::ProcessOsdUpdate");
 
+    VideoPlayer::SetBrowserSize(input.disp_width, input.disp_height);
+
     // the page must not be deleted while drawing
     std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
 
@@ -220,6 +222,8 @@ bool VdrPluginWebServer::ProcessOsdUpdate(const ProcessOsdUpdateType &input) {
 
 bool VdrPluginWebServer::ProcessOsdUpdateQOI(const ProcessOsdUpdateQOIType &input) {
     DEBUGLOG("[vdrweb] VdrPluginWebServer::ProcessOsdUpdateQOI");
+
+    VideoPlayer::SetBrowserSize(input.render_width, input.render_height);
 
     // the page must not be deleted while drawing
     std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
@@ -456,6 +460,8 @@ bool VdrPluginWebServer::OsdEmpty(const OsdEmptyType &input) {
 }
 
 bool VdrPluginWebServer::ProcessOsdShm(const ProcessOsdShmType &input) {
+    VideoPlayer::SetBrowserSize(input.render_width, input.render_height);
+
     // the page must not be deleted while drawing
     std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
 
@@ -555,6 +561,8 @@ bool VdrPluginWebServer::StreamEventFilter(const StreamEventFilterType &input) {
 }
 
 bool VdrPluginWebServer::ProcessOsdFrame(const ProcessOsdFrameType &input) {
+    VideoPlayer::SetBrowserSize(input.render_width, input.render_height);
+
     // the page must not be deleted while drawing
     std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
 
