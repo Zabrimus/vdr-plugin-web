@@ -7,6 +7,8 @@
  */
 
 #include <vdr/channels.h>
+#include <vdr/dvbdevice.h>
+#include <vdr/sources.h>
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -35,7 +37,7 @@ const char *channelJson = R"(
         "authorised": true,
         "genre": null,
         "hidden": false,
-        "idType": "%d",
+        "idType": %d,
         "channelMaxBitRate": 0,
         "manualBlock": false,
         "majorChannel": 1,
@@ -133,27 +135,47 @@ static std::string channelProgrammesJson(const cChannel* channel, tEventID *pres
     return result + "]";
 }
 
+// OIPF DAE 7.13.11.1: Channel.TYPE_TV, TYPE_RADIO, TYPE_OTHER
+static int oipfChannelType(const cChannel* channel) {
+    if (channel->Vpid() != 0) {
+        return 0;
+    }
+    return channel->Apid(0) != 0 || channel->Dpid(0) != 0 ? 1 : 2;
+}
+
+// OIPF DAE 7.13.11.1: the ID_* constant of the delivery system. Applications check it,
+// the ProSiebenSat.1 red button asserts that it is a number.
+static int oipfIdType(const cChannel* channel) {
+    int source = channel->Source();
+    if (cSource::IsSat(source) || cSource::IsTerr(source)) {
+        // System() is 0 for DVB-S/DVB-T and 1 for DVB-S2/DVB-T2 (DVB_SYSTEM_1/2 in dvbdevice.c)
+        bool second = cDvbTransponderParameters(channel->Parameters()).System() != 0;
+        if (cSource::IsSat(source)) {
+            return second ? 15 : 11; // ID_DVB_S2, ID_DVB_S
+        }
+        return second ? 16 : 12;     // ID_DVB_T2, ID_DVB_T
+    }
+    if (cSource::IsCable(source)) {
+        return 10;                   // ID_DVB_C
+    }
+    if (cSource::IsAtsc(source)) {
+        return 30;                   // ID_ATSC_T
+    }
+    return 41;                       // ID_IPTV_URI
+}
+
 inline const char* toChannelJson(const cChannel* channel) {
     // longName, Name => currentChannel
     // nid            => ??? (use 1 as default)
     // onid           => channel, Nid
     // sid            => channel, Sid
     // tsid           => channel, Tid
-    // channelType    => HDTV 0x19, TV 0x01, Radio 0x02
-    // idType         => ??? (use 15 as default)
-    int channelType;
-
-    if (strstr(channel->Name(), "HD") != nullptr) {
-        channelType = 0x19;
-    } else if (channel->Rid() > 0) {
-        channelType = 0x02;
-    } else {
-        channelType = 0x01;
-    }
+    int channelType = oipfChannelType(channel);
+    int idType = oipfIdType(channel);
 
     char *cmd;
     std::string name = jsonEscape(channel->Name());
-    asprintf(&cmd, channelJson, *channel->GetChannelID().ToString(), channelType, 1, channel->Nid(), channel->Tid(), channel->Sid(), name.c_str(), name.c_str(), 15);
+    asprintf(&cmd, channelJson, *channel->GetChannelID().ToString(), channelType, 1, channel->Nid(), channel->Tid(), channel->Sid(), name.c_str(), name.c_str(), idType);
 
     // add the tracks of the channel
     std::string json = cmd;
