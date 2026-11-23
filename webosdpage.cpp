@@ -150,7 +150,11 @@ WebOSDPage::~WebOSDPage() {
             break;
     }
 
-    // cDevice::PrimaryDevice()->ScaleVideo(cRect::Null);
+    // The application is left (Menu, end of the application, channel key). A video
+    // of the application has its own page and sets the video fullscreen itself.
+    if (currentMode == OSD) {
+        CloseVideoWindow();
+    }
 }
 
 void WebOSDPage::Show() {
