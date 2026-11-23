@@ -168,6 +168,13 @@ void stopVideo() {
     if (videoPlayer != nullptr) {
         releasePlayer();
 
+        // The player switches to full screen when it goes, but the application
+        // stays open: show TV again where the application last placed the video.
+        // It may have done so already while the video was still playing.
+        if (lastVideoWidth > 0 && lastVideoHeight > 0) {
+            VideoPlayer::SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
+        }
+
         nextOsdCommand = REOPEN;
         cRemote::CallPlugin("web");
     }
