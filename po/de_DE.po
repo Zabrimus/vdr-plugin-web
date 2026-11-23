@@ -20,5 +20,230 @@ msgstr ""
 msgid "Browser not available"
 msgstr "Der Browser ist nicht verfügbar"
 
+msgid "HbbTV available"
+msgstr "HbbTV verfügbar"
+
+msgid "bottom right"
+msgstr "unten rechts"
+
+msgid "bottom left"
+msgstr "unten links"
+
+msgid "top right"
+msgstr "oben rechts"
+
+msgid "top left"
+msgstr "oben links"
+
+msgid "Show HbbTV hint"
+msgstr "Hinweis \"HbbTV verfügbar\" anzeigen"
+
+msgid "HbbTV hint duration (s)"
+msgstr "Anzeigedauer des Hinweises (s)"
+
+msgid "HbbTV hint position"
+msgstr "Position des Hinweises"
+
 #~ msgid "RedButton Application not available"
 #~ msgstr "RedButton Applikation ist nicht verfügbar"
+
+msgid "Browser resolution"
+msgstr "Auflösung des Browsers"
+
+msgid "Scale by output device"
+msgstr "Skalierung durch Ausgabegerät"
+
+msgid "Browser frame rate"
+msgstr "Bildrate des Browsers"
+
+msgid "Media Source Extensions"
+msgstr "Media Source Extensions"
+
+msgid "ZDF special handling"
+msgstr "ZDF-Sonderbehandlung"
+
+msgid "browser default"
+msgstr "Vorgabe des Browsers"
+
+msgid "Download"
+msgstr "Download"
+
+msgid "Downloads"
+msgstr "Downloads"
+
+msgid "Searching in MediathekView..."
+msgstr "Suche in MediathekView..."
+
+msgid "Stream without MediathekView entry"
+msgstr "Stream ohne MediathekView-Eintrag"
+
+msgid "Download started: %s"
+msgstr "Download gestartet: %s"
+
+msgid "Transcoder not available"
+msgstr "Transcoder nicht erreichbar"
+
+msgid "No downloads"
+msgstr "Keine Downloads"
+
+msgid "failed"
+msgstr "Fehler"
+
+msgid "Button$Cancel"
+msgstr "Abbrechen"
+
+msgid "Button$Remove"
+msgstr "Entfernen"
+
+msgid "Button$Delete"
+msgstr "Löschen"
+
+msgid "Cancel download?"
+msgstr "Download abbrechen?"
+
+msgid "Delete file?"
+msgstr "Datei löschen?"
+
+msgid "Can't remove the download"
+msgstr "Download kann nicht entfernt werden"
+
+msgid "No download directory"
+msgstr "Kein Download-Verzeichnis eingestellt"
+
+msgid "No video or a live stream"
+msgstr "Kein Video oder ein Livestream"
+
+msgid "MediathekView is not reachable"
+msgstr "MediathekView ist nicht erreichbar"
+
+msgid "This video can't be downloaded"
+msgstr "Dieses Video kann nicht heruntergeladen werden"
+
+msgid "The download directory is not writable"
+msgstr "Das Download-Verzeichnis ist nicht beschreibbar"
+
+msgid "Max. download speed (Mbit/s)"
+msgstr "Max. Download-Geschwindigkeit (Mbit/s)"
+
+msgid "unlimited"
+msgstr "unbegrenzt"
+
+msgid "Download finished: %s"
+msgstr "Download fertig: %s"
+
+msgid "Download failed: %s"
+msgstr "Download fehlgeschlagen: %s"
+
+msgid "Download %d%%"
+msgstr "Download %d%%"
+
+msgid "%d downloads"
+msgstr "%d Downloads"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "Close"
+msgstr "Beenden"
+
+msgid "never"
+msgstr "nie"
+
+msgid "Close HbbTV without display after (s)"
+msgstr "HbbTV ohne Anzeige beenden nach (s)"
+
+msgid "audio description"
+msgstr "Audiodeskription"
+
+msgid "sign language"
+msgstr "Gebärdensprache"
+
+msgid "original version"
+msgstr "Originalfassung"
+
+msgid "plain language"
+msgstr "Klare Sprache"
+
+msgid "trailer"
+msgstr "Trailer"
+
+msgid "Other versions:"
+msgstr "Weitere Fassungen:"
+
+msgid "best"
+msgstr "beste"
+
+msgid "720p at most"
+msgstr "höchstens 720p"
+
+msgid "Download quality"
+msgstr "Download-Qualität"
+
+msgid "Not enough disk space"
+msgstr "Nicht genug Speicherplatz"
+
+msgid "Keep free on the disk (GB)"
+msgstr "Frei lassen auf der Platte (GB)"
+
+msgid "Downloads at the same time"
+msgstr "Gleichzeitige Downloads"
+
+msgid "waiting"
+msgstr "wartet"
+
+msgid "Interrupted"
+msgstr "Unterbrochen"
+
+msgid "Button$Retry"
+msgstr "Wiederholen"
+
+msgid "This video can't be converted"
+msgstr "Dieses Video kann nicht umgewandelt werden"
+
+msgid "The download directory is not reachable by VDR"
+msgstr "VDR erreicht das Download-Verzeichnis nicht"
+
+msgid "The recording can't be created"
+msgstr "Die Aufnahme kann nicht erstellt werden"
+
+msgid "Recording created: %s"
+msgstr "Aufnahme erstellt: %s"
+
+msgid "Recording failed: %s"
+msgstr "Aufnahme fehlgeschlagen: %s"
+
+msgid "Recording"
+msgstr "Aufnahme"
+
+msgid "conv."
+msgstr "Umw."
+
+msgid "recording"
+msgstr "Aufnahme"
+
+msgid "Button$Recording"
+msgstr "Aufnahme"
+
+msgid "manually"
+msgstr "manuell"
+
+msgid "automatically"
+msgstr "automatisch"
+
+msgid "Downloads as recording"
+msgstr "Downloads als Aufnahme"
+
+msgid "Lifetime of the recordings"
+msgstr "Lebensdauer der Aufnahmen"
+
+msgid "Key for the downloads"
+msgstr "Taste für die Downloads"
+
+msgid "Downloads..."
+msgstr "Downloads..."
+
+msgid "none"
+msgstr "keine"
+
+msgid "OSD in shared memory"
+msgstr "OSD per Shared Memory"

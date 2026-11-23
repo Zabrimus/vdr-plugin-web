@@ -4,6 +4,7 @@
 
 #include "debuglog.h"
 #include "BrowserClient.h"
+#include "TransportBuffer.h"
 
 using namespace apache::thrift;
 using namespace apache::thrift::protocol;
@@ -19,7 +20,10 @@ BrowserClient::BrowserClient(std::string vdrIp, int vdrPort) {
     DEBUGLOG("Construct BrowserClient");
 
     socket = std::make_shared<TSocket>(vdrIp, vdrPort);
-    transport = static_cast<const std::shared_ptr<TTransport>>(new TBufferedTransport(socket));
+    socket->setConnTimeout(3000);
+    socket->setSendTimeout(10000);
+    socket->setRecvTimeout(10000);
+    transport = static_cast<const std::shared_ptr<TTransport>>(new TBufferedTransport(socket, THRIFT_TRANSPORT_BUFFER_SIZE, THRIFT_TRANSPORT_BUFFER_SIZE));
     std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
 
     client = new CefBrowserClient(protocol);
@@ -33,10 +37,9 @@ BrowserClient::~BrowserClient() {
     CefBrowserClient *clientOld = client;
     client = nullptr;
 
-    if (transport && transport->isOpen()) {
-        transport->close();
-        transport = nullptr;
-    }
+    // no transport->close(), see reset()
+    socket->close();
+    transport = nullptr;
 
     delete clientOld;
 }
@@ -73,7 +76,20 @@ bool BrowserClient::connect() {
     return true;
 }
 
+// TBufferedTransport::close() writes the buffer. After a failed write it may still
+// hold the rest of the request: that fails again on the broken socket, and the
+// exception in the catch block terminates the program. After a reconnect it would be
+// sent before the next request. Close the socket and start with a new transport.
+void BrowserClient::reset() {
+    socket->close();
+    transport = std::make_shared<TBufferedTransport>(socket, THRIFT_TRANSPORT_BUFFER_SIZE, THRIFT_TRANSPORT_BUFFER_SIZE);
+    delete client;
+    client = new CefBrowserClient(std::make_shared<TBinaryProtocol>(transport));
+}
+
 bool BrowserClient::ping() {
+    std::lock_guard<std::recursive_mutex> lock(browser_send_mutex);
+
     // DEBUGLOG("BrowserClient::ping");
 
     if (!connect()) {
@@ -86,7 +102,7 @@ bool BrowserClient::ping() {
     } catch (OperationFailed &err) {
         return false;
     } catch (TException &err) {
-        transport->close();
+        reset();
         return false;
     }
 }
@@ -94,18 +110,30 @@ bool BrowserClient::ping() {
 template <typename F> bool BrowserClient::processInternal(F&& request) {
     std::lock_guard<std::recursive_mutex> lock(browser_send_mutex);
 
-    if (!ping()) {
-        return false;
+    // no ping before every request, that doubles the round trips.
+    // If the connection is broken, reconnect once and repeat the request.
+    for (int attempt = 0; attempt < 2; ++attempt) {
+        if (!connect()) {
+            return false;
+        }
+
+        try {
+            return request();
+        } catch (OperationFailed &err) {
+            return false;
+        } catch (TTransportException &err) {
+            reset();
+            if (err.getType() == TTransportException::TIMED_OUT) {
+                // the request may have been processed, don't repeat it
+                return false;
+            }
+        } catch (TException &err) {
+            reset();
+            return false;
+        }
     }
 
-    try {
-        return request();
-    } catch (OperationFailed &err) {
-        return false;
-    } catch (TException &err) {
-       transport->close();
-       return false;
-    }
+    return false;
 }
 
 bool BrowserClient::LoadUrl(const std::string& url) {
@@ -210,5 +238,63 @@ bool BrowserClient::StopVideo(const std::string& reason) {
         input.reason = reason;
 
         return client->StopVideo(input);
+    });
+}
+
+bool BrowserClient::PlayerStatus(int64_t position, int state) {
+    return processInternal([&]() -> bool {
+        PlayerStatusType input;
+        input.position = position;
+        input.state = state;
+
+        return client->PlayerStatus(input);
+    });
+}
+
+bool BrowserClient::StreamEvent(int componentTag, int eventId, const std::string& privateData, const std::string& status) {
+    DEBUGLOG("BrowserClient::StreamEvent: tag %d, id %d, %s", componentTag, eventId, status.c_str());
+
+    return processInternal([&]() -> bool {
+        StreamEventType input;
+        input.componentTag = componentTag;
+        input.eventId = eventId;
+        input.privateData = privateData;
+        input.status = status;
+
+        return client->StreamEvent(input);
+    });
+}
+
+bool BrowserClient::SetRenderParameters(int width, int frameRate) {
+    DEBUGLOG("BrowserClient::SetRenderParameters: width %d, frame rate %d", width, frameRate);
+
+    return processInternal([&]() -> bool {
+        RenderParametersType input;
+        input.width = width;
+        input.frameRate = frameRate;
+
+        return client->SetRenderParameters(input);
+    });
+}
+
+bool BrowserClient::SetBrowserOptions(bool mse, bool zdfQuirks, bool sharedMemory) {
+    DEBUGLOG("BrowserClient::SetBrowserOptions: mse %d, zdf quirks %d, shared memory %d", mse, zdfQuirks, sharedMemory);
+
+    return processInternal([&]() -> bool {
+        BrowserOptionsType input;
+        input.mse = mse;
+        input.zdfQuirks = zdfQuirks;
+        input.sharedMemory = sharedMemory;
+
+        return client->SetBrowserOptions(input);
+    });
+}
+
+bool BrowserClient::PageTitle(std::string& title) {
+    DEBUGLOG("BrowserClient::PageTitle");
+
+    return processInternal([&]() -> bool {
+        client->PageTitle(title);
+        return true;
     });
 }

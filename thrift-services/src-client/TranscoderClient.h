@@ -58,14 +58,44 @@ public:
 
     bool AudioInfo(std::string& result, const std::string& streamId);
 
+    bool DownloadLookup(DownloadLookupResult& result, const DownloadLookupType& input);
+
+    bool DownloadStart(std::string& error, const DownloadStartType& input);
+
+    bool DownloadList(std::vector<DownloadInfo>& result);
+
+    bool DownloadRemove(const std::string& id);
+
+    bool DownloadRetry(std::string& error, const std::string& id);
+
+    bool DownloadConvert(std::string& error, const std::string& id, int reserve);
+
     bool GetVideo(std::string& result, const VideoType& input);
+
+    bool MseStart(std::string& result,
+                  const std::string& responseIp,
+                  const std::string& responsePort,
+                  const std::string& vdrIp,
+                  const std::string& vdrPort,
+                  const std::string& postfix,
+                  const std::string& duration,
+                  const std::vector<std::string>& tracks);
+
+    // returns false if the buffer of the transcoder is full or the request failed
+    bool MseAppend(const std::string& streamId, int track, const std::string& data);
+
+    bool MseReset(const std::string& streamId);
+
+    bool MseEndOfStream(const std::string& streamId);
 
 private:
     bool connect();
+    void reset();
     template <typename F> bool processInternal(F &&request);
 
 private:
     RemoteTranscoderClient *client;
+    std::shared_ptr<TSocket> socket;
     std::shared_ptr<TTransport> transport;
     std::recursive_mutex transcoder_send_mutex;
 };

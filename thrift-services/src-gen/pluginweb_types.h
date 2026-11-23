@@ -26,6 +26,12 @@ class ProcessOsdUpdateType;
 
 class ProcessOsdUpdateQOIType;
 
+class OsdRectType;
+
+class ProcessOsdFrameType;
+
+class ProcessOsdShmType;
+
 class ProcessTSPacketType;
 
 class StartVideoType;
@@ -35,6 +41,14 @@ class VideoSizeType;
 class ResetVideoType;
 
 class SelectAudioTrackType;
+
+class SelectSubtitleTrackType;
+
+class StreamEventFilterType;
+
+class SwitchChannelType;
+
+class OsdEmptyType;
 
 typedef struct _ProcessOsdUpdateType__isset {
   _ProcessOsdUpdateType__isset() : disp_width(false), disp_height(false), x(false), y(false), width(false), height(false), data(false) {}
@@ -148,6 +162,154 @@ void swap(ProcessOsdUpdateQOIType &a, ProcessOsdUpdateQOIType &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const ProcessOsdUpdateQOIType& obj);
 
+typedef struct _OsdRectType__isset {
+  _OsdRectType__isset() : x(false), y(false), width(false), height(false), data(false) {}
+  bool x :1;
+  bool y :1;
+  bool width :1;
+  bool height :1;
+  bool data :1;
+} _OsdRectType__isset;
+
+class OsdRectType : public virtual ::apache::thrift::TBase {
+ public:
+
+  OsdRectType(const OsdRectType&);
+  OsdRectType& operator=(const OsdRectType&);
+  OsdRectType() noexcept;
+
+  virtual ~OsdRectType() noexcept;
+  int32_t x;
+  int32_t y;
+  int32_t width;
+  int32_t height;
+  std::string data;
+
+  _OsdRectType__isset __isset;
+
+  void __set_x(const int32_t val);
+
+  void __set_y(const int32_t val);
+
+  void __set_width(const int32_t val);
+
+  void __set_height(const int32_t val);
+
+  void __set_data(const std::string& val);
+
+  bool operator == (const OsdRectType & rhs) const;
+  bool operator != (const OsdRectType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const OsdRectType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(OsdRectType &a, OsdRectType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const OsdRectType& obj);
+
+typedef struct _ProcessOsdFrameType__isset {
+  _ProcessOsdFrameType__isset() : render_width(false), render_height(false), qoi(false), rects(false) {}
+  bool render_width :1;
+  bool render_height :1;
+  bool qoi :1;
+  bool rects :1;
+} _ProcessOsdFrameType__isset;
+
+class ProcessOsdFrameType : public virtual ::apache::thrift::TBase {
+ public:
+
+  ProcessOsdFrameType(const ProcessOsdFrameType&);
+  ProcessOsdFrameType& operator=(const ProcessOsdFrameType&);
+  ProcessOsdFrameType() noexcept;
+
+  virtual ~ProcessOsdFrameType() noexcept;
+  int32_t render_width;
+  int32_t render_height;
+  bool qoi;
+  std::vector<OsdRectType>  rects;
+
+  _ProcessOsdFrameType__isset __isset;
+
+  void __set_render_width(const int32_t val);
+
+  void __set_render_height(const int32_t val);
+
+  void __set_qoi(const bool val);
+
+  void __set_rects(const std::vector<OsdRectType> & val);
+
+  bool operator == (const ProcessOsdFrameType & rhs) const;
+  bool operator != (const ProcessOsdFrameType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ProcessOsdFrameType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ProcessOsdFrameType &a, ProcessOsdFrameType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const ProcessOsdFrameType& obj);
+
+typedef struct _ProcessOsdShmType__isset {
+  _ProcessOsdShmType__isset() : render_width(false), render_height(false), name(false), rects(false) {}
+  bool render_width :1;
+  bool render_height :1;
+  bool name :1;
+  bool rects :1;
+} _ProcessOsdShmType__isset;
+
+class ProcessOsdShmType : public virtual ::apache::thrift::TBase {
+ public:
+
+  ProcessOsdShmType(const ProcessOsdShmType&);
+  ProcessOsdShmType& operator=(const ProcessOsdShmType&);
+  ProcessOsdShmType() noexcept;
+
+  virtual ~ProcessOsdShmType() noexcept;
+  int32_t render_width;
+  int32_t render_height;
+  std::string name;
+  std::vector<OsdRectType>  rects;
+
+  _ProcessOsdShmType__isset __isset;
+
+  void __set_render_width(const int32_t val);
+
+  void __set_render_height(const int32_t val);
+
+  void __set_name(const std::string& val);
+
+  void __set_rects(const std::vector<OsdRectType> & val);
+
+  bool operator == (const ProcessOsdShmType & rhs) const;
+  bool operator != (const ProcessOsdShmType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ProcessOsdShmType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ProcessOsdShmType &a, ProcessOsdShmType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const ProcessOsdShmType& obj);
+
 typedef struct _ProcessTSPacketType__isset {
   _ProcessTSPacketType__isset() : ts(false) {}
   bool ts :1;
@@ -185,8 +347,9 @@ void swap(ProcessTSPacketType &a, ProcessTSPacketType &b) noexcept;
 std::ostream& operator<<(std::ostream& out, const ProcessTSPacketType& obj);
 
 typedef struct _StartVideoType__isset {
-  _StartVideoType__isset() : videoInfo(false) {}
+  _StartVideoType__isset() : videoInfo(false), mse(true) {}
   bool videoInfo :1;
+  bool mse :1;
 } _StartVideoType__isset;
 
 class StartVideoType : public virtual ::apache::thrift::TBase {
@@ -198,10 +361,13 @@ class StartVideoType : public virtual ::apache::thrift::TBase {
 
   virtual ~StartVideoType() noexcept;
   std::string videoInfo;
+  bool mse;
 
   _StartVideoType__isset __isset;
 
   void __set_videoInfo(const std::string& val);
+
+  void __set_mse(const bool val);
 
   bool operator == (const StartVideoType & rhs) const;
   bool operator != (const StartVideoType &rhs) const {
@@ -269,8 +435,9 @@ void swap(VideoSizeType &a, VideoSizeType &b) noexcept;
 std::ostream& operator<<(std::ostream& out, const VideoSizeType& obj);
 
 typedef struct _ResetVideoType__isset {
-  _ResetVideoType__isset() : videoInfo(false) {}
+  _ResetVideoType__isset() : videoInfo(false), mse(true) {}
   bool videoInfo :1;
+  bool mse :1;
 } _ResetVideoType__isset;
 
 class ResetVideoType : public virtual ::apache::thrift::TBase {
@@ -282,10 +449,13 @@ class ResetVideoType : public virtual ::apache::thrift::TBase {
 
   virtual ~ResetVideoType() noexcept;
   std::string videoInfo;
+  bool mse;
 
   _ResetVideoType__isset __isset;
 
   void __set_videoInfo(const std::string& val);
+
+  void __set_mse(const bool val);
 
   bool operator == (const ResetVideoType & rhs) const;
   bool operator != (const ResetVideoType &rhs) const {
@@ -339,6 +509,166 @@ class SelectAudioTrackType : public virtual ::apache::thrift::TBase {
 void swap(SelectAudioTrackType &a, SelectAudioTrackType &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const SelectAudioTrackType& obj);
+
+typedef struct _SelectSubtitleTrackType__isset {
+  _SelectSubtitleTrackType__isset() : subtitleTrack(false) {}
+  bool subtitleTrack :1;
+} _SelectSubtitleTrackType__isset;
+
+class SelectSubtitleTrackType : public virtual ::apache::thrift::TBase {
+ public:
+
+  SelectSubtitleTrackType(const SelectSubtitleTrackType&);
+  SelectSubtitleTrackType& operator=(const SelectSubtitleTrackType&);
+  SelectSubtitleTrackType() noexcept;
+
+  virtual ~SelectSubtitleTrackType() noexcept;
+  std::string subtitleTrack;
+
+  _SelectSubtitleTrackType__isset __isset;
+
+  void __set_subtitleTrack(const std::string& val);
+
+  bool operator == (const SelectSubtitleTrackType & rhs) const;
+  bool operator != (const SelectSubtitleTrackType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SelectSubtitleTrackType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SelectSubtitleTrackType &a, SelectSubtitleTrackType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const SelectSubtitleTrackType& obj);
+
+typedef struct _StreamEventFilterType__isset {
+  _StreamEventFilterType__isset() : componentTag(false), enable(false) {}
+  bool componentTag :1;
+  bool enable :1;
+} _StreamEventFilterType__isset;
+
+class StreamEventFilterType : public virtual ::apache::thrift::TBase {
+ public:
+
+  StreamEventFilterType(const StreamEventFilterType&) noexcept;
+  StreamEventFilterType& operator=(const StreamEventFilterType&) noexcept;
+  StreamEventFilterType() noexcept;
+
+  virtual ~StreamEventFilterType() noexcept;
+  int32_t componentTag;
+  bool enable;
+
+  _StreamEventFilterType__isset __isset;
+
+  void __set_componentTag(const int32_t val);
+
+  void __set_enable(const bool val);
+
+  bool operator == (const StreamEventFilterType & rhs) const;
+  bool operator != (const StreamEventFilterType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const StreamEventFilterType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(StreamEventFilterType &a, StreamEventFilterType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const StreamEventFilterType& obj);
+
+typedef struct _SwitchChannelType__isset {
+  _SwitchChannelType__isset() : channelId(false), onid(false), tsid(false), sid(false) {}
+  bool channelId :1;
+  bool onid :1;
+  bool tsid :1;
+  bool sid :1;
+} _SwitchChannelType__isset;
+
+class SwitchChannelType : public virtual ::apache::thrift::TBase {
+ public:
+
+  SwitchChannelType(const SwitchChannelType&);
+  SwitchChannelType& operator=(const SwitchChannelType&);
+  SwitchChannelType() noexcept;
+
+  virtual ~SwitchChannelType() noexcept;
+  std::string channelId;
+  int32_t onid;
+  int32_t tsid;
+  int32_t sid;
+
+  _SwitchChannelType__isset __isset;
+
+  void __set_channelId(const std::string& val);
+
+  void __set_onid(const int32_t val);
+
+  void __set_tsid(const int32_t val);
+
+  void __set_sid(const int32_t val);
+
+  bool operator == (const SwitchChannelType & rhs) const;
+  bool operator != (const SwitchChannelType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SwitchChannelType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SwitchChannelType &a, SwitchChannelType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const SwitchChannelType& obj);
+
+typedef struct _OsdEmptyType__isset {
+  _OsdEmptyType__isset() : empty(false) {}
+  bool empty :1;
+} _OsdEmptyType__isset;
+
+class OsdEmptyType : public virtual ::apache::thrift::TBase {
+ public:
+
+  OsdEmptyType(const OsdEmptyType&) noexcept;
+  OsdEmptyType& operator=(const OsdEmptyType&) noexcept;
+  OsdEmptyType() noexcept;
+
+  virtual ~OsdEmptyType() noexcept;
+  bool empty;
+
+  _OsdEmptyType__isset __isset;
+
+  void __set_empty(const bool val);
+
+  bool operator == (const OsdEmptyType & rhs) const;
+  bool operator != (const OsdEmptyType &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const OsdEmptyType & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(OsdEmptyType &a, OsdEmptyType &b) noexcept;
+
+std::ostream& operator<<(std::ostream& out, const OsdEmptyType& obj);
 
 } // namespace
 

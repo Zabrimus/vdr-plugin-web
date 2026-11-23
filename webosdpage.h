@@ -1,10 +1,13 @@
 #pragma once
 
+#include <mutex>
+
 #include <string>
 #include <map>
 #include <thread>
 #include <vdr/osdbase.h>
 #include <vdr/player.h>
+#include "pluginweb_types.h"
 
 enum OSD_MODE {
     OSD,
@@ -12,11 +15,15 @@ enum OSD_MODE {
     CLOSED
 };
 
+// protects the pages and their OSD, the thrift threads draw while VDR may close a page
+extern std::recursive_mutex pixmap_mutex;
+
 class WebOSDPage : public cControl {
 
 private:
     cPixmap *pixmap = nullptr;
     cPixmap *pixmapVol = nullptr;
+    cPixmap *pixmapHint = nullptr;     // "HbbTV is running" while the page shows nothing
     cOsd* osd;
 
     tColor clrVolumeBarUpper = clrRed;
@@ -34,16 +41,33 @@ private:
 
     OSD_MODE currentMode;
 
+    // the OSD is given free for a menu of VDR, Display() shows it again
+    bool hidden = false;
+
+    // the application has shown something: an empty page afterwards gets the hint
+    bool contentSeen = false;
+    bool closeEmptyPage = false;
+    cTimeMs lastKey;
+
+    void CheckEmptyPage(eKeys key);
+    void ShowHint(bool show);
+    static void DrawKey(cPixmap *pixmap, const cRect& rect, tColor color);
+
+    void DestroyOsd();
+
 private:
     explicit WebOSDPage(bool useOutputDeviceScale, OSD_MODE osdMode);
 
-    bool scaleAndPaint(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height);
+    bool scaleAndPaint(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height, bool flush = true);
 
     void DeleteVolume();
 
 public:
     static WebOSDPage* Create(bool useOutputDeviceScale, OSD_MODE osdMode);
     static WebOSDPage* Get();
+
+    // the browser reports a page without visible pixels
+    static void SetEmpty(bool empty);
     static bool IsOpen();
 
     ~WebOSDPage() override;
@@ -51,6 +75,7 @@ public:
     void Show() override;
     cOsdObject* GetInfo() override;
     void Display();
+    void HideOsd();
     void SetOsdSize();
 
     void Hide() override;
@@ -63,6 +88,15 @@ public:
     // Using both methods in parallel leads to undefined behaviour.
     bool drawImage(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height);
     bool drawImageQOI(const std::string qoiBuffer, const int render_width, const int render_height, const int x, const int y);
+
+    // all regions of a frame, the OSD is flushed once
+    bool drawFrame(const pluginweb::ProcessOsdFrameType &frame);
+
+    // the regions of the frame in shared memory, false: the memory can't be read
+    bool drawShmFrame(const pluginweb::ProcessOsdShmType &frame);
+
+    // the mapping of the shared memory, at the end of the plugin
+    static void ReleaseShm();
 
     void DrawVolume(int volume = 0);
 

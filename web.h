@@ -19,7 +19,7 @@
 #include <thrift/transport/TSocket.h>
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/transport/TBufferTransports.h>
-#include <thrift/server/TThreadPoolServer.h>
+#include <thrift/server/TThreadedServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 
@@ -33,10 +33,17 @@ using namespace ::common;
 
 static const char *VERSION = "0.0.1";
 static const char *DESCRIPTION = "Uses the cefbrowser to show HTTP Pages, HbbTV applications and videos";
-static const char *MAINMENUENTRY = "Web";
-static char* MAINMENUENTRYALT = nullptr;
 
 extern BrowserClient* browserClient;
+
+// Rec during a video: the selection of the MediathekView entry
+void OpenDownloads();
+
+// the key of the setup: the list of the downloads, then the application again
+void OpenDownloadList();
+
+// after a download menu: show the page of a video or the application again
+void ReturnFromDownloads();
 
 class cRegularWorker: public cThread {
     private:
@@ -53,6 +60,7 @@ class cRegularWorker: public cThread {
 
 class cPluginWeb : public cPlugin {
 private:
+    cString mainMenuEntry;     // with the status of the downloads
     std::unique_ptr<cRegularWorker> regularWorker;
 
 public:
@@ -74,8 +82,9 @@ public:
     cString Active() override;
     time_t WakeupTime() override;
 
-    const char *MainMenuEntry() override { return MAINMENUENTRYALT != nullptr ? MAINMENUENTRYALT : MAINMENUENTRY; }
+    const char *MainMenuEntry() override;
     cOsdObject *MainMenuAction() override;
+    cOsdObject *DownloadMenu(int command);
     cMenuSetupPage *SetupMenu() override;
 
     bool SetupParse(const char *Name, const char *Value) override;
@@ -105,6 +114,13 @@ public:
     bool ResetVideo(const ResetVideoType& input) override;
     bool SelectAudioTrack(const SelectAudioTrackType& input) override;
     bool IsWebActive() override;
+    bool SelectSubtitleTrack(const SelectSubtitleTrackType& input) override;
+    bool EndOfStream() override;
+    bool StreamEventFilter(const StreamEventFilterType& input) override;
+    bool ProcessOsdFrame(const ProcessOsdFrameType& input) override;
+    bool SwitchChannel(const SwitchChannelType& input) override;
+    bool OsdEmpty(const OsdEmptyType& input) override;
+    bool ProcessOsdShm(const ProcessOsdShmType& input) override;
 };
 
 class VdrPluginWebCloneFactory : virtual public VdrPluginWebIfFactory {

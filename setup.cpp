@@ -1,0 +1,162 @@
+/*
+ * setup.cpp: setup of the web plugin
+ *
+ * See the README file for copyright information and how to reach the author.
+ */
+
+#include <vdr/config.h>
+#include <vdr/i18n.h>
+#include "setup.h"
+#include "web.h"
+#include "downloadmenu.h"
+
+cWebSetup webSetup;
+
+extern bool useOutputDeviceScale;
+
+int cWebSetup::Width() const {
+    static const int widths[] = { 0, 1280, 1920, 2560, 3840 };
+    return (resolution >= 0 && resolution <= 4) ? widths[resolution] : 0;
+}
+
+int cWebSetup::FrameRate() const {
+    static const int rates[] = { 0, 25, 30, 50, 60 };
+    return (frameRate >= 0 && frameRate <= 4) ? rates[frameRate] : 0;
+}
+
+int cWebSetup::DownloadMaxHeight() const {
+    static const int heights[] = { 0, 720, 576 };
+    return (downloadQuality >= 0 && downloadQuality <= 2) ? heights[downloadQuality] : 0;
+}
+
+eKeys cWebSetup::DownloadsKey() const {
+    static const eKeys keys[] = { kNone, kInfo, kStop, kBlue, kUser1, kUser2, kUser3, kUser4, kUser5, kUser6, kUser7, kUser8, kUser9 };
+    return (downloadsKey >= 0 && downloadsKey <= 12) ? keys[downloadsKey] : kNone;
+}
+
+void SendRenderParameters() {
+    if (browserClient == nullptr) {
+        return;
+    }
+
+    if (webSetup.Width() > 0 || webSetup.FrameRate() > 0) {
+        browserClient->SetRenderParameters(webSetup.Width(), webSetup.FrameRate());
+    }
+
+    // used by the next page
+    browserClient->SetBrowserOptions(webSetup.mse != 0, webSetup.zdfQuirks != 0, webSetup.osdSharedMemory != 0);
+}
+
+// 0 (never) or 5 to 60 seconds: 1 to 4 are skipped
+class cMenuEditAutoCloseItem : public cMenuEditIntItem {
+public:
+    cMenuEditAutoCloseItem(const char *Name, int *Value) : cMenuEditIntItem(Name, Value, 0, 60, tr("never")) {}
+
+    eOSState ProcessKey(eKeys Key) override {
+        int old = *value;
+        eOSState state = cMenuEditIntItem::ProcessKey(Key);
+
+        if (*value > 0 && *value < 5) {
+            *value = old == 0 ? 5 : 0;
+            Set();
+        }
+
+        return state;
+    }
+};
+
+cMenuSetupWeb::cMenuSetupWeb() {
+    hint = hbbtvHintSetup;
+    web = webSetup;
+
+    positions[0] = tr("bottom right");
+    positions[1] = tr("bottom left");
+    positions[2] = tr("top right");
+    positions[3] = tr("top left");
+
+    resolutions[0] = tr("browser default");
+    resolutions[1] = "1280x720";
+    resolutions[2] = "1920x1080";
+    resolutions[3] = "2560x1440";
+    resolutions[4] = "3840x2160";
+
+    frameRates[0] = tr("browser default");
+    frameRates[1] = "25";
+    frameRates[2] = "30";
+    frameRates[3] = "50";
+    frameRates[4] = "60";
+
+    qualities[0] = tr("best");
+    qualities[1] = tr("720p at most");
+    qualities[2] = "SD";
+
+    recordingModes[0] = tr("manually");
+    recordingModes[1] = tr("automatically");
+
+    downloadsKeys[0] = tr("none");
+    downloadsKeys[1] = tr("Key$Info");
+    downloadsKeys[2] = tr("Key$Stop");
+    downloadsKeys[3] = tr("Key$Blue");
+    for (int i = 0; i < 9; ++i) {
+        // a user key without a macro reaches the plugin, if VDR passes it on
+        downloadsKeys[4 + i] = cKey::ToString(eKeys(kUser1 + i), true);
+    }
+
+    Add(new cMenuEditBoolItem(tr("Show HbbTV hint"), &hint.enabled));
+    Add(new cMenuEditIntItem(tr("HbbTV hint duration (s)"), &hint.duration, 1, 60));
+    Add(new cMenuEditStraItem(tr("HbbTV hint position"), &hint.position, 4, positions));
+
+    Add(new cMenuEditStraItem(tr("Browser resolution"), &web.resolution, 5, resolutions));
+#ifdef ENABLE_FAST_SCALE
+    Add(new cMenuEditBoolItem(tr("Scale by output device"), &web.deviceScale));
+#endif
+    Add(new cMenuEditStraItem(tr("Browser frame rate"), &web.frameRate, 5, frameRates));
+    Add(new cMenuEditBoolItem(tr("Media Source Extensions"), &web.mse));
+    Add(new cMenuEditBoolItem(tr("ZDF special handling"), &web.zdfQuirks));
+    Add(new cMenuEditBoolItem(tr("OSD in shared memory"), &web.osdSharedMemory));
+    Add(new cMenuEditIntItem(tr("Max. download speed (Mbit/s)"), &web.downloadRate, 0, 1000, tr("unlimited")));
+    Add(new cMenuEditStraItem(tr("Download quality"), &web.downloadQuality, 3, qualities));
+    Add(new cMenuEditIntItem(tr("Keep free on the disk (GB)"), &web.downloadReserve, 0, 1000));
+    Add(new cMenuEditIntItem(tr("Downloads at the same time"), &web.downloadParallel, 1, 10));
+    Add(new cMenuEditStraItem(tr("Downloads as recording"), &web.downloadRecording, 2, recordingModes));
+    Add(new cMenuEditIntItem(tr("Lifetime of the recordings"), &web.recordingLifetime, 0, MAXLIFETIME));
+    Add(new cMenuEditStraItem(tr("Key for the downloads"), &web.downloadsKey, 13, downloadsKeys));
+    Add(downloadsItem = new cOsdItem(tr("Downloads...")));
+    Add(new cMenuEditAutoCloseItem(tr("Close HbbTV without display after (s)"), &web.autoClose));
+}
+
+void cMenuSetupWeb::Store() {
+    hbbtvHintSetup = hint;
+    webSetup = web;
+    useOutputDeviceScale = webSetup.deviceScale != 0;
+
+    SetupStore("HbbtvHint", hbbtvHintSetup.enabled);
+    SetupStore("HbbtvHintDuration", hbbtvHintSetup.duration);
+    SetupStore("HbbtvHintPosition", hbbtvHintSetup.position);
+
+    SetupStore("Resolution", webSetup.resolution);
+    SetupStore("DeviceScale", webSetup.deviceScale);
+    SetupStore("FrameRate", webSetup.frameRate);
+    SetupStore("Mse", webSetup.mse);
+    SetupStore("ZdfQuirks", webSetup.zdfQuirks);
+    SetupStore("OsdSharedMemory", webSetup.osdSharedMemory);
+    SetupStore("DownloadRate", webSetup.downloadRate);
+    SetupStore("DownloadQuality", webSetup.downloadQuality);
+    SetupStore("DownloadReserve", webSetup.downloadReserve);
+    SetupStore("DownloadParallel", webSetup.downloadParallel);
+    SetupStore("DownloadRecording", webSetup.downloadRecording);
+    SetupStore("RecordingLifetime", webSetup.recordingLifetime);
+    SetupStore("DownloadsKey", webSetup.downloadsKey);
+    SetupStore("AutoClose", webSetup.autoClose);
+
+    SendRenderParameters();
+}
+
+eOSState cMenuSetupWeb::ProcessKey(eKeys Key) {
+    // the list of the downloads, back to the setup afterwards
+    if (!HasSubMenu() && Key == kOk && Get(Current()) == downloadsItem) {
+        return AddSubMenu(new cMenuWebDownloads(true));
+    }
+
+    return cMenuSetupPage::ProcessKey(Key);
+}

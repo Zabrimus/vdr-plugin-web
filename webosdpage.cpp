@@ -1,17 +1,31 @@
+#include <vdr/config.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <vdr/device.h>
 #include <vdr/remote.h>
 #include <Magick++/Blob.h>
 #include <Magick++/Image.h>
+#include <atomic>
 #include <chrono>
 #include <mutex>
 #include "webosdpage.h"
+#include <algorithm>
+
+extern bool measureOsd;
 #include "web.h"
+#include "setup.h"
 
 // #define MEASURE_SCALE_TIME 1
 // #define DEBUG_SAVE_OSD_IMAGE 1
 
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
+
+// the state of the browser page, also before a WebOSDPage exists
+static std::atomic<bool> pageEmpty(false);
+static std::atomic<uint64_t> pageEmptySince(0);
 
 std::recursive_mutex pixmap_mutex;
 
@@ -47,8 +61,12 @@ std::map<int, std::string> keyMap({
         {kStop, "VK_STOP"},
         {kFastFwd, "VK_FAST_FWD"},
         {kFastRew, "VK_REWIND"},
-        {kNext, "VK_PAGE_DOWN"},
-        {kPrev, "VK_PAGE_UP"},
+        {kPlayPause, "VK_PLAY_PAUSE"},
+        // HbbTV: next/previous are the skip keys of the VCR keyset
+        {kNext, "VK_TRACK_NEXT"},
+        {kPrev, "VK_TRACK_PREV"},
+        {kInfo, "VK_INFO"},
+        {kSubtitles, "VK_SUBTITLE"},
 });
 
 WebOSDPage *WebOSDPage::Create(bool useOutputDeviceScale, OSD_MODE osdMode) {
@@ -57,6 +75,7 @@ WebOSDPage *WebOSDPage::Create(bool useOutputDeviceScale, OSD_MODE osdMode) {
             if (webOsdPage == nullptr) {
                 webOsdPage = new WebOSDPage(useOutputDeviceScale, osdMode);
             }
+            webOsdPage->useOutputDeviceScale = useOutputDeviceScale;
             currentOsdMode = OSD;
             return webOsdPage;
 
@@ -64,6 +83,7 @@ WebOSDPage *WebOSDPage::Create(bool useOutputDeviceScale, OSD_MODE osdMode) {
             if (playerWebOsdPage == nullptr) {
                 playerWebOsdPage = new WebOSDPage(useOutputDeviceScale, osdMode);
             }
+            playerWebOsdPage->useOutputDeviceScale = useOutputDeviceScale;
             currentOsdMode = PLAYER;
             return playerWebOsdPage;
 
@@ -105,21 +125,17 @@ WebOSDPage::WebOSDPage(bool useOutputDeviceScale, OSD_MODE osdMode)
     lastVolumeTime = time(NULL);
 
     currentMode = osdMode;
+
+    // the browser may show the application already
+    contentSeen = !pageEmpty;
+    lastKey.Set();
 }
 
 WebOSDPage::~WebOSDPage() {
     dsyslog("[vdrweb] Destruct WebOSDPage, osdMode %d", (int)currentMode);
 
     std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
-    if (osd != nullptr) {
-        if (pixmap != nullptr) {
-            osd->DestroyPixmap(pixmap);
-        }
-        delete osd;
-        osd = nullptr;
-    }
-
-    pixmap = nullptr;
+    DestroyOsd();
 
     switch (currentMode) {
         case OSD:
@@ -143,26 +159,171 @@ void WebOSDPage::Show() {
     Display();
 }
 
-void WebOSDPage::Display() {
-    dsyslog("[vdrweb] WebOSDPage Display\n");
-    if (osd != nullptr) {
-        std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+void WebOSDPage::SetEmpty(bool empty) {
+    if (empty && !pageEmpty) {
+        pageEmptySince = cTimeMs::Now();
+    }
+    pageEmpty = empty;
+}
 
+void WebOSDPage::ShowHint(bool show) {
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+    if (osd == nullptr || show == (pixmapHint != nullptr)) {
+        return;
+    }
+
+    if (!show) {
+        osd->DestroyPixmap(pixmapHint);
+        pixmapHint = nullptr;
+        osd->Flush();
+        return;
+    }
+
+    // "HbbTV  (red key) Start  (MENU key) Close"
+    const cFont *font = cFont::GetFont(fontOsd);
+    const char *hbbtv = "HbbTV";
+    const char *start = tr("Start");
+    const char *closeText = tr("Close");
+    const char *menu = "MENU";
+
+    int lineHeight = font->Height();
+    int border = lineHeight / 2;
+    int gap = lineHeight / 4;            // between a key and its text
+    int space = lineHeight;              // between the parts
+    int keyHeight = lineHeight * 3 / 4;
+    cFont *keyFont = cFont::CreateFont(Setup.FontSml, keyHeight / 2);
+
+    int redWidth = keyHeight * 3 / 2;
+    int menuWidth = keyFont->Width(menu) + keyHeight * 2 / 3;
+    int w = border + font->Width(hbbtv) + space + redWidth + gap + font->Width(start) +
+            space + menuWidth + gap + font->Width(closeText) + border;
+    int h = lineHeight + border;
+    int x = disp_width - w - disp_width / 20;
+    int y = disp_height / 20;
+
+    pixmapHint = osd->CreatePixmap(7, cRect(x, y, w, h));
+    LOCK_PIXMAPS;
+    pixmapHint->Fill(0xC0000000);
+
+    int textY = border / 2;
+    int keyY = textY + (lineHeight - keyHeight) / 2;
+    int pos = border;
+
+    auto text = [&](const char *s) {
+        pixmapHint->DrawText(cPoint(pos, textY), s, clrWhite, clrTransparent, font);
+        pos += font->Width(s);
+    };
+
+    text(hbbtv);
+    pos += space;
+    DrawKey(pixmapHint, cRect(pos, keyY, redWidth, keyHeight), 0xFFE01010);
+    pos += redWidth + gap;
+    text(start);
+    pos += space;
+    DrawKey(pixmapHint, cRect(pos, keyY, menuWidth, keyHeight), 0xFF505050);
+    pixmapHint->DrawText(cPoint(pos, keyY), menu, clrWhite, clrTransparent, keyFont, menuWidth, keyHeight, taCenter);
+    pos += menuWidth + gap;
+    text(closeText);
+
+    delete keyFont;
+    osd->Flush();
+}
+
+// a key of the remote control: a light frame and rounded corners
+void WebOSDPage::DrawKey(cPixmap *pixmap, const cRect& rect, tColor color) {
+    auto rounded = [pixmap](const cRect& r, tColor c) {
+        int d = std::max(2, r.Height() / 3);
+        pixmap->DrawRectangle(cRect(r.X() + d, r.Y(), r.Width() - 2 * d, r.Height()), c);
+        pixmap->DrawRectangle(cRect(r.X(), r.Y() + d, d, r.Height() - 2 * d), c);
+        pixmap->DrawRectangle(cRect(r.Right() - d + 1, r.Y() + d, d, r.Height() - 2 * d), c);
+        pixmap->DrawEllipse(cRect(r.Right() - d + 1, r.Y(), d, d), c, 1);
+        pixmap->DrawEllipse(cRect(r.X(), r.Y(), d, d), c, 2);
+        pixmap->DrawEllipse(cRect(r.X(), r.Bottom() - d + 1, d, d), c, 3);
+        pixmap->DrawEllipse(cRect(r.Right() - d + 1, r.Bottom() - d + 1, d, d), c, 4);
+    };
+
+    int frame = std::max(1, rect.Height() / 12);
+    rounded(rect, 0xFFD0D0D0);
+    rounded(cRect(rect.X() + frame, rect.Y() + frame, rect.Width() - 2 * frame, rect.Height() - 2 * frame), color);
+}
+
+// The application shows nothing, e.g. the red button hint has disappeared: a hint
+// tells that HbbTV is still open, and without a key it is closed after a while.
+void WebOSDPage::CheckEmptyPage(eKeys key) {
+    if (currentMode != OSD || hidden) {
+        return;
+    }
+
+    if (key != kNone) {
+        lastKey.Set();
+    }
+
+    bool empty = pageEmpty;
+    if (!empty) {
+        contentSeen = true;
+    }
+
+    uint64_t now = cTimeMs::Now();
+    uint64_t emptyFor = now - pageEmptySince;
+
+    // a short gap while the application changes its page shows no hint
+    bool hint = empty && contentSeen && emptyFor >= 1000;
+    ShowHint(hint);
+
+    int seconds = webSetup.autoClose;
+    if (hint && seconds > 0 && emptyFor >= (uint64_t) seconds * 1000 && lastKey.Elapsed() >= (uint64_t) seconds * 1000) {
+        isyslog("[vdrweb] the application shows nothing for %d s, close", seconds);
+        closeEmptyPage = true;
+    }
+}
+
+void WebOSDPage::DestroyOsd() {
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+
+    if (osd != nullptr) {
         if (pixmap != nullptr) {
             osd->DestroyPixmap(pixmap);
             pixmap = nullptr;
         }
 
+        if (pixmapVol != nullptr) {
+            osd->DestroyPixmap(pixmapVol);
+            pixmapVol = nullptr;
+        }
+
+        if (pixmapHint != nullptr) {
+            osd->DestroyPixmap(pixmapHint);
+            pixmapHint = nullptr;
+        }
+
         delete osd;
         osd = nullptr;
     }
+}
 
-    osd = cOsdProvider::NewOsd(0, 0, 5);
+void WebOSDPage::HideOsd() {
+    dsyslog("[vdrweb] WebOSDPage HideOsd");
 
-    double ph;
-    cDevice::PrimaryDevice()->GetOsdSize(disp_width, disp_height, ph);
-    tArea area {0, 0, disp_width - 1, disp_height - 1, 32};
-    auto areaResult = osd->SetAreas(&area, 1);
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+    hidden = true;
+    DestroyOsd();
+}
+
+void WebOSDPage::Display() {
+    dsyslog("[vdrweb] WebOSDPage Display\n");
+    DestroyOsd();
+
+    eOsdError areaResult;
+    {
+        std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+        hidden = false;
+        osd = cOsdProvider::NewOsd(0, 0, 5);
+
+        double ph;
+        cDevice::PrimaryDevice()->GetOsdSize(disp_width, disp_height, ph);
+        tArea area {0, 0, disp_width - 1, disp_height - 1, 32};
+        areaResult = osd->SetAreas(&area, 1);
+    }
 
     if (areaResult == oeOk) {
         isyslog("[vdrweb] Area size set to %d:%d - %d:%d", 0, 0, disp_width - 1, disp_height - 1);
@@ -177,6 +338,10 @@ void WebOSDPage::SetOsdSize() {
     dsyslog("[vdrweb] webospage SetOsdSize()");
 
     std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+    if (osd == nullptr) {
+        return;
+    }
+
     if (pixmap != nullptr) {
         dsyslog("[vdrweb] webosdpage SetOsdSize, Destroy old pixmap");
 
@@ -242,6 +407,192 @@ bool WebOSDPage::drawImage(uint8_t* image, int render_width, int render_height, 
     return scaleAndPaint(image, render_width, render_height, x, y, width, height);
 }
 
+// measurement (-m): time from a key to its frame and statistics of the OSD frames
+static std::mutex measureMutex;
+static eKeys measureKey = kNone;
+static cTimeMs measureKeyTime;
+
+struct tOsdStats {
+    cTimeMs start;
+    int frames = 0;
+    int rects = 0;
+    size_t bytes = 0;
+    uint64_t draw = 0;
+    uint64_t drawMax = 0;
+    uint64_t flush = 0;
+    uint64_t flushMax = 0;
+};
+
+static tOsdStats osdStats;
+
+static void measureFrame(int rects, size_t bytes, uint64_t draw, uint64_t flush) {
+    std::lock_guard<std::mutex> lock(measureMutex);
+
+    if (measureKey != kNone) {
+        isyslog("[vdrweb] [measure] key %s: frame drawn after %d ms (draw %d ms, flush %d ms)",
+                cKey::ToString(measureKey), (int) measureKeyTime.Elapsed(), (int) draw, (int) flush);
+        measureKey = kNone;
+    }
+
+    osdStats.frames++;
+    osdStats.rects += rects;
+    osdStats.bytes += bytes;
+    osdStats.draw += draw;
+    osdStats.drawMax = std::max(osdStats.drawMax, draw);
+    osdStats.flush += flush;
+    osdStats.flushMax = std::max(osdStats.flushMax, flush);
+
+    uint64_t elapsed = osdStats.start.Elapsed();
+    if (elapsed >= 5000) {
+        isyslog("[vdrweb] [measure] OSD: %d frames in %.1f s, %.1f regions/frame, %.1f MB, draw avg %.1f max %d ms, flush avg %.1f max %d ms",
+                osdStats.frames, elapsed / 1000.0, (double) osdStats.rects / osdStats.frames, osdStats.bytes / 1048576.0,
+                (double) osdStats.draw / osdStats.frames, (int) osdStats.drawMax,
+                (double) osdStats.flush / osdStats.frames, (int) osdStats.flushMax);
+        osdStats = tOsdStats();
+    }
+}
+
+bool WebOSDPage::drawFrame(const pluginweb::ProcessOsdFrameType &frame) {
+    bool ok = true;
+    cTimeMs drawTime;
+
+    for (const auto &r : frame.rects) {
+        if (frame.qoi) {
+            qoi_desc desc;
+            void *image = qoi_decode(r.data.c_str(), (int) r.data.size(), &desc, 4);
+            if (image == nullptr) {
+                esyslog("[vdrweb] failed to decode qoi OSD image");
+                ok = false;
+                continue;
+            }
+
+            ok &= scaleAndPaint(static_cast<uint8_t *>(image), frame.render_width, frame.render_height, r.x, r.y, (int) desc.width, (int) desc.height, false);
+            free(image);
+        } else {
+            if ((int64_t) r.width * r.height * 4 != (int64_t) r.data.size()) {
+                ok = false;
+                continue;
+            }
+
+            ok &= scaleAndPaint((uint8_t *) r.data.c_str(), frame.render_width, frame.render_height, r.x, r.y, r.width, r.height, false);
+        }
+    }
+
+    uint64_t draw = drawTime.Elapsed();
+    cTimeMs flushTime;
+
+    // one flush for the whole frame
+    {
+        std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+        if (osd != nullptr) {
+            osd->Flush();
+        }
+    }
+
+    if (measureOsd) {
+        size_t bytes = 0;
+        for (const auto &r : frame.rects) {
+            bytes += r.data.size();
+        }
+        measureFrame((int) frame.rects.size(), bytes, draw, flushTime.Elapsed());
+    }
+
+    return ok;
+}
+
+// the shared memory of the browser, kept until it changes (a new size)
+static std::string shmName;
+static uint8_t *shmData = nullptr;
+static size_t shmSize = 0;
+
+void WebOSDPage::ReleaseShm() {
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+    if (shmData != nullptr) {
+        munmap(shmData, shmSize);
+        shmData = nullptr;
+        shmSize = 0;
+        shmName.clear();
+    }
+}
+
+bool WebOSDPage::drawShmFrame(const pluginweb::ProcessOsdShmType &frame) {
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+
+    size_t size = (size_t) frame.render_width * frame.render_height * 4;
+    if (frame.render_width <= 0 || frame.render_height <= 0 || frame.render_width > 3840 || frame.render_height > 2160) {
+        return false;
+    }
+
+    if (frame.name != shmName || shmData == nullptr) {
+        ReleaseShm();
+
+        // a file of /dev/shm, nothing else
+        if (frame.name.empty() || frame.name.find('/') != std::string::npos || frame.name[0] == '.') {
+            return false;
+        }
+
+        std::string path = "/dev/shm/" + frame.name;
+        int fd = open(path.c_str(), O_RDONLY);
+        if (fd < 0) {
+            esyslog("[vdrweb] unable to open the OSD in %s: %s", path.c_str(), strerror(errno));
+            return false;
+        }
+
+        struct stat st {};
+        void *p = MAP_FAILED;
+        if (fstat(fd, &st) == 0 && (size_t) st.st_size >= size) {
+            p = mmap(nullptr, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
+        }
+        close(fd);
+
+        if (p == MAP_FAILED) {
+            esyslog("[vdrweb] unable to map the OSD in %s", path.c_str());
+            return false;
+        }
+
+        shmData = (uint8_t *) p;
+        shmSize = st.st_size;
+        shmName = frame.name;
+        isyslog("[vdrweb] OSD in shared memory %s", path.c_str());
+    }
+
+    if (shmSize < size) {
+        return false;
+    }
+
+    cTimeMs drawTime;
+    size_t bytes = 0;
+    std::vector<uint8_t> region;
+
+    for (const auto &r : frame.rects) {
+        if (r.x < 0 || r.y < 0 || r.width <= 0 || r.height <= 0 || r.x + r.width > frame.render_width || r.y + r.height > frame.render_height) {
+            continue;
+        }
+
+        // the rows of the region one after another
+        region.resize((size_t) r.width * r.height * 4);
+        for (int y = 0; y < r.height; ++y) {
+            memcpy(region.data() + (size_t) y * r.width * 4, shmData + (((size_t) (r.y + y) * frame.render_width) + r.x) * 4, (size_t) r.width * 4);
+        }
+        bytes += region.size();
+
+        scaleAndPaint(region.data(), frame.render_width, frame.render_height, r.x, r.y, r.width, r.height, false);
+    }
+
+    uint64_t draw = drawTime.Elapsed();
+    cTimeMs flushTime;
+
+    if (osd != nullptr) {
+        osd->Flush();
+    }
+
+    if (measureOsd) {
+        measureFrame((int) frame.rects.size(), bytes, draw, flushTime.Elapsed());
+    }
+
+    return true;
+}
+
 bool WebOSDPage::drawImageQOI(const std::string qoibuffer, const int render_width, const int render_height, const int x, const int y) {
     // decode image data
     qoi_desc desc;
@@ -259,7 +610,7 @@ bool WebOSDPage::drawImageQOI(const std::string qoibuffer, const int render_widt
     return retValue;
 }
 
-bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height) {
+bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_height, int x, int y, int width, int height, bool flush) {
     // sanity check
     if (width > 3840 || height > 2160 || width <= 0 || height <= 0) {
         return false;
@@ -280,10 +631,12 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
             LOCK_PIXMAPS;
             pixmap->DrawImage(cPoint(x,y), recImage);
         } else {
-            esyslog("[vdrweb] Pixmap is null. OSD not available");
+            if (!hidden) {
+                esyslog("[vdrweb] Pixmap is null. OSD not available");
+            }
         }
 
-        if (osd != nullptr) {
+        if (flush && osd != nullptr) {
             osd->Flush();
         }
 
@@ -295,12 +648,8 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
     double scaley = disp_height / (double)render_height;
 
     // calculate coordinates
-    int osd_x = (int)lround(scalex * x);
-    int osd_y = (int)lround(scaley * y);
     int osd_width = (int)lround(scalex * width);
     int osd_height = (int)lround(scaley * height);
-
-    // dsyslog("[vdrweb] Scaling: scalex=%2f, scaley=%2f, osd_x=%d, osd_y=%d", scalex, scaley, osd_x, osd_y);
 
 #ifdef ENABLE_FAST_SCALE
     if (useOutputDeviceScale) {
@@ -313,7 +662,9 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
             LOCK_PIXMAPS;
             pixmap->DrawScaledImage(cPoint(x * scalex, y * scaley), recImage, scalex, scaley, true);
         } else {
-            esyslog("[vdrweb] Pixmap is null. OSD not available");
+            if (!hidden) {
+                esyslog("[vdrweb] Pixmap is null. OSD not available");
+            }
         }
     } else {
 #endif // ENABLE_FAST_SCALE
@@ -348,13 +699,15 @@ bool WebOSDPage::scaleAndPaint(uint8_t* image, int render_width, int render_heig
             LOCK_PIXMAPS;
             pixmap->DrawImage(cPoint(x * scalex, y * scaley), recImage);
         } else {
-            esyslog("[vdrweb] Pixmap is null. OSD not available");
+            if (!hidden) {
+                esyslog("[vdrweb] Pixmap is null. OSD not available");
+            }
         }
 #ifdef ENABLE_FAST_SCALE
     }
 #endif
 
-    if (osd != nullptr) {
+    if (flush && osd != nullptr) {
         osd->Flush();
     }
 
@@ -368,10 +721,53 @@ eOSState WebOSDPage::ProcessKey(eKeys Key) {
     if (pixmapVol && (time(NULL) - lastVolumeTime > 3))
         DeleteVolume();
 
-    auto search = ::keyMap.find(Key);
-    if (search != ::keyMap.end()) {
-        browserClient->ProcessKey(search->second);
+    CheckEmptyPage(Key);
+    if (closeEmptyPage) {
+        return osEnd;
+    }
+
+    if (Key & k_Release) {
         return osContinue;
+    }
+
+    // repeated keys (e.g. scrolling with a held arrow key) are sent as normal keys
+    eKeys key = NORMALKEY(Key);
+
+    if (measureOsd) {
+        std::lock_guard<std::mutex> lock(measureMutex);
+        measureKey = key;
+        measureKeyTime.Set();
+    }
+
+    // Rec: a download of the current video. Without a video VDR handles Rec itself.
+    if (key == kRecord) {
+        if (!(Key & k_Repeat) && currentMode == PLAYER) {
+            OpenDownloads();
+        }
+        return osContinue;
+    }
+
+    auto search = ::keyMap.find(key);
+    if (search != ::keyMap.end() && browserClient->ProcessKey(search->second)) {
+        return osContinue;
+    }
+
+    // the key of the setup opens the list of the downloads, if the application doesn't use it
+    if (key == webSetup.DownloadsKey() && key != kNone) {
+        if (!(Key & k_Repeat)) {
+            OpenDownloadList();
+        }
+        return osContinue;
+    }
+
+    // The application doesn't use this key (not in its keyset or not mapped).
+    // Like a TV: the numeric and channel keys switch the channel. Close the page
+    // and let VDR handle the key in normal viewing mode.
+    bool isChannelKey = (key >= k0 && key <= k9) || key == kChanUp || key == kChanDn || key == kChanPrev;
+    if (isChannelKey && !(Key & k_Repeat)) {
+        dsyslog("[vdrweb] key %d not used by the application, pass it to VDR", (int)key);
+        cRemote::Put(key);
+        return osEnd;
     }
 
     return osContinue;
@@ -383,6 +779,11 @@ void WebOSDPage::Hide() {
 
 void WebOSDPage::DrawVolume(int volume) {
     dsyslog("[vdrweb] WebOSDPage::DrawVolume...");
+   std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+   if (osd == nullptr) {
+      return;
+   }
+
    if (volume != lastVolume) {
       int x = 0;           // volumebar x
       int y = 20;          // volumebar y
@@ -409,7 +810,8 @@ void WebOSDPage::DrawVolume(int volume) {
 
 void WebOSDPage::DeleteVolume(void) {
     dsyslog("[vdrweb] WebOSDPage::DeleteVolume...: %s", pixmapVol != nullptr ? "pixmapVol != null" : "pixmapVol == null");
-    if (pixmapVol) {
+    std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
+    if (pixmapVol && osd != nullptr) {
         osd->DestroyPixmap(pixmapVol);
         osd->Flush();
         pixmapVol = nullptr;
@@ -419,5 +821,6 @@ void WebOSDPage::DeleteVolume(void) {
 cOsdObject *WebOSDPage::GetInfo() {
     dsyslog("[vdrweb] WebOSDPage::GetInfo...");
 
-    return this;
+    // VDR deletes the returned object after closing the info menu
+    return nullptr;
 }

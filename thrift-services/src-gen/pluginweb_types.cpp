@@ -448,6 +448,580 @@ void ProcessOsdUpdateQOIType::printTo(std::ostream& out) const {
 }
 
 
+OsdRectType::~OsdRectType() noexcept {
+}
+
+OsdRectType::OsdRectType() noexcept
+   : x(0),
+     y(0),
+     width(0),
+     height(0),
+     data() {
+}
+
+void OsdRectType::__set_x(const int32_t val) {
+  this->x = val;
+}
+
+void OsdRectType::__set_y(const int32_t val) {
+  this->y = val;
+}
+
+void OsdRectType::__set_width(const int32_t val) {
+  this->width = val;
+}
+
+void OsdRectType::__set_height(const int32_t val) {
+  this->height = val;
+}
+
+void OsdRectType::__set_data(const std::string& val) {
+  this->data = val;
+}
+std::ostream& operator<<(std::ostream& out, const OsdRectType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t OsdRectType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->x);
+          this->__isset.x = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->y);
+          this->__isset.y = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->width);
+          this->__isset.width = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->height);
+          this->__isset.height = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readBinary(this->data);
+          this->__isset.data = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t OsdRectType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("OsdRectType");
+
+  xfer += oprot->writeFieldBegin("x", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->x);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("y", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->y);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("width", ::apache::thrift::protocol::T_I32, 3);
+  xfer += oprot->writeI32(this->width);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("height", ::apache::thrift::protocol::T_I32, 4);
+  xfer += oprot->writeI32(this->height);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("data", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeBinary(this->data);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(OsdRectType &a, OsdRectType &b) noexcept {
+  using ::std::swap;
+  swap(a.x, b.x);
+  swap(a.y, b.y);
+  swap(a.width, b.width);
+  swap(a.height, b.height);
+  swap(a.data, b.data);
+  swap(a.__isset, b.__isset);
+}
+
+bool OsdRectType::operator==(const OsdRectType & rhs) const
+{
+  if (!(x == rhs.x))
+    return false;
+  if (!(y == rhs.y))
+    return false;
+  if (!(width == rhs.width))
+    return false;
+  if (!(height == rhs.height))
+    return false;
+  if (!(data == rhs.data))
+    return false;
+  return true;
+}
+
+OsdRectType::OsdRectType(const OsdRectType& other4) {
+  x = other4.x;
+  y = other4.y;
+  width = other4.width;
+  height = other4.height;
+  data = other4.data;
+  __isset = other4.__isset;
+}
+OsdRectType& OsdRectType::operator=(const OsdRectType& other5) {
+  x = other5.x;
+  y = other5.y;
+  width = other5.width;
+  height = other5.height;
+  data = other5.data;
+  __isset = other5.__isset;
+  return *this;
+}
+void OsdRectType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "OsdRectType(";
+  out << "x=" << to_string(x);
+  out << ", " << "y=" << to_string(y);
+  out << ", " << "width=" << to_string(width);
+  out << ", " << "height=" << to_string(height);
+  out << ", " << "data=" << to_string(data);
+  out << ")";
+}
+
+
+ProcessOsdFrameType::~ProcessOsdFrameType() noexcept {
+}
+
+ProcessOsdFrameType::ProcessOsdFrameType() noexcept
+   : render_width(0),
+     render_height(0),
+     qoi(0) {
+}
+
+void ProcessOsdFrameType::__set_render_width(const int32_t val) {
+  this->render_width = val;
+}
+
+void ProcessOsdFrameType::__set_render_height(const int32_t val) {
+  this->render_height = val;
+}
+
+void ProcessOsdFrameType::__set_qoi(const bool val) {
+  this->qoi = val;
+}
+
+void ProcessOsdFrameType::__set_rects(const std::vector<OsdRectType> & val) {
+  this->rects = val;
+}
+std::ostream& operator<<(std::ostream& out, const ProcessOsdFrameType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t ProcessOsdFrameType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->render_width);
+          this->__isset.render_width = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->render_height);
+          this->__isset.render_height = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->qoi);
+          this->__isset.qoi = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->rects.clear();
+            uint32_t _size6;
+            ::apache::thrift::protocol::TType _etype9;
+            xfer += iprot->readListBegin(_etype9, _size6);
+            this->rects.resize(_size6);
+            uint32_t _i10;
+            for (_i10 = 0; _i10 < _size6; ++_i10)
+            {
+              xfer += this->rects[_i10].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.rects = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ProcessOsdFrameType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ProcessOsdFrameType");
+
+  xfer += oprot->writeFieldBegin("render_width", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->render_width);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("render_height", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->render_height);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("qoi", ::apache::thrift::protocol::T_BOOL, 3);
+  xfer += oprot->writeBool(this->qoi);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("rects", ::apache::thrift::protocol::T_LIST, 4);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->rects.size()));
+    std::vector<OsdRectType> ::const_iterator _iter11;
+    for (_iter11 = this->rects.begin(); _iter11 != this->rects.end(); ++_iter11)
+    {
+      xfer += (*_iter11).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ProcessOsdFrameType &a, ProcessOsdFrameType &b) noexcept {
+  using ::std::swap;
+  swap(a.render_width, b.render_width);
+  swap(a.render_height, b.render_height);
+  swap(a.qoi, b.qoi);
+  swap(a.rects, b.rects);
+  swap(a.__isset, b.__isset);
+}
+
+bool ProcessOsdFrameType::operator==(const ProcessOsdFrameType & rhs) const
+{
+  if (!(render_width == rhs.render_width))
+    return false;
+  if (!(render_height == rhs.render_height))
+    return false;
+  if (!(qoi == rhs.qoi))
+    return false;
+  if (!(rects == rhs.rects))
+    return false;
+  return true;
+}
+
+ProcessOsdFrameType::ProcessOsdFrameType(const ProcessOsdFrameType& other12) {
+  render_width = other12.render_width;
+  render_height = other12.render_height;
+  qoi = other12.qoi;
+  rects = other12.rects;
+  __isset = other12.__isset;
+}
+ProcessOsdFrameType& ProcessOsdFrameType::operator=(const ProcessOsdFrameType& other13) {
+  render_width = other13.render_width;
+  render_height = other13.render_height;
+  qoi = other13.qoi;
+  rects = other13.rects;
+  __isset = other13.__isset;
+  return *this;
+}
+void ProcessOsdFrameType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ProcessOsdFrameType(";
+  out << "render_width=" << to_string(render_width);
+  out << ", " << "render_height=" << to_string(render_height);
+  out << ", " << "qoi=" << to_string(qoi);
+  out << ", " << "rects=" << to_string(rects);
+  out << ")";
+}
+
+
+ProcessOsdShmType::~ProcessOsdShmType() noexcept {
+}
+
+ProcessOsdShmType::ProcessOsdShmType() noexcept
+   : render_width(0),
+     render_height(0),
+     name() {
+}
+
+void ProcessOsdShmType::__set_render_width(const int32_t val) {
+  this->render_width = val;
+}
+
+void ProcessOsdShmType::__set_render_height(const int32_t val) {
+  this->render_height = val;
+}
+
+void ProcessOsdShmType::__set_name(const std::string& val) {
+  this->name = val;
+}
+
+void ProcessOsdShmType::__set_rects(const std::vector<OsdRectType> & val) {
+  this->rects = val;
+}
+std::ostream& operator<<(std::ostream& out, const ProcessOsdShmType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t ProcessOsdShmType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->render_width);
+          this->__isset.render_width = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->render_height);
+          this->__isset.render_height = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->name);
+          this->__isset.name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->rects.clear();
+            uint32_t _size14;
+            ::apache::thrift::protocol::TType _etype17;
+            xfer += iprot->readListBegin(_etype17, _size14);
+            this->rects.resize(_size14);
+            uint32_t _i18;
+            for (_i18 = 0; _i18 < _size14; ++_i18)
+            {
+              xfer += this->rects[_i18].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.rects = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ProcessOsdShmType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ProcessOsdShmType");
+
+  xfer += oprot->writeFieldBegin("render_width", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->render_width);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("render_height", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->render_height);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->name);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("rects", ::apache::thrift::protocol::T_LIST, 4);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->rects.size()));
+    std::vector<OsdRectType> ::const_iterator _iter19;
+    for (_iter19 = this->rects.begin(); _iter19 != this->rects.end(); ++_iter19)
+    {
+      xfer += (*_iter19).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ProcessOsdShmType &a, ProcessOsdShmType &b) noexcept {
+  using ::std::swap;
+  swap(a.render_width, b.render_width);
+  swap(a.render_height, b.render_height);
+  swap(a.name, b.name);
+  swap(a.rects, b.rects);
+  swap(a.__isset, b.__isset);
+}
+
+bool ProcessOsdShmType::operator==(const ProcessOsdShmType & rhs) const
+{
+  if (!(render_width == rhs.render_width))
+    return false;
+  if (!(render_height == rhs.render_height))
+    return false;
+  if (!(name == rhs.name))
+    return false;
+  if (!(rects == rhs.rects))
+    return false;
+  return true;
+}
+
+ProcessOsdShmType::ProcessOsdShmType(const ProcessOsdShmType& other20) {
+  render_width = other20.render_width;
+  render_height = other20.render_height;
+  name = other20.name;
+  rects = other20.rects;
+  __isset = other20.__isset;
+}
+ProcessOsdShmType& ProcessOsdShmType::operator=(const ProcessOsdShmType& other21) {
+  render_width = other21.render_width;
+  render_height = other21.render_height;
+  name = other21.name;
+  rects = other21.rects;
+  __isset = other21.__isset;
+  return *this;
+}
+void ProcessOsdShmType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ProcessOsdShmType(";
+  out << "render_width=" << to_string(render_width);
+  out << ", " << "render_height=" << to_string(render_height);
+  out << ", " << "name=" << to_string(name);
+  out << ", " << "rects=" << to_string(rects);
+  out << ")";
+}
+
+
 ProcessTSPacketType::~ProcessTSPacketType() noexcept {
 }
 
@@ -533,13 +1107,13 @@ bool ProcessTSPacketType::operator==(const ProcessTSPacketType & rhs) const
   return true;
 }
 
-ProcessTSPacketType::ProcessTSPacketType(const ProcessTSPacketType& other4) {
-  ts = other4.ts;
-  __isset = other4.__isset;
+ProcessTSPacketType::ProcessTSPacketType(const ProcessTSPacketType& other22) {
+  ts = other22.ts;
+  __isset = other22.__isset;
 }
-ProcessTSPacketType& ProcessTSPacketType::operator=(const ProcessTSPacketType& other5) {
-  ts = other5.ts;
-  __isset = other5.__isset;
+ProcessTSPacketType& ProcessTSPacketType::operator=(const ProcessTSPacketType& other23) {
+  ts = other23.ts;
+  __isset = other23.__isset;
   return *this;
 }
 void ProcessTSPacketType::printTo(std::ostream& out) const {
@@ -554,11 +1128,16 @@ StartVideoType::~StartVideoType() noexcept {
 }
 
 StartVideoType::StartVideoType() noexcept
-   : videoInfo() {
+   : videoInfo(),
+     mse(false) {
 }
 
 void StartVideoType::__set_videoInfo(const std::string& val) {
   this->videoInfo = val;
+}
+
+void StartVideoType::__set_mse(const bool val) {
+  this->mse = val;
 }
 std::ostream& operator<<(std::ostream& out, const StartVideoType& obj)
 {
@@ -596,6 +1175,14 @@ uint32_t StartVideoType::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->mse);
+          this->__isset.mse = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -617,6 +1204,10 @@ uint32_t StartVideoType::write(::apache::thrift::protocol::TProtocol* oprot) con
   xfer += oprot->writeString(this->videoInfo);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("mse", ::apache::thrift::protocol::T_BOOL, 2);
+  xfer += oprot->writeBool(this->mse);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -625,6 +1216,7 @@ uint32_t StartVideoType::write(::apache::thrift::protocol::TProtocol* oprot) con
 void swap(StartVideoType &a, StartVideoType &b) noexcept {
   using ::std::swap;
   swap(a.videoInfo, b.videoInfo);
+  swap(a.mse, b.mse);
   swap(a.__isset, b.__isset);
 }
 
@@ -632,22 +1224,27 @@ bool StartVideoType::operator==(const StartVideoType & rhs) const
 {
   if (!(videoInfo == rhs.videoInfo))
     return false;
+  if (!(mse == rhs.mse))
+    return false;
   return true;
 }
 
-StartVideoType::StartVideoType(const StartVideoType& other6) {
-  videoInfo = other6.videoInfo;
-  __isset = other6.__isset;
+StartVideoType::StartVideoType(const StartVideoType& other24) {
+  videoInfo = other24.videoInfo;
+  mse = other24.mse;
+  __isset = other24.__isset;
 }
-StartVideoType& StartVideoType::operator=(const StartVideoType& other7) {
-  videoInfo = other7.videoInfo;
-  __isset = other7.__isset;
+StartVideoType& StartVideoType::operator=(const StartVideoType& other25) {
+  videoInfo = other25.videoInfo;
+  mse = other25.mse;
+  __isset = other25.__isset;
   return *this;
 }
 void StartVideoType::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "StartVideoType(";
   out << "videoInfo=" << to_string(videoInfo);
+  out << ", " << "mse=" << to_string(mse);
   out << ")";
 }
 
@@ -797,19 +1394,19 @@ bool VideoSizeType::operator==(const VideoSizeType & rhs) const
   return true;
 }
 
-VideoSizeType::VideoSizeType(const VideoSizeType& other8) noexcept {
-  x = other8.x;
-  y = other8.y;
-  w = other8.w;
-  h = other8.h;
-  __isset = other8.__isset;
+VideoSizeType::VideoSizeType(const VideoSizeType& other26) noexcept {
+  x = other26.x;
+  y = other26.y;
+  w = other26.w;
+  h = other26.h;
+  __isset = other26.__isset;
 }
-VideoSizeType& VideoSizeType::operator=(const VideoSizeType& other9) noexcept {
-  x = other9.x;
-  y = other9.y;
-  w = other9.w;
-  h = other9.h;
-  __isset = other9.__isset;
+VideoSizeType& VideoSizeType::operator=(const VideoSizeType& other27) noexcept {
+  x = other27.x;
+  y = other27.y;
+  w = other27.w;
+  h = other27.h;
+  __isset = other27.__isset;
   return *this;
 }
 void VideoSizeType::printTo(std::ostream& out) const {
@@ -827,11 +1424,16 @@ ResetVideoType::~ResetVideoType() noexcept {
 }
 
 ResetVideoType::ResetVideoType() noexcept
-   : videoInfo() {
+   : videoInfo(),
+     mse(false) {
 }
 
 void ResetVideoType::__set_videoInfo(const std::string& val) {
   this->videoInfo = val;
+}
+
+void ResetVideoType::__set_mse(const bool val) {
+  this->mse = val;
 }
 std::ostream& operator<<(std::ostream& out, const ResetVideoType& obj)
 {
@@ -869,6 +1471,14 @@ uint32_t ResetVideoType::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->mse);
+          this->__isset.mse = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -890,6 +1500,10 @@ uint32_t ResetVideoType::write(::apache::thrift::protocol::TProtocol* oprot) con
   xfer += oprot->writeString(this->videoInfo);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("mse", ::apache::thrift::protocol::T_BOOL, 2);
+  xfer += oprot->writeBool(this->mse);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -898,6 +1512,7 @@ uint32_t ResetVideoType::write(::apache::thrift::protocol::TProtocol* oprot) con
 void swap(ResetVideoType &a, ResetVideoType &b) noexcept {
   using ::std::swap;
   swap(a.videoInfo, b.videoInfo);
+  swap(a.mse, b.mse);
   swap(a.__isset, b.__isset);
 }
 
@@ -905,22 +1520,27 @@ bool ResetVideoType::operator==(const ResetVideoType & rhs) const
 {
   if (!(videoInfo == rhs.videoInfo))
     return false;
+  if (!(mse == rhs.mse))
+    return false;
   return true;
 }
 
-ResetVideoType::ResetVideoType(const ResetVideoType& other10) {
-  videoInfo = other10.videoInfo;
-  __isset = other10.__isset;
+ResetVideoType::ResetVideoType(const ResetVideoType& other28) {
+  videoInfo = other28.videoInfo;
+  mse = other28.mse;
+  __isset = other28.__isset;
 }
-ResetVideoType& ResetVideoType::operator=(const ResetVideoType& other11) {
-  videoInfo = other11.videoInfo;
-  __isset = other11.__isset;
+ResetVideoType& ResetVideoType::operator=(const ResetVideoType& other29) {
+  videoInfo = other29.videoInfo;
+  mse = other29.mse;
+  __isset = other29.__isset;
   return *this;
 }
 void ResetVideoType::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "ResetVideoType(";
   out << "videoInfo=" << to_string(videoInfo);
+  out << ", " << "mse=" << to_string(mse);
   out << ")";
 }
 
@@ -1010,19 +1630,519 @@ bool SelectAudioTrackType::operator==(const SelectAudioTrackType & rhs) const
   return true;
 }
 
-SelectAudioTrackType::SelectAudioTrackType(const SelectAudioTrackType& other12) {
-  audioTrack = other12.audioTrack;
-  __isset = other12.__isset;
+SelectAudioTrackType::SelectAudioTrackType(const SelectAudioTrackType& other30) {
+  audioTrack = other30.audioTrack;
+  __isset = other30.__isset;
 }
-SelectAudioTrackType& SelectAudioTrackType::operator=(const SelectAudioTrackType& other13) {
-  audioTrack = other13.audioTrack;
-  __isset = other13.__isset;
+SelectAudioTrackType& SelectAudioTrackType::operator=(const SelectAudioTrackType& other31) {
+  audioTrack = other31.audioTrack;
+  __isset = other31.__isset;
   return *this;
 }
 void SelectAudioTrackType::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "SelectAudioTrackType(";
   out << "audioTrack=" << to_string(audioTrack);
+  out << ")";
+}
+
+
+SelectSubtitleTrackType::~SelectSubtitleTrackType() noexcept {
+}
+
+SelectSubtitleTrackType::SelectSubtitleTrackType() noexcept
+   : subtitleTrack() {
+}
+
+void SelectSubtitleTrackType::__set_subtitleTrack(const std::string& val) {
+  this->subtitleTrack = val;
+}
+std::ostream& operator<<(std::ostream& out, const SelectSubtitleTrackType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t SelectSubtitleTrackType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->subtitleTrack);
+          this->__isset.subtitleTrack = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t SelectSubtitleTrackType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("SelectSubtitleTrackType");
+
+  xfer += oprot->writeFieldBegin("subtitleTrack", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->subtitleTrack);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(SelectSubtitleTrackType &a, SelectSubtitleTrackType &b) noexcept {
+  using ::std::swap;
+  swap(a.subtitleTrack, b.subtitleTrack);
+  swap(a.__isset, b.__isset);
+}
+
+bool SelectSubtitleTrackType::operator==(const SelectSubtitleTrackType & rhs) const
+{
+  if (!(subtitleTrack == rhs.subtitleTrack))
+    return false;
+  return true;
+}
+
+SelectSubtitleTrackType::SelectSubtitleTrackType(const SelectSubtitleTrackType& other32) {
+  subtitleTrack = other32.subtitleTrack;
+  __isset = other32.__isset;
+}
+SelectSubtitleTrackType& SelectSubtitleTrackType::operator=(const SelectSubtitleTrackType& other33) {
+  subtitleTrack = other33.subtitleTrack;
+  __isset = other33.__isset;
+  return *this;
+}
+void SelectSubtitleTrackType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "SelectSubtitleTrackType(";
+  out << "subtitleTrack=" << to_string(subtitleTrack);
+  out << ")";
+}
+
+
+StreamEventFilterType::~StreamEventFilterType() noexcept {
+}
+
+StreamEventFilterType::StreamEventFilterType() noexcept
+   : componentTag(0),
+     enable(0) {
+}
+
+void StreamEventFilterType::__set_componentTag(const int32_t val) {
+  this->componentTag = val;
+}
+
+void StreamEventFilterType::__set_enable(const bool val) {
+  this->enable = val;
+}
+std::ostream& operator<<(std::ostream& out, const StreamEventFilterType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t StreamEventFilterType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->componentTag);
+          this->__isset.componentTag = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->enable);
+          this->__isset.enable = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t StreamEventFilterType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("StreamEventFilterType");
+
+  xfer += oprot->writeFieldBegin("componentTag", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->componentTag);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("enable", ::apache::thrift::protocol::T_BOOL, 2);
+  xfer += oprot->writeBool(this->enable);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(StreamEventFilterType &a, StreamEventFilterType &b) noexcept {
+  using ::std::swap;
+  swap(a.componentTag, b.componentTag);
+  swap(a.enable, b.enable);
+  swap(a.__isset, b.__isset);
+}
+
+bool StreamEventFilterType::operator==(const StreamEventFilterType & rhs) const
+{
+  if (!(componentTag == rhs.componentTag))
+    return false;
+  if (!(enable == rhs.enable))
+    return false;
+  return true;
+}
+
+StreamEventFilterType::StreamEventFilterType(const StreamEventFilterType& other34) noexcept {
+  componentTag = other34.componentTag;
+  enable = other34.enable;
+  __isset = other34.__isset;
+}
+StreamEventFilterType& StreamEventFilterType::operator=(const StreamEventFilterType& other35) noexcept {
+  componentTag = other35.componentTag;
+  enable = other35.enable;
+  __isset = other35.__isset;
+  return *this;
+}
+void StreamEventFilterType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "StreamEventFilterType(";
+  out << "componentTag=" << to_string(componentTag);
+  out << ", " << "enable=" << to_string(enable);
+  out << ")";
+}
+
+
+SwitchChannelType::~SwitchChannelType() noexcept {
+}
+
+SwitchChannelType::SwitchChannelType() noexcept
+   : channelId(),
+     onid(0),
+     tsid(0),
+     sid(0) {
+}
+
+void SwitchChannelType::__set_channelId(const std::string& val) {
+  this->channelId = val;
+}
+
+void SwitchChannelType::__set_onid(const int32_t val) {
+  this->onid = val;
+}
+
+void SwitchChannelType::__set_tsid(const int32_t val) {
+  this->tsid = val;
+}
+
+void SwitchChannelType::__set_sid(const int32_t val) {
+  this->sid = val;
+}
+std::ostream& operator<<(std::ostream& out, const SwitchChannelType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t SwitchChannelType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->channelId);
+          this->__isset.channelId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->onid);
+          this->__isset.onid = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->tsid);
+          this->__isset.tsid = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->sid);
+          this->__isset.sid = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t SwitchChannelType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("SwitchChannelType");
+
+  xfer += oprot->writeFieldBegin("channelId", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->channelId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("onid", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->onid);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tsid", ::apache::thrift::protocol::T_I32, 3);
+  xfer += oprot->writeI32(this->tsid);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("sid", ::apache::thrift::protocol::T_I32, 4);
+  xfer += oprot->writeI32(this->sid);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(SwitchChannelType &a, SwitchChannelType &b) noexcept {
+  using ::std::swap;
+  swap(a.channelId, b.channelId);
+  swap(a.onid, b.onid);
+  swap(a.tsid, b.tsid);
+  swap(a.sid, b.sid);
+  swap(a.__isset, b.__isset);
+}
+
+bool SwitchChannelType::operator==(const SwitchChannelType & rhs) const
+{
+  if (!(channelId == rhs.channelId))
+    return false;
+  if (!(onid == rhs.onid))
+    return false;
+  if (!(tsid == rhs.tsid))
+    return false;
+  if (!(sid == rhs.sid))
+    return false;
+  return true;
+}
+
+SwitchChannelType::SwitchChannelType(const SwitchChannelType& other36) {
+  channelId = other36.channelId;
+  onid = other36.onid;
+  tsid = other36.tsid;
+  sid = other36.sid;
+  __isset = other36.__isset;
+}
+SwitchChannelType& SwitchChannelType::operator=(const SwitchChannelType& other37) {
+  channelId = other37.channelId;
+  onid = other37.onid;
+  tsid = other37.tsid;
+  sid = other37.sid;
+  __isset = other37.__isset;
+  return *this;
+}
+void SwitchChannelType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "SwitchChannelType(";
+  out << "channelId=" << to_string(channelId);
+  out << ", " << "onid=" << to_string(onid);
+  out << ", " << "tsid=" << to_string(tsid);
+  out << ", " << "sid=" << to_string(sid);
+  out << ")";
+}
+
+
+OsdEmptyType::~OsdEmptyType() noexcept {
+}
+
+OsdEmptyType::OsdEmptyType() noexcept
+   : empty(0) {
+}
+
+void OsdEmptyType::__set_empty(const bool val) {
+  this->empty = val;
+}
+std::ostream& operator<<(std::ostream& out, const OsdEmptyType& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t OsdEmptyType::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->empty);
+          this->__isset.empty = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t OsdEmptyType::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("OsdEmptyType");
+
+  xfer += oprot->writeFieldBegin("empty", ::apache::thrift::protocol::T_BOOL, 1);
+  xfer += oprot->writeBool(this->empty);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(OsdEmptyType &a, OsdEmptyType &b) noexcept {
+  using ::std::swap;
+  swap(a.empty, b.empty);
+  swap(a.__isset, b.__isset);
+}
+
+bool OsdEmptyType::operator==(const OsdEmptyType & rhs) const
+{
+  if (!(empty == rhs.empty))
+    return false;
+  return true;
+}
+
+OsdEmptyType::OsdEmptyType(const OsdEmptyType& other38) noexcept {
+  empty = other38.empty;
+  __isset = other38.__isset;
+}
+OsdEmptyType& OsdEmptyType::operator=(const OsdEmptyType& other39) noexcept {
+  empty = other39.empty;
+  __isset = other39.__isset;
+  return *this;
+}
+void OsdEmptyType::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "OsdEmptyType(";
+  out << "empty=" << to_string(empty);
   out << ")";
 }
 

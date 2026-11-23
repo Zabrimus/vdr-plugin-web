@@ -4,6 +4,7 @@
 
 #include "debuglog.h"
 #include "TranscoderClient.h"
+#include "TransportBuffer.h"
 
 using namespace apache::thrift;
 using namespace apache::thrift::protocol;
@@ -18,8 +19,11 @@ void transcoderClientOutputFunction(const char* msg) {
 TranscoderClient::TranscoderClient(std::string vdrIp, int vdrPort) {
     DEBUGLOG("Construct TranscoderClient");
 
-    std::shared_ptr<TTransport> socket(new TSocket(vdrIp, vdrPort));
-    transport = static_cast<const std::shared_ptr<TTransport>>(new TBufferedTransport(socket));
+    socket = std::make_shared<TSocket>(vdrIp, vdrPort);
+    socket->setConnTimeout(3000);
+    socket->setSendTimeout(10000);
+    socket->setRecvTimeout(60000);   // Probe of a slow stream can take a while
+    transport = static_cast<const std::shared_ptr<TTransport>>(new TBufferedTransport(socket, THRIFT_TRANSPORT_BUFFER_SIZE, THRIFT_TRANSPORT_BUFFER_SIZE));
     std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
 
     client = new RemoteTranscoderClient(protocol);
@@ -30,9 +34,8 @@ TranscoderClient::TranscoderClient(std::string vdrIp, int vdrPort) {
 TranscoderClient::~TranscoderClient() {
     DEBUGLOG("Destruct TranscoderClient");
 
-    if (transport->isOpen()) {
-        transport->close();
-    }
+    // no transport->close(), see reset()
+    socket->close();
 
     delete client;
 }
@@ -53,7 +56,20 @@ bool TranscoderClient::connect() {
     return true;
 }
 
+// TBufferedTransport::close() writes the buffer. After a failed write it may still
+// hold the rest of the request: that fails again on the broken socket, and the
+// exception in the catch block terminates the program. After a reconnect it would be
+// sent before the next request. Close the socket and start with a new transport.
+void TranscoderClient::reset() {
+    socket->close();
+    transport = std::make_shared<TBufferedTransport>(socket, THRIFT_TRANSPORT_BUFFER_SIZE, THRIFT_TRANSPORT_BUFFER_SIZE);
+    delete client;
+    client = new RemoteTranscoderClient(std::make_shared<TBinaryProtocol>(transport));
+}
+
 bool TranscoderClient::ping() {
+    std::lock_guard<std::recursive_mutex> lock(transcoder_send_mutex);
+
     if (!connect()) {
         return false;
     }
@@ -64,7 +80,7 @@ bool TranscoderClient::ping() {
     } catch (OperationFailed &err) {
         return false;
     } catch (TException &err) {
-        transport->close();
+        reset();
         return false;
     }
 }
@@ -72,18 +88,30 @@ bool TranscoderClient::ping() {
 template <typename F> bool TranscoderClient::processInternal(F&& request) {
     std::lock_guard<std::recursive_mutex> lock(transcoder_send_mutex);
 
-    if (!ping()) {
-        return false;
+    // no ping before every request, that doubles the round trips.
+    // If the connection is broken, reconnect once and repeat the request.
+    for (int attempt = 0; attempt < 2; ++attempt) {
+        if (!connect()) {
+            return false;
+        }
+
+        try {
+            return request();
+        } catch (OperationFailed &err) {
+            return false;
+        } catch (TTransportException &err) {
+            reset();
+            if (err.getType() == TTransportException::TIMED_OUT) {
+                // the request may have been processed, don't repeat it
+                return false;
+            }
+        } catch (TException &err) {
+            reset();
+            return false;
+        }
     }
 
-    try {
-        return request();
-    } catch (OperationFailed &err) {
-        return false;
-    } catch (TException &err) {
-        transport->close();
-        return false;
-    }
+    return false;
 }
 
 bool TranscoderClient::Probe(std::string&result,
@@ -198,6 +226,122 @@ bool TranscoderClient::GetVideo(std::string &result, const VideoType &input) {
 
     return processInternal([&]() -> bool {
         client->GetVideo(result, input);
+        return true;
+    });
+}
+
+bool TranscoderClient::MseStart(std::string &result, const std::string &responseIp, const std::string &responsePort,
+                                const std::string &vdrIp, const std::string &vdrPort, const std::string &postfix,
+                                const std::string &duration, const std::vector<std::string> &tracks) {
+    DEBUGLOG("TranscoderClient::MseStart");
+
+    return processInternal([&]() -> bool {
+        MseStartType input;
+        input.responseIp = responseIp;
+        input.responsePort = responsePort;
+        input.vdrIp = vdrIp;
+        input.vdrPort = vdrPort;
+        input.postfix = postfix;
+        input.duration = duration;
+        input.tracks = tracks;
+
+        client->MseStart(result, input);
+        return true;
+    });
+}
+
+bool TranscoderClient::MseAppend(const std::string &streamId, int track, const std::string &data) {
+    return processInternal([&]() -> bool {
+        MseAppendType input;
+        input.streamId = streamId;
+        input.track = track;
+        input.data = data;
+
+        return client->MseAppend(input);
+    });
+}
+
+bool TranscoderClient::MseReset(const std::string &streamId) {
+    DEBUGLOG("TranscoderClient::MseReset");
+
+    return processInternal([&]() -> bool {
+        MseResetType input;
+        input.streamId = streamId;
+
+        return client->MseReset(input);
+    });
+}
+
+bool TranscoderClient::MseEndOfStream(const std::string &streamId) {
+    DEBUGLOG("TranscoderClient::MseEndOfStream");
+
+    return processInternal([&]() -> bool {
+        MseEndOfStreamType input;
+        input.streamId = streamId;
+
+        return client->MseEndOfStream(input);
+    });
+}
+
+bool TranscoderClient::DownloadLookup(DownloadLookupResult& result, const DownloadLookupType& input) {
+    DEBUGLOG("TranscoderClient::DownloadLookup: %s", input.channel.c_str());
+
+    return processInternal([&]() -> bool {
+        client->DownloadLookup(result, input);
+        return true;
+    });
+}
+
+bool TranscoderClient::DownloadStart(std::string& error, const DownloadStartType& input) {
+    DEBUGLOG("TranscoderClient::DownloadStart: %s", input.name.c_str());
+
+    return processInternal([&]() -> bool {
+        client->DownloadStart(error, input);
+        return true;
+    });
+}
+
+bool TranscoderClient::DownloadList(std::vector<DownloadInfo>& result) {
+    DEBUGLOG("TranscoderClient::DownloadList");
+
+    return processInternal([&]() -> bool {
+        client->DownloadList(result);
+        return true;
+    });
+}
+
+bool TranscoderClient::DownloadRemove(const std::string& id) {
+    DEBUGLOG("TranscoderClient::DownloadRemove: %s", id.c_str());
+
+    return processInternal([&]() -> bool {
+        DownloadRemoveType input;
+        input.id = id;
+
+        return client->DownloadRemove(input);
+    });
+}
+
+bool TranscoderClient::DownloadRetry(std::string& error, const std::string& id) {
+    DEBUGLOG("TranscoderClient::DownloadRetry: %s", id.c_str());
+
+    return processInternal([&]() -> bool {
+        DownloadRetryType input;
+        input.id = id;
+
+        client->DownloadRetry(error, input);
+        return true;
+    });
+}
+
+bool TranscoderClient::DownloadConvert(std::string& error, const std::string& id, int reserve) {
+    DEBUGLOG("TranscoderClient::DownloadConvert: %s", id.c_str());
+
+    return processInternal([&]() -> bool {
+        DownloadConvertType input;
+        input.id = id;
+        input.reserve = reserve;
+
+        client->DownloadConvert(error, input);
         return true;
     });
 }

@@ -49,11 +49,97 @@ Creates a dummy osd while streaming a video. It could be necessary.
 ### -s / --savets
 Used for debugging. The incoming TS streams will be saved in the recordings/web directory. 
 
+### -m / --measure
+Logs the time from a key to the OSD frame drawn by VDR and every 5 seconds statistics
+of the OSD frames (size, draw and flush time).
+
 ### -b / --bindall
 If set, then bind the internal HTTP server to all available network devices. Otherwise use the configured IP.
 
 ### - / --name
 If set, then the menu entry will have a different name. Instead default ```web``` another name can be choosed.
+
+## Setup
+
+### HbbTV hint
+Like a TV, a small hint "HbbTV available" is shown after a channel switch, if the channel
+signals an HbbTV application which starts automatically (AIT control code AUTOSTART).
+The hint waits until other OSDs (e.g. the channel display) are closed and disappears
+after the configured time, on the next channel switch or if a menu is opened.
+
+VDR uses the red key itself. To start HbbTV with a key, map it to the plugin in
+`keymacros.conf`, e.g. `Red @web`.
+
+| Setup entry              | Default      | Description                    |
+|--------------------------|--------------|--------------------------------|
+| Show HbbTV hint          | yes          | Enables the hint               |
+| HbbTV hint duration (s)  | 7            | Display time in seconds (1-60) |
+| HbbTV hint position      | bottom right | Corner of the OSD area         |
+
+### Display
+| Setup entry             | Default         | Description |
+|-------------------------|-----------------|-------------|
+| Browser resolution      | browser default | Size of the page rendered by the browser. 1280x720 is the native size of HbbTV applications and the fastest one. Use it together with scaling by the output device. |
+| Scale by output device  | command line -f | Only if built with `ENABLE_FAST_SCALE=1`. Scales the OSD of the browser with the output device (e.g. by the GPU) instead of GraphicsMagick. |
+| Browser frame rate      | browser default | Frame rate of the browser (25, 30, 50, 60). A higher rate reacts faster to keys, but needs more CPU. |
+
+"browser default" keeps the values the browser was started with (`--zoom`, 25 fps).
+
+### Browser
+| Setup entry             | Default | Description |
+|-------------------------|---------|-------------|
+| Media Source Extensions | yes     | Videos of players like dash.js are sent to VDR via the transcoder. Switch it off if an application worked better without. |
+| OSD in shared memory    | no      | The browser writes the OSD into a file of /dev/shm, only the changed regions are sent. Faster, needs the browser on the same machine (otherwise the browser falls back). |
+| ZDF special handling    | yes     | The ZDF applications are forced to plain HTML5 videos. Without it they use their dash player (needs Media Source Extensions). |
+| Max. download speed (Mbit/s) | unlimited | Limits the speed of a download (see Downloads). |
+| Download quality        | best    | The best quality, 720p at most or SD. |
+| Keep free on the disk (GB) | 5    | A download needs this space and its estimated size, it is stopped when the space is reached. |
+| Downloads at the same time | 2    | More downloads wait in a queue. |
+| Downloads as recording  | manually | automatically: a download becomes a recording of VDR. manually: a MP4 file, green in the list converts it. |
+| Lifetime of the recordings | 99   | The lifetime of these recordings. |
+| Key for the downloads   | Info    | Opens the list of the downloads from an application, if the application doesn't use the key (Info, Stop or Blue). Back returns to the application. A user key (User1 - User9) is never used by an application, it needs a VDR which passes a user key without a macro in keymacros.conf on to the plugin. |
+| Downloads...            |         | Opens the list of the downloads. |
+| Close HbbTV without display after (s) | never | An application which shows nothing anymore (e.g. the red button hint has disappeared) gets the hint "HbbTV is running". Without a key HbbTV is closed after this time (5 to 60 s). |
+
+Both take effect with the next application.
+
+## Keys
+The keys of VDR are sent to the application as HbbTV keys, if they are in the keyset of the application.
+Otherwise VDR handles them (e.g. the numeric and channel keys switch the channel).
+
+| VDR key                      | HbbTV key                          |
+|------------------------------|------------------------------------|
+| Up, Down, Left, Right, Ok    | VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, VK_ENTER |
+| Back                         | VK_BACK                            |
+| Red, Green, Yellow, Blue     | VK_RED, VK_GREEN, VK_YELLOW, VK_BLUE |
+| 0 - 9                        | VK_0 - VK_9                        |
+| Play, Pause, Play/Pause, Stop| VK_PLAY, VK_PAUSE, VK_PLAY_PAUSE, VK_STOP |
+| FastFwd, FastRew             | VK_FAST_FWD, VK_REWIND             |
+| Next, Prev                   | VK_TRACK_NEXT, VK_TRACK_PREV       |
+| Info                         | VK_INFO                            |
+| Subtitles                    | VK_SUBTITLE                        |
+
+Record isn't sent to the application, during a video it downloads the video (see Downloads).
+
+## Downloads
+The current video can be downloaded, if remotetranscode has a download directory (parameter ```-d```).
+The download runs in the background, also after the end of the video.
+
+- Record while a video plays: remotetranscode looks up the video in MediathekViewWeb by channel and
+  duration. The title of the page, the EPG of the channel and an ID shared by the stream and the entry
+  help to find it. Is it the video for sure, or there is one entry only, the download starts at once.
+  Otherwise a menu shows the entries with date, duration, resolution and size, versions like audio
+  description at the end, together with the stream itself. With ```--dummyosd``` VDR takes the key,
+  it doesn't reach the plugin.
+- The list of the downloads and files opens with the key of the setup in an application, in the
+  setup of the plugin or with the SVDRP command ```PLUG web DOWNLOADS```. Red cancels a
+  download or deletes a file, green makes a recording of a MP4 file, yellow starts a failed or
+  interrupted download again.
+- While downloads run, the main menu entry shows the progress, e.g. ```Web (Download 45%)```. A message
+  tells when a download has finished or failed.
+- A recording is created in ```Mediathek/<topic>/<title>``` with info and index, like one of VDR. The
+  file is moved into the video directory, copied if it is another file system. VDR must reach the
+  download directory, i.e. remotetranscode runs on the same machine or the directory is shared.
 
 ## Logging
 Uses the VDR logging mechanism. Log entries can be found in ```/var/log/syslog``` with ```[vdrweb]``` prefix.
