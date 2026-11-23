@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <thread>
+#include <vector>
 #include <vdr/osdbase.h>
 #include <vdr/player.h>
 #include "pluginweb_types.h"
@@ -47,6 +48,9 @@ private:
     // the application has shown something: an empty page afterwards gets the hint
     bool contentSeen = false;
     bool closeEmptyPage = false;
+
+    // channel keys for VDR after the page of the player has ended (ProcessKey)
+    std::vector<eKeys> pendingChannelKeys;
     cTimeMs lastKey;
 
     void CheckEmptyPage(eKeys key);
