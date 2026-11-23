@@ -36,6 +36,9 @@ static const char *DESCRIPTION = "Uses the cefbrowser to show HTTP Pages, HbbTV 
 
 extern BrowserClient* browserClient;
 
+// the page of the application is closed: the video is fullscreen again
+void CloseVideoWindow();
+
 // Rec during a video: the selection of the MediathekView entry
 void OpenDownloads();
 
