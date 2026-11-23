@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <vdr/device.h>
+#include <vdr/menu.h>
 #include <vdr/remote.h>
 #include <Magick++/Blob.h>
 #include <Magick++/Image.h>
@@ -769,6 +770,19 @@ eOSState WebOSDPage::ProcessKey(eKeys Key) {
     // and let VDR handle the key in normal viewing mode.
     bool isChannelKey = (key >= k0 && key <= k9) || key == kChanUp || key == kChanDn || key == kChanPrev;
     if (isChannelKey && !(Key & k_Repeat)) {
+        if (key == kChanUp || key == kChanDn) {
+            // With an OSD open VDR switches with these keys itself and then passes
+            // them on, unless a player or the channel display runs (vdr.c). Putting
+            // the key back switched a second time.
+            cMutexLock controlLock;
+            bool vdrSwitched = !cDisplayChannel::IsOpen() && cControl::Control(controlLock) == nullptr &&
+                               (!cDevice::PrimaryDevice()->Replaying() || cDevice::PrimaryDevice()->Transferring());
+            if (vdrSwitched) {
+                dsyslog("[vdrweb] key %d not used by the application, VDR has switched the channel", (int)key);
+                return osEnd;
+            }
+        }
+
         dsyslog("[vdrweb] key %d not used by the application, pass it to VDR", (int)key);
         cRemote::Put(key);
         return osEnd;

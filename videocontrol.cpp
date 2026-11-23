@@ -153,7 +153,19 @@ void VideoPlayer::SetVideoSize(int x, int y, int width, int height) {
 
     dsyslog("[vdrweb] SetVideoSize calculated: x=%d, y=%d, width=%d, height=%d", newX, newY, newWidth, newHeight);
 
-    cRect r = {newX, newY, newWidth, newHeight};
+    // Only the part on the screen can be shown. The output device clamps a
+    // rectangle outside of it to a few pixels at the border, and an empty one
+    // means full screen to it: keep the current video window for both.
+    int osdWidth;
+    int osdHeight;
+    double osdPh;
+    cDevice::PrimaryDevice()->GetOsdSize(osdWidth, osdHeight, osdPh);
+    cRect r = cRect(newX, newY, newWidth, newHeight).Intersected(cRect(0, 0, osdWidth, osdHeight));
+    if (r.Width() < 2 || r.Height() < 2) {
+        dsyslog("[vdrweb] SetVideoSize: the video is not on the screen, keep the current video window");
+        return;
+    }
+
     cRect availableRect = cDevice::PrimaryDevice()->CanScaleVideo(r);
     cDevice::PrimaryDevice()->ScaleVideo(availableRect);
 }
