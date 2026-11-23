@@ -20,6 +20,9 @@ msgstr ""
 msgid "Browser not available"
 msgstr "Der Browser ist nicht verfügbar"
 
+msgid "No HbbTV application on this channel"
+msgstr "Keine HbbTV-Anwendung auf diesem Kanal"
+
 msgid "HbbTV available"
 msgstr "HbbTV verfügbar"
 

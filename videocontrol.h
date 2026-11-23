@@ -19,6 +19,10 @@ public:
     static void SetVideoSize(int x, int y, int width, int height);
     static void setVideoFullscreen();
 
+    // Coordinate space the browser reports video geometry in, which is the
+    // size it renders at (cefbrowser -z).
+    static void SetBrowserSize(int width, int height);
+
     void ResetVideo();
     static bool SelectTrack(bool subtitle, int index);
 

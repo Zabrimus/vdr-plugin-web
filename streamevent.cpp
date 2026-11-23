@@ -17,6 +17,7 @@
 #include <vdr/thread.h>
 #include <libsi/util.h>
 #include "streamevent.h"
+#include "debuglog.h"
 #include "web.h"
 
 #define TID_DSMCC_STREAM_DESCRIPTORS  0x3D
@@ -215,7 +216,8 @@ void cStreamEventFilter::Parse(int pid, int componentTag, const u_char *Data, in
             // p[4..11]: reserved and event NPT, HbbTV uses do-it-now events only
             event.privateData.assign((const char *) p + 12, length - 10);
 
-            dsyslog("[vdrweb] stream event: component tag %d, event id %d, %d bytes", componentTag, event.eventId, length - 10);
+            // one line per event: Das Erste sends about 16 a minute
+            DEBUGLOG("[vdrweb] stream event: component tag %d, event id %d, %d bytes", componentTag, event.eventId, length - 10);
 
             if (sender != nullptr) {
                 sender->Send(event);

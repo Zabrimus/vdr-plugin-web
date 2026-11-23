@@ -1,3 +1,4 @@
+#include <atomic>
 #include <chrono>
 #include <thread>
 #include <vector>
@@ -157,16 +158,30 @@ void VideoPlayer::SetVideoSize(int x, int y, int width, int height) {
     cDevice::PrimaryDevice()->ScaleVideo(availableRect);
 }
 
+// The browser reports video geometry in the size it renders at. Every OSD
+// update carries that size, so it is known from the first one on; this is only
+// the value used until then, and matches what the browser itself defaults to.
+// Written by the thrift threads of the OSD updates, read by the one of the video.
+static std::atomic<int> browserWidth(1280);
+static std::atomic<int> browserHeight(720);
+
+void VideoPlayer::SetBrowserSize(int width, int height) {
+    if (width > 0 && height > 0) {
+        browserWidth = width;
+        browserHeight = height;
+    }
+}
+
 void VideoPlayer::calcVideoPosition(int x, int y, int w, int h, int *newx, int *newy, int *newwidth, int *newheight) {
     int osdWidth;
     int osdHeight;
     double osdPh;
     cDevice::PrimaryDevice()->GetOsdSize(osdWidth, osdHeight, osdPh);
 
-    *newx = (x * osdWidth) / 1280;
-    *newy = (y * osdHeight) / 720;
-    *newwidth = (w * osdWidth) / 1280;
-    *newheight = (h * osdHeight) / 720;
+    *newx = (x * osdWidth) / browserWidth;
+    *newy = (y * osdHeight) / browserHeight;
+    *newwidth = (w * osdWidth) / browserWidth;
+    *newheight = (h * osdHeight) / browserHeight;
 }
 
 void VideoPlayer::PlayPacket(uint8_t *buffer, int len) {

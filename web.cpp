@@ -200,6 +200,8 @@ void VdrPluginWebServer::ping() {
 bool VdrPluginWebServer::ProcessOsdUpdate(const ProcessOsdUpdateType &input) {
     DEBUGLOG("[vdrweb] VdrPluginWebServer::ProcessOsdUpdate");
 
+    VideoPlayer::SetBrowserSize(input.disp_width, input.disp_height);
+
     // the page must not be deleted while drawing
     std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
 
@@ -220,6 +222,8 @@ bool VdrPluginWebServer::ProcessOsdUpdate(const ProcessOsdUpdateType &input) {
 
 bool VdrPluginWebServer::ProcessOsdUpdateQOI(const ProcessOsdUpdateQOIType &input) {
     DEBUGLOG("[vdrweb] VdrPluginWebServer::ProcessOsdUpdateQOI");
+
+    VideoPlayer::SetBrowserSize(input.render_width, input.render_height);
 
     // the page must not be deleted while drawing
     std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
@@ -456,6 +460,8 @@ bool VdrPluginWebServer::OsdEmpty(const OsdEmptyType &input) {
 }
 
 bool VdrPluginWebServer::ProcessOsdShm(const ProcessOsdShmType &input) {
+    VideoPlayer::SetBrowserSize(input.render_width, input.render_height);
+
     // the page must not be deleted while drawing
     std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
 
@@ -555,6 +561,8 @@ bool VdrPluginWebServer::StreamEventFilter(const StreamEventFilterType &input) {
 }
 
 bool VdrPluginWebServer::ProcessOsdFrame(const ProcessOsdFrameType &input) {
+    VideoPlayer::SetBrowserSize(input.render_width, input.render_height);
+
     // the page must not be deleted while drawing
     std::lock_guard<std::recursive_mutex> lock(pixmap_mutex);
 
@@ -953,34 +961,41 @@ cOsdObject *cPluginWeb::MainMenuAction() {
         }
     }
 
-    LOCK_CHANNELS_READ
-    const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
+    std::string channelId;
+    {
+        // not with the lock of the channels: the browser may answer slowly
+        LOCK_CHANNELS_READ
+        const cChannel *currentChannel = Channels->GetByNumber(cDevice::CurrentChannel());
 
-    if (currentChannel == nullptr) {
-        esyslog("[vdrweb] MainMenuAction: no current channel");
-        nextOsdCommand = OPEN;
-        return nullptr;
+        if (currentChannel == nullptr) {
+            esyslog("[vdrweb] MainMenuAction: no current channel");
+            nextOsdCommand = OPEN;
+            return nullptr;
+        }
+
+        channelId = *currentChannel->GetChannelID().ToString();
     }
-
-    WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, OSD);
 
     // resolution and frame rate from the setup, the browser may have been restarted
     if (nextOsdCommand != REOPEN) {
         SendRenderParameters();
     }
 
-    if (nextOsdCommand == OPEN) {
-        if (!browserClient->RedButton(*currentChannel->GetChannelID().ToString())) {
-            Skins.QueueMessage(mtInfo, tr("Browser not available"));
-        }
-    } else if (nextOsdCommand == REOPEN) {
-        // nothing to do
-    } else if (nextOsdCommand == URL) {
-        browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "URL", param_userAgent, param_referrer, param_cookie, param_url);
+    if (nextOsdCommand == OPEN && !browserClient->RedButton(channelId)) {
+        // no OSD: it would only show an empty page, or the application of the last channel
+        Skins.QueueMessage(mtInfo, browserClient->ping() ? tr("No HbbTV application on this channel") : tr("Browser not available"));
+        return nullptr;
+    }
+
+    WebOSDPage* page = WebOSDPage::Create(useOutputDeviceScale, OSD);
+
+    // OPEN started the application above, REOPEN shows the current page again
+    if (nextOsdCommand == URL) {
+        browserClient->StartApplication(channelId, "URL", param_userAgent, param_referrer, param_cookie, param_url);
     } else if (nextOsdCommand == MAIN) {
-        browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "MAIN", param_userAgent, param_referrer, param_cookie, "");
+        browserClient->StartApplication(channelId, "MAIN", param_userAgent, param_referrer, param_cookie, "");
     } else if (nextOsdCommand == M3U) {
-        browserClient->StartApplication(*currentChannel->GetChannelID().ToString(), "M3U", param_userAgent, param_referrer, param_cookie, param_m3uContent);
+        browserClient->StartApplication(channelId, "M3U", param_userAgent, param_referrer, param_cookie, param_m3uContent);
     }
 
     nextOsdCommand = OPEN;
