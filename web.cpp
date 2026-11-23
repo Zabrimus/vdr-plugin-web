@@ -166,6 +166,11 @@ void stopVideo() {
     std::lock_guard<std::recursive_mutex> lock(playerMutex);
 
     if (videoPlayer != nullptr) {
+        // The application stays open. Until VDR shows its page again there is
+        // neither a page nor a player: IsWebActive() must not report the end of
+        // the application to the browser meanwhile, it would close it.
+        nextOsdCommand = REOPEN;
+
         releasePlayer();
 
         // The player switches to full screen when it goes, but the application
@@ -175,7 +180,6 @@ void stopVideo() {
             VideoPlayer::SetVideoSize(lastVideoX, lastVideoY, lastVideoWidth, lastVideoHeight);
         }
 
-        nextOsdCommand = REOPEN;
         cRemote::CallPlugin("web");
     }
 }
@@ -466,7 +470,8 @@ bool VdrPluginWebServer::SelectAudioTrack(const SelectAudioTrackType &input) {
 
 bool VdrPluginWebServer::IsWebActive() {
     std::lock_guard<std::recursive_mutex> lock(playerMutex);
-    return (WebOSDPage::Get() != nullptr) || (videoPlayer != nullptr);
+    // REOPEN: the page of the application is shown again after a video (stopVideo)
+    return (WebOSDPage::Get() != nullptr) || (videoPlayer != nullptr) || nextOsdCommand == REOPEN;
 }
 
 bool VdrPluginWebServer::SelectSubtitleTrack(const SelectSubtitleTrackType &input) {
