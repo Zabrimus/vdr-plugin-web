@@ -818,12 +818,13 @@ void cPluginWeb::Stop() {
     // first everything that uses the clients, then the clients
     thriftServer->stop();
     regularWorker->Stop();
+    // first the switch worker of the device status, it uses the stream events
+    delete hbbtvDeviceStatus;
+    hbbtvDeviceStatus = nullptr;
+
     StreamEventsShutdown();
     StopDownloadWatcher();
     WebOSDPage::ReleaseShm();
-
-    delete hbbtvDeviceStatus;
-    hbbtvDeviceStatus = nullptr;
 
     BrowserClient *client = browserClient;
     browserClient = nullptr;

@@ -16,12 +16,16 @@
 class cHbbtvDeviceStatus : public cStatus
 {
 private:
+   class cSwitchWorker;
+   cSwitchWorker *switchWorker;
    cDevice *device;
    cAitFilter *aitFilter;
    // also read by the regular worker (CheckProgramme)
    std::atomic<int> sid;
    int volume = 0;
    std::atomic<tEventID> lastPresentEventId{0};
+   // runs in the switch worker, never in the callback of the channel switch
+   void Switch(int channelNumber, const cDevice *vdrDevice);
 protected:
    void ChannelSwitch(const cDevice *device, int channelNumber, bool LiveView) override;
    virtual void SetVolume(int Volume, bool Absolute);

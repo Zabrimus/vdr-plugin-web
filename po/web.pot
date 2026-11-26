@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: vdr-web \n"
+"Project-Id-Version: vdr-web 0.0.1\n"
 "Report-Msgid-Bugs-To: <see README>\n"
-"POT-Creation-Date: 2025-03-25 08:48+0100\n"
+"POT-Creation-Date: 2026-11-26 08:41+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,5 +17,249 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "No download directory"
+msgstr ""
+
+msgid "No video or a live stream"
+msgstr ""
+
+msgid "MediathekView is not reachable"
+msgstr ""
+
+msgid "This video can't be downloaded"
+msgstr ""
+
+msgid "The download directory is not writable"
+msgstr ""
+
+msgid "Not enough disk space"
+msgstr ""
+
+msgid "Interrupted"
+msgstr ""
+
+msgid "This video can't be converted"
+msgstr ""
+
+msgid "The download directory is not reachable by VDR"
+msgstr ""
+
+msgid "The recording can't be created"
+msgstr ""
+
+msgid "audio description"
+msgstr ""
+
+msgid "sign language"
+msgstr ""
+
+msgid "original version"
+msgstr ""
+
+msgid "plain language"
+msgstr ""
+
+msgid "trailer"
+msgstr ""
+
+#, c-format
+msgid "Recording created: %s"
+msgstr ""
+
+#, c-format
+msgid "Recording failed: %s"
+msgstr ""
+
+#, c-format
+msgid "Download finished: %s"
+msgstr ""
+
+#, c-format
+msgid "Download failed: %s"
+msgstr ""
+
+msgid "Recording"
+msgstr ""
+
+#, c-format
+msgid "Download %d%%"
+msgstr ""
+
+#, c-format
+msgid "%d downloads"
+msgstr ""
+
+msgid "Download"
+msgstr ""
+
+msgid "Searching in MediathekView..."
+msgstr ""
+
+msgid "Transcoder not available"
+msgstr ""
+
+#, c-format
+msgid "Download started: %s"
+msgstr ""
+
+msgid "Stream without MediathekView entry"
+msgstr ""
+
+msgid "Other versions:"
+msgstr ""
+
+msgid "Downloads"
+msgstr ""
+
+msgid "conv."
+msgstr ""
+
+msgid "waiting"
+msgstr ""
+
+msgid "failed"
+msgstr ""
+
+msgid "recording"
+msgstr ""
+
+msgid "No downloads"
+msgstr ""
+
+msgid "Button$Cancel"
+msgstr ""
+
+msgid "Button$Remove"
+msgstr ""
+
+msgid "Button$Retry"
+msgstr ""
+
+msgid "Button$Delete"
+msgstr ""
+
+msgid "Button$Recording"
+msgstr ""
+
+msgid "Cancel download?"
+msgstr ""
+
+msgid "Delete file?"
+msgstr ""
+
+msgid "Can't remove the download"
+msgstr ""
+
+msgid "HbbTV available"
+msgstr ""
+
+msgid "never"
+msgstr ""
+
+msgid "bottom right"
+msgstr ""
+
+msgid "bottom left"
+msgstr ""
+
+msgid "top right"
+msgstr ""
+
+msgid "top left"
+msgstr ""
+
+msgid "browser default"
+msgstr ""
+
+msgid "best"
+msgstr ""
+
+msgid "720p at most"
+msgstr ""
+
+msgid "manually"
+msgstr ""
+
+msgid "automatically"
+msgstr ""
+
+msgid "none"
+msgstr ""
+
+msgid "Key$Info"
+msgstr ""
+
+msgid "Key$Stop"
+msgstr ""
+
+msgid "Key$Blue"
+msgstr ""
+
+msgid "Show HbbTV hint"
+msgstr ""
+
+msgid "HbbTV hint duration (s)"
+msgstr ""
+
+msgid "HbbTV hint position"
+msgstr ""
+
+msgid "Browser resolution"
+msgstr ""
+
+msgid "Scale by output device"
+msgstr ""
+
+msgid "Browser frame rate"
+msgstr ""
+
+msgid "Media Source Extensions"
+msgstr ""
+
+msgid "ZDF special handling"
+msgstr ""
+
+msgid "OSD in shared memory"
+msgstr ""
+
+msgid "Max. download speed (Mbit/s)"
+msgstr ""
+
+msgid "unlimited"
+msgstr ""
+
+msgid "Download quality"
+msgstr ""
+
+msgid "Keep free on the disk (GB)"
+msgstr ""
+
+msgid "Downloads at the same time"
+msgstr ""
+
+msgid "Downloads as recording"
+msgstr ""
+
+msgid "Lifetime of the recordings"
+msgstr ""
+
+msgid "Key for the downloads"
+msgstr ""
+
+msgid "Downloads..."
+msgstr ""
+
+msgid "Close HbbTV without display after (s)"
+msgstr ""
+
+msgid "No HbbTV application on this channel"
+msgstr ""
+
 msgid "Browser not available"
+msgstr ""
+
+msgid "Start"
+msgstr ""
+
+msgid "Close"
 msgstr ""

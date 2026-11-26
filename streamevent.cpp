@@ -12,6 +12,7 @@
 #include <map>
 #include <set>
 #include <deque>
+#include <memory>
 #include <string>
 #include <vdr/filter.h>
 #include <vdr/thread.h>
@@ -230,51 +231,78 @@ void cStreamEventFilter::Parse(int pid, int componentTag, const u_char *Data, in
 
 // --- interface -------------------------------------------------------------------------
 
+// filterMutex protects only the pointers, it is never held while calling into VDR
+// (Detach() waits for the section handler, which may wait for a VDR lock)
 static cMutex filterMutex;
-static cStreamEventFilter *filter = nullptr;
+static std::shared_ptr<cStreamEventFilter> filter;
 static cDevice *filterDevice = nullptr;
 
+// must not be called with locks of VDR held (the channel switch callback), see status.cpp
 void StreamEventsChannelSwitch(cDevice *device) {
-    cMutexLock lock(&filterMutex);
-
-    if (sender == nullptr) {
-        sender = new cStreamEventSender();
-        sender->Start();
+    {
+        cMutexLock lock(&filterMutex);
+        if (sender == nullptr) {
+            sender = new cStreamEventSender();
+            sender->Start();
+        }
     }
 
-    if (filter != nullptr && filterDevice != nullptr) {
-        filterDevice->Detach(filter);
-    }
-    delete filter;
-    filter = nullptr;
-    filterDevice = nullptr;
-
-    if (device != nullptr) {
-        filter = new cStreamEventFilter();
+    std::shared_ptr<cStreamEventFilter> oldFilter;
+    cDevice *oldDevice = nullptr;
+    std::shared_ptr<cStreamEventFilter> newFilter;
+    {
+        cMutexLock lock(&filterMutex);
+        oldFilter = filter;
+        oldDevice = filterDevice;
+        if (device != nullptr) {
+            newFilter = std::make_shared<cStreamEventFilter>();
+        }
+        filter = newFilter;
         filterDevice = device;
-        device->AttachFilter(filter);
+    }
+
+    // without filterMutex: Detach() waits for the section handler
+    if (oldFilter != nullptr && oldDevice != nullptr) {
+        oldDevice->Detach(oldFilter.get());
+    }
+    oldFilter.reset();
+
+    if (newFilter != nullptr) {
+        device->AttachFilter(newFilter.get());
     }
 }
 
 void StreamEventsComponent(int componentTag, int pid) {
-    cMutexLock lock(&filterMutex);
-    if (filter != nullptr) {
-        filter->SetComponentPid(componentTag, pid);
+    std::shared_ptr<cStreamEventFilter> current;
+    {
+        cMutexLock lock(&filterMutex);
+        current = filter;
+    }
+    if (current != nullptr) {
+        current->SetComponentPid(componentTag, pid);
     }
 }
 
 bool StreamEventsRequest(int componentTag, bool enable) {
-    cMutexLock lock(&filterMutex);
-    return filter != nullptr && filter->Request(componentTag, enable);
+    std::shared_ptr<cStreamEventFilter> current;
+    {
+        cMutexLock lock(&filterMutex);
+        current = filter;
+    }
+    return current != nullptr && current->Request(componentTag, enable);
 }
 
 void StreamEventsShutdown() {
     StreamEventsChannelSwitch(nullptr);
 
-    cMutexLock lock(&filterMutex);
-    if (sender != nullptr) {
-        sender->Stop();
-        delete sender;
+    cStreamEventSender *old = nullptr;
+    {
+        cMutexLock lock(&filterMutex);
+        old = sender;
         sender = nullptr;
+    }
+    if (old != nullptr) {
+        old->Stop();
+        delete old;
     }
 }

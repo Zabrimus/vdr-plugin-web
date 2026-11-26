@@ -8,6 +8,7 @@
 
 #include <vdr/channels.h>
 #include <vdr/dvbdevice.h>
+#include <vdr/thread.h>
 #include <vdr/sources.h>
 #include <string>
 #include <vector>
@@ -188,13 +189,67 @@ inline const char* toChannelJson(const cChannel* channel) {
     return strdup(json.c_str());
 }
 
+// Attach() and Detach() wait for the section handlers, which may wait for the locks of VDR.
+// So they must not run in the channel switch callback, which holds such locks.
+class cHbbtvDeviceStatus::cSwitchWorker : public cThread {
+private:
+   cMutex mutex;
+   cCondVar condition;
+   bool pending = false;
+   int channelNumber = 0;
+   const cDevice *vdrDevice = nullptr;
+   cHbbtvDeviceStatus *status;
+
+protected:
+   void Action() override {
+      while (Running()) {
+         int number;
+         const cDevice *dev;
+         {
+            cMutexLock lock(&mutex);
+            if (!pending) {
+               condition.TimedWait(mutex, 1000);
+               continue;
+            }
+            number = channelNumber;
+            dev = vdrDevice;
+            pending = false;
+         }
+         status->Switch(number, dev);
+      }
+   }
+
+public:
+   cSwitchWorker(cHbbtvDeviceStatus *Status) : cThread("vdrweb channel switch"), status(Status) {}
+
+   // only the latest switch counts
+   void Request(int ChannelNumber, const cDevice *VdrDevice) {
+      cMutexLock lock(&mutex);
+      channelNumber = ChannelNumber;
+      vdrDevice = VdrDevice;
+      pending = true;
+      condition.Broadcast();
+   }
+
+   void Stop() {
+      Cancel(-1);
+      condition.Broadcast();
+      Cancel(3);
+   }
+};
+
 cHbbtvDeviceStatus::cHbbtvDeviceStatus() {
    device = nullptr;
    aitFilter = nullptr;
    sid = -1;
+   switchWorker = new cSwitchWorker(this);
+   switchWorker->Start();
 }
 
 cHbbtvDeviceStatus::~cHbbtvDeviceStatus() {
+   switchWorker->Stop();
+   delete switchWorker;
+
    // the filter sends the applications to the browser
    if (device) {
       device->Detach(aitFilter);
@@ -211,51 +266,55 @@ void cHbbtvDeviceStatus::ChannelSwitch(const cDevice * vdrDevice, int channelNum
       // a new channel needs its own HbbTV hint
       cHbbtvHint::ChannelSwitch();
 
-      // stream events belong to the channel
-      StreamEventsChannelSwitch(nullptr);
+      switchWorker->Request(channelNumber, vdrDevice);
+   }
+}
 
-      if (device) {
-         isyslog("[vdrweb] Detaching HbbTV ait filter from device %d", device->CardIndex()+1);
-         device->Detach(aitFilter);
-         delete aitFilter;
-         device = nullptr;
-         aitFilter = nullptr;
-         sid = -1;
-      }
+void cHbbtvDeviceStatus::Switch(int channelNumber, const cDevice *vdrDevice) {
+   // stream events belong to the channel
+   StreamEventsChannelSwitch(nullptr);
 
-      if (channelNumber) {
-         device = cDevice::ActualDevice();
+   if (device) {
+      isyslog("[vdrweb] Detaching HbbTV ait filter from device %d", device->CardIndex()+1);
+      device->Detach(aitFilter);
+      delete aitFilter;
+      device = nullptr;
+      aitFilter = nullptr;
+      sid = -1;
+   }
 
-         std::string json;
-         {
+   if (channelNumber) {
+      device = cDevice::ActualDevice();
+
+      std::string json;
+      {
 #if APIVERSNUM >= 20301
-            LOCK_CHANNELS_READ
-            auto channel = Channels->GetByNumber(channelNumber);
+         LOCK_CHANNELS_READ
+         auto channel = Channels->GetByNumber(channelNumber);
 #else
-            auto channel = Channels->GetByNumber(channelNumber);
+         auto channel = Channels->GetByNumber(channelNumber);
 #endif
-            if (channel == nullptr) {
-               device = nullptr;
-               return;
-            }
-
-            sid = channel->Sid();
-            lastPresentEventId = 0;
-
-            const char* buffer = toChannelJson(channel);
-            json = buffer;
-            free((void *) buffer);
+         if (channel == nullptr) {
+            device = nullptr;
+            return;
          }
 
-         // not with the lock of the channels: the browser may answer slowly
-         if (browserClient != nullptr) {
-            browserClient->InsertChannel(json);
-         }
+         sid = channel->Sid();
+         lastPresentEventId = 0;
 
-         device->AttachFilter(aitFilter = new cAitFilter(sid));
-         StreamEventsChannelSwitch(device);
-         isyslog("[vdrweb] Attached HbbTV ait filter to device %d, vdrDev=%d actDev=%d, Sid=0x%04x", device->CardIndex()+1, vdrDevice->CardIndex()+1,cDevice::ActualDevice()->CardIndex()+1, sid.load());
+         const char* buffer = toChannelJson(channel);
+         json = buffer;
+         free((void *) buffer);
       }
+
+      // not with the lock of the channels: the browser may answer slowly
+      if (browserClient != nullptr) {
+         browserClient->InsertChannel(json);
+      }
+
+      device->AttachFilter(aitFilter = new cAitFilter(sid));
+      StreamEventsChannelSwitch(device);
+      isyslog("[vdrweb] Attached HbbTV ait filter to device %d, vdrDev=%d actDev=%d, Sid=0x%04x", device->CardIndex()+1, vdrDevice->CardIndex()+1,cDevice::ActualDevice()->CardIndex()+1, sid.load());
    }
 }
 
